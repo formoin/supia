@@ -9,8 +9,8 @@ from ultralytics import SAM, YOLO
 seg_model = SAM("mobile_sam.pt")
 cls_model = YOLO("yolov8n-cls.pt")
 
-image_path = "dog.png"
-output_path = "segment2.jpg"
+image_path = "./img/input/dog.jpg"
+output_path = "./img/seg/segment1.jpg"
 # Load the original image
 image = cv2.imread(image_path)
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -34,8 +34,18 @@ overlay = image_rgb.copy()
 overlay[mask == 255] = [255, 0, 0]  # Color the mask area red for visualization
 
 # Create a new image where the outside of the mask is white
-new_image = image_rgb.copy()
-new_image[mask == 0] = [255, 255, 255]  # Set the area outside the mask to white
+# new_image = image_rgb.copy()
+# new_image[mask == 0] = [255, 255, 255]  # Set the area outside the mask to white
+
+# new_image = np.dstack((image_rgb, mask))  # Add mask as alpha channel
+# new_image[mask == 0, 3] = 0  # Set the alpha channel to 0 for the background
+
+# Create an empty image with an alpha channel (RGBA)
+new_image = np.zeros((image_rgb.shape[0], image_rgb.shape[1], 4), dtype=np.uint8)
+
+# Copy the original image where the mask is non-zero
+new_image[mask == 255, :3] = image_rgb[mask == 255]
+new_image[mask == 255, 3] = 255  # Set alpha channel to 255 where mask is non-zero
 
 new_image = cv2.cvtColor(new_image, cv2.COLOR_RGB2BGR)
 cv2.imwrite(output_path, new_image)
@@ -50,18 +60,17 @@ probs = cls_result[0].probs.top1
 probs_name = cls_result[0].names[probs]
 
 
+# # Display the original image, the mask, and the overlay
+# plt.figure(figsize=(15, 5))
 
-# Display the original image, the mask, and the overlay
-plt.figure(figsize=(15, 5))
+# plt.subplot(1, 2, 1)
+# plt.title('Original Image')
+# plt.imshow(image_rgb)
+# plt.axis('off')
 
-plt.subplot(1, 2, 1)
-plt.title('Original Image')
-plt.imshow(image_rgb)
-plt.axis('off')
+# plt.subplot(1, 2, 2)
+# plt.title(f'{probs_name}')
+# plt.imshow(new_image)
+# plt.axis('off')
 
-plt.subplot(1, 2, 2)
-plt.title(f'{probs_name}')
-plt.imshow(new_image)
-plt.axis('off')
-
-plt.show()
+# plt.show()

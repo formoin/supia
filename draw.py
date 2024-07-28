@@ -64,6 +64,6 @@ def simplify_colors(image):
     return Image.fromarray(clustered_img_array)
 
 if __name__ == "__main__":
-    input_image_path = r"segment2.jpg"
-    output_image_path = r"crayon_style_image.jpg"
+    input_image_path = r"./img/seg/segment3.jpg"
+    output_image_path = r"./img/output/blur_kmeans_image3.jpg"
     color_crayon_style(input_image_path, output_image_path)
