@@ -1,12 +1,11 @@
 import React from 'react';
 import { StyleSheet, View, Text, Image } from 'react-native';
-import Line from './atoms/Line'
 
 const Popup_White = ({dong}) => {
   return (
     <View style={styles.rectangle}>
         <Text style={styles.text}>{dong}에서 발견된 자연물</Text>
-        <Line />
+        <View style={styles.line} />
         <View style={styles.container}>
             <Image
               source={{ url: '' }}
@@ -14,7 +13,7 @@ const Popup_White = ({dong}) => {
             />
             <Text style={styles.p_text}>들꽃</Text>
         </View>
-        <Line />
+        <View style={styles.line} />
     </View>
   );
 };
@@ -32,19 +31,27 @@ const styles = StyleSheet.create({
      backgroundColor: '#fff',
      opacity: 0.7,
    },
-   image: {
+  image: {
       width: 40,
       height: 40,
       borderRadius: 50,
       backgroundColor: '#fff',
    },
-   text: {
+  text: {
       padding: 20
-   },
-   p_text: {
+  },
+  p_text: {
       paddingTop: 10,
       paddingLeft: 20
-   }
+  },
+  line: {
+       width: 240,
+       height: 1,
+       transform: [{ rotate: '0.177deg' }],
+       borderWidth: 1,
+       borderColor: '#A2AA7B',
+       opacity: 1,
+  },
 });
 
 export default Popup_White;

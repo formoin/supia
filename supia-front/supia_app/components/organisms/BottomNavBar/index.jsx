@@ -11,19 +11,18 @@ import { Feather } from "@expo/vector-icons";
 import { Octicons } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { getStatusBarHeight } from "react-native-status-bar-height";
+import { useNavigation } from '@react-navigation/native';
+import useStore from '../../store/useStore';
 
 const statusBarHeight = getStatusBarHeight();
 const BottomTab = createBottomTabNavigator();
 
-// 중앙 산책 버튼을 위한 커스텀 View
-// BottomTab.Navigator에서 tabBarButton을 사용하면 tabBarIcon, tabBarLabel이 자동으로 children으로 생성됨
-// onPress도 Navigator에서 제공하는 페이지 이동이 그대로 들어가게 됨
-function WalkButton({ children, onPress }) {
+function WalkButton({ onPress }) {
   return (
     <View style={styles.walkButtonContainer}>
       <View style={styles.walkButton}>
         <Pressable onPress={onPress} style={styles.walkButtonPressable}>
-          {children}
+          <FontAwesome5 name="walking" size={24} color="#fff" />
         </Pressable>
       </View>
     </View>
@@ -31,12 +30,20 @@ function WalkButton({ children, onPress }) {
 }
 
 function BottomNav() {
+  const navigation = useNavigation();
+  const startStopwatch = useStore((state) => state.startStopwatch);
+
+  const handleWalkButtonPress = () => {
+    startStopwatch(); // 스톱워치 시작
+    navigation.navigate('Walk'); // 산책 페이지로 이동
+  };
+
   return (
     <BottomTab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#ECEADE', // 베이지색 배경
+          backgroundColor: '#ECEADE',
         },
         tabBarLabelStyle: {
           color: '#8C8677',
@@ -69,11 +76,8 @@ function BottomNav() {
         name="Walk"
         component={WalkingScreen}
         options={{
-          tabBarButton: (props) => <WalkButton {...props} />,
+          tabBarButton: (props) => <WalkButton {...props} onPress={handleWalkButtonPress} />,
           tabBarLabel: () => {},
-          tabBarIcon: ({ size }) => (
-            <FontAwesome5 name="walking" size={size} color="#fff" />
-          ),
         }}
       />
       <BottomTab.Screen
@@ -123,13 +127,13 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "rgba(162, 170, 123, 0.8)", // Background circle color
+    backgroundColor: "rgba(162, 170, 123, 0.8)",
   },
   walkButton: {
     width: 60,
     height: 60,
     borderRadius: 35,
-    backgroundColor: "#A2AA7B", // Main button color
+    backgroundColor: "#A2AA7B",
     justifyContent: "center",
     alignItems: "center",
   },

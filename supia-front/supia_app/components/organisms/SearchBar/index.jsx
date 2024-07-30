@@ -1,8 +1,8 @@
-import { View, StyleSheet, Pressable, TextInput } from "react-native";
+import { View, StyleSheet, Pressable, TextInput, Text } from "react-native";
 import { useState } from "react";
 import { AntDesign } from "@expo/vector-icons";
 
-export default function Searchbar({}) {
+export default function Searchbar({active, searchName}) {
   const [value, setValue] = useState("");
 
   // X 버튼 클릭 시 초기화
@@ -23,17 +23,23 @@ export default function Searchbar({}) {
 
   return (
     <View style={styles.container}>
-      <AntDesign name="search1" size={20} />
-      <TextInput
-        value={value}
-        onChangeText={onChangeT}
-        onSubmitEditing={onSubmitEditing} // 엔터 키 처리
-        style={styles.input}
-        placeholder="Search..."
-      />
-      <Pressable onPress={onReset}>
-        <AntDesign name="close" size={20} />
-      </Pressable>
+      {active ? (
+        <>
+          <AntDesign name="search1" size={20} color="#A2AA7B" />
+          <TextInput
+            value={value}
+            onChangeText={onChangeT}
+            onSubmitEditing={onSubmitEditing} // 엔터 키 처리
+            style={styles.input}
+            placeholder="Search..."
+          />
+          <Pressable onPress={onReset}>
+            <AntDesign name="close" size={20} color="#A2AA7B" />
+          </Pressable>
+        </>
+      ) : (
+        <Text style={styles.input}>{searchName}</Text>
+      )}
     </View>
   );
 }

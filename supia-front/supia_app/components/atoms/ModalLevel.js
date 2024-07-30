@@ -2,11 +2,11 @@ import React from 'react';
 import { StyleSheet, View, Image, Text } from 'react-native';
 
 const images = {
-  level_1: require('../../assets/level/level_1.png'),
-  level_2: require('../../assets/level/level_2.png'),
-  level_3: require('../../assets/level/level_3.png'),
-  level_4: require('../../assets/level/level_4.png'),
-  level_5: require('../../assets/level/level_5.png'),
+  '씨앗': require('../../assets/level/씨앗.png'),
+  '새싹': require('../../assets/level/새싹.png'),
+  '잎새': require('../../assets/level/잎새.png'),
+  '꽃': require('../../assets/level/꽃.png'),
+  '열매': require('../../assets/level/열매.png'),
 };
 
 export default function ModalLevel({UserLevel}) {
@@ -14,7 +14,7 @@ export default function ModalLevel({UserLevel}) {
     <View style={styles.container}>
       <Image
         style={styles.levelimg}
-        source={images[`level_${UserLevel}`]}
+        source={images[`${UserLevel}`]}
       />
       <Text style={styles.typography}>{UserLevel}</Text>
     </View>

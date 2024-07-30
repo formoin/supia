@@ -21,7 +21,7 @@ export default function FriendScreen() {
 
       <View style={styles.container}>
         <View style={styles.searchbar}>
-          <Searchbar />
+          <Searchbar active={true} />
         </View>
 
         <View style={styles.friendContainer}>
@@ -40,7 +40,7 @@ export default function FriendScreen() {
           </View>
         </View>
 
-        <ListItem pic="user" title="yewone1" content="김예원" name={edit ? 'x' : 'message-square'} UserLevel="2"/>
+        <ListItem pic="user" title="yewone1" content="김예원" name={edit ? 'x' : 'message-square'} UserLevel="새싹"/>
 
       </View>
     </View>

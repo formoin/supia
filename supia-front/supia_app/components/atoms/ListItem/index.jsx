@@ -3,10 +3,12 @@ import { Text, View, Pressable, StyleSheet, Modal } from "react-native";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import FriendModal from '../../FriendModal';
 import NoteModal from '../../NoteModal';
+import Popup from '../../Popup';
 
 export default function Label({ pic, title, content, name, UserLevel }) {
   const [UsermodalVisible, setUsermodalVisible] = useState(false);
   const [NoteModalVisible, setNoteModalVisible] = useState(false);
+  const [DeletePopupVisible, setDeletePopupVisible] = useState(false);
 
   const handlePicPress = () => {
     if (pic === 'user') {
@@ -26,11 +28,19 @@ export default function Label({ pic, title, content, name, UserLevel }) {
     setNoteModalVisible(false); // NoteModal 닫기
   };
 
+  const handleOpenDeletePopup = () => {
+    setDeletePopupVisible(true); // 삭제 팝업 열기
+  };
+
+  const handleCloseDeletePopup = () => {
+    setDeletePopupVisible(false); // 삭제 팝업 닫기
+  };
+
   const onPress = () => {
     if (name === 'message-square') {
       handleOpenNoteModal();
     } else {
-      alert('delete');
+      handleOpenDeletePopup();
     }
   };
 
@@ -67,7 +77,18 @@ export default function Label({ pic, title, content, name, UserLevel }) {
         onRequestClose={handleCloseNoteModal}
       >
         <View style={styles.modalBackground}>
-          <NoteModal onClose={handleCloseNoteModal} />
+          <NoteModal onClose={handleCloseNoteModal} friendName={title}/>
+        </View>
+      </Modal>
+      
+      {/* DeletePopup */}
+      <Modal
+        transparent={true}
+        visible={DeletePopupVisible}
+        onRequestClose={handleCloseDeletePopup}
+      >
+        <View style={styles.modalBackground}>
+          <Popup onClose={handleCloseDeletePopup} Label='친구 삭제' friendName={title} content='님을 친구 목록에서 삭제하시겠습니까?'/>
         </View>
       </Modal>
     </View>

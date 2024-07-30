@@ -25,7 +25,7 @@ export default function SearchScreen() {
         <Divide text1="User" text2="Item" />
       </View>
       <View style={styles.searchbar}>
-        <Searchbar />
+        <Searchbar active={true}/>
       </View>
       <View style={styles.p_value}>
         {activeText === 'text1' ? (

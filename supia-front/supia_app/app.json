@@ -17,7 +17,16 @@
         "backgroundColor": "#ffffff"
       }
     },
-    "web": {
+    "web": {}
+  },
+
+  "@react-native-kakao/core": {
+    "nativeAppKey": "{{native app key}}",
+    "android": {
+      "authCodeHandlerActivity": true
+    },
+    "ios": {
+      "handleKakaoOpenUrl": true
     }
   }
 }

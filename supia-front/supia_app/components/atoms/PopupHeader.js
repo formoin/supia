@@ -3,9 +3,6 @@ import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { EvilIcons } from '@expo/vector-icons';
 
 export default function PopupHeader({ Label, onClose }) {
-  // const onPressClose = () => {
-  //   alert('close');
-  // };
 
   return (
     <View style={styles.Header}>
@@ -23,13 +20,17 @@ const styles = StyleSheet.create({
   Header: {
     flexDirection: 'row', // 가로로 배치
     alignItems: 'center', // 세로 중앙 정렬
-    justifyContent: 'space-between', // 양 끝으로 정렬
     width: '100%', // 헤더가 전체 너비를 차지하도록 설정
-    paddingVertical: 8, // 상하 여백 추가 (옵션)
+    paddingVertical: 8,
+    paddingHorizontal: 10,
   },
   centerContainer: {
     flex: 1,
     alignItems: 'center', // 텍스트를 가운데로 정렬
+    justifyContent: 'center', // 수직 중앙 정렬
+    position: 'absolute', // 절대 위치 지정
+    left: 0,
+    right: 0,
   },
   typography: {
     fontSize: 24,
@@ -37,6 +38,6 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   closeButton: {
-    marginRight: 10
+    marginLeft: 'auto',
   },
 });

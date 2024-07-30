@@ -4,13 +4,13 @@ import PopupHeader from './atoms/PopupHeader'
 import Searchbar from './organisms/SearchBar';
 import TextFrame from './atoms/TextFrame';
 
-export default function NoteModal({onClose}) {
+export default function NoteModal({onClose, friendName}) {
   return (
     <View style={styles.container}>
       <PopupHeader Label="쪽지 보내기" onClose={onClose}/>
 
       <View style={styles.searchbar}>
-        <Searchbar />
+        <Searchbar active={false} searchName={friendName}/>
       </View>
 
       <View style={styles.frame}>

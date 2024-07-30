@@ -1,12 +1,9 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-const Button_Green = ({ label }) => {
-   const handlePress = () => {
-       Alert.alert(`${label} clicked!`);
-     };
+const Button_Green = ({ label, onPress }) => {
   return (
-    <TouchableOpacity style={styles.button} onPress={handlePress}>
+    <TouchableOpacity style={styles.button} onPress={onPress}>
       <Text style={styles.buttonText}>{label}</Text>
     </TouchableOpacity>
   );
