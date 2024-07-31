@@ -1,18 +1,20 @@
-import { StyleSheet, Text, View, Pressable, Platform } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import HomeScreen from "../../Pages/HomePage";
-import SearchScreen from "../../Pages/SearchPage";
-import StoreScreen from "../../Pages/StorePage";
-import FriendScreen from "../../Pages/FriendPage";
-import WalkingScreen from "../../Pages/WalkPage";
+import React, { useState } from 'react';
+import { View, StyleSheet, Pressable, Platform, Text } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import HomeScreen from '../../Pages/HomePage';
+import SearchScreen from '../../Pages/SearchPage';
+import StoreScreen from '../../Pages/StorePage';
+import FriendScreen from '../../Pages/FriendPage';
+import WalkingScreen from '../../Pages/WalkPage';
+import WalkRecordScreen from '../../Pages/WalkRecordPage';
+import MyPageScreen from '../../Pages/User/MyPage';
 
-import { Feather } from "@expo/vector-icons";
-import { Octicons } from "@expo/vector-icons";
-import { FontAwesome5 } from "@expo/vector-icons";
-import { getStatusBarHeight } from "react-native-status-bar-height";
+import { Feather } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
+import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { useNavigation } from '@react-navigation/native';
 import useStore from '../../store/useStore';
+import * as Location from 'expo-location';
 
 const statusBarHeight = getStatusBarHeight();
 const BottomTab = createBottomTabNavigator();
@@ -32,8 +34,24 @@ function WalkButton({ onPress }) {
 function BottomNav() {
   const navigation = useNavigation();
   const startStopwatch = useStore((state) => state.startStopwatch);
+  const setWalkStartTime = useStore((state) => state.setWalkStartTime);
+  const setCurrentLocation = useStore((state) => state.setCurrentLocation); // 현재 위치를 상태에 저장하는 함수
 
-  const handleWalkButtonPress = () => {
+  const handleWalkButtonPress = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Permission to access location was denied');
+      return;
+    }
+
+    const location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.High
+    });
+
+    const { latitude, longitude } = location.coords;
+    const currentTime = new Date().toISOString(); // 현재 시간
+    setWalkStartTime(currentTime); // 상태에 시간 저장
+    setCurrentLocation({ latitude, longitude }); // 상태에 현재 위치 저장
     startStopwatch(); // 스톱워치 시작
     navigation.navigate('Walk'); // 산책 페이지로 이동
   };
@@ -76,8 +94,13 @@ function BottomNav() {
         name="Walk"
         component={WalkingScreen}
         options={{
-          tabBarButton: (props) => <WalkButton {...props} onPress={handleWalkButtonPress} />,
+          tabBarButton: (props) => (
+            <WalkButton {...props} onPress={handleWalkButtonPress} />
+          ),
           tabBarLabel: () => {},
+          tabBarStyle: {
+            display: 'none',
+          },
         }}
       />
       <BottomTab.Screen
@@ -86,7 +109,7 @@ function BottomNav() {
         options={{
           tabBarLabel: () => <Text style={styles.tabBarLabel}>친구</Text>,
           tabBarIcon: ({ size }) => (
-            <Octicons name="person" size={size} color="#8C8677" />
+            <FontAwesome5 name="user-friends" size={size} color="#8C8677" />
           ),
         }}
       />
@@ -100,6 +123,16 @@ function BottomNav() {
           ),
         }}
       />
+      <BottomTab.Screen
+        name="MyPage"
+        component={MyPageScreen}
+        options={{ tabBarButton: () => null }}
+      />
+      <BottomTab.Screen
+        name="WalkRecord"
+        component={WalkRecordScreen}
+        options={{ tabBarButton: () => null }}
+      />
     </BottomTab.Navigator>
   );
 }
@@ -107,9 +140,7 @@ function BottomNav() {
 export default function BottomNavBar() {
   return (
     <View style={styles.container}>
-      <NavigationContainer>
-        <BottomNav />
-      </NavigationContainer>
+      <BottomNav />
     </View>
   );
 }
@@ -117,28 +148,28 @@ export default function BottomNavBar() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: Platform.OS === "ios" ? 0 : statusBarHeight,
+    backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'ios' ? 0 : statusBarHeight,
   },
   walkButtonContainer: {
     top: -40,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "rgba(162, 170, 123, 0.8)",
+    backgroundColor: 'rgba(162, 170, 123, 0.8)',
   },
   walkButton: {
     width: 60,
     height: 60,
     borderRadius: 35,
-    backgroundColor: "#A2AA7B",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#A2AA7B',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   tabBarLabel: {
-    color: "#8C8677",
+    color: '#8C8677',
     fontSize: 12,
     marginTop: -3,
   },

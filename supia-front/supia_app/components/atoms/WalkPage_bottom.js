@@ -1,39 +1,48 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Pressable, Modal, Text } from 'react-native';
-import { Ionicons, Entypo, Feather } from '@expo/vector-icons';
-import useStore from '../store/useStore';
-import Button_Green from '../atoms/Button_Green';
-import Button_Red from '../atoms/Button_Red';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from "react";
+import { StyleSheet, View, Pressable, Modal, Text } from "react-native";
+import { Ionicons, Entypo, Feather } from "@expo/vector-icons";
+import useStore from "../store/useStore";
+import Button_Green from "../atoms/Button_Green";
+import Button_Red from "../atoms/Button_Red";
+import { useNavigation } from "@react-navigation/native";
+import Popup_Call from "../Popup_Call";
 
-export default function WalkPage_bottom() {
-  const { resetStopwatch, pauseStopwatch } = useStore();
-  const [modalVisible, setModalVisible] = useState(false);
+const WalkPage_bottom = ({onOpenPopup}) => {
   const navigation = useNavigation();
+  const { resetStopwatch, pauseStopwatch, setWalkEndTime } = useStore();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [popupVisible, setPopupVisible] = useState(false);
 
   const onPressCamera = () => {
-    alert('camera');
+    alert("camera");
   };
 
   const onPressPause = () => {
     resetStopwatch(); // 스톱워치 리셋
     pauseStopwatch(); // 스톱워치 일시 정지
 
-    // 팝업 모달을 띄우기
+    const currentTime = new Date().toISOString();
+    setWalkEndTime(currentTime);
+
     setModalVisible(true);
   };
 
   const onPressUser = () => {
-    alert('User');
+    setPopupVisible(true);
   };
 
   const handleConfirm = () => {
     setModalVisible(false);
+    navigation.navigate("WalkRecord");
   };
 
   const handleCancel = () => {
     setModalVisible(false);
-    navigation.navigate('Home');
+    navigation.navigate("Home");
+  };
+
+  const handlePopupClose = () => {
+    setPopupVisible(false);
   };
 
   return (
@@ -77,7 +86,9 @@ export default function WalkPage_bottom() {
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>산책 종료</Text>
-            <Text style={styles.modalMessage}>산책 기록을 확인하시겠습니까?</Text>
+            <Text style={styles.modalMessage}>
+              산책 기록을 확인하시겠습니까?
+            </Text>
             <View style={styles.buttonContainerModal}>
               <Button_Green label="네" onPress={handleConfirm} />
               <Button_Red label="아니오" onPress={handleCancel} />
@@ -85,81 +96,83 @@ export default function WalkPage_bottom() {
           </View>
         </View>
       </Modal>
+
+      <Popup_Call visible={popupVisible} onClose={handlePopupClose} onOpenPopup={onOpenPopup}/>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   buttonContainer: {
-    width: '100%',
+    width: "100%",
     height: 58,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     margin: 15,
   },
   button: {
     borderRadius: 10,
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
     opacity: 1,
   },
   whiteIcon: {
     paddingRight: 8,
     borderRadius: 50,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingLeft: 9,
     paddingVertical: 9,
   },
   greenIcon: {
     paddingRight: 8,
     borderRadius: 50,
-    backgroundColor: '#A2AA7B',
+    backgroundColor: "#A2AA7B",
     paddingLeft: 7,
     paddingVertical: 6,
-    position: 'relative',
+    position: "relative",
   },
   bg: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(162, 170, 123, 0.8)',
-    position: 'absolute',
+    backgroundColor: "rgba(162, 170, 123, 0.8)",
+    position: "absolute",
     zIndex: -1,
     opacity: 0.8,
   },
   iconWithCircle: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
     marginHorizontal: 50,
   },
   walkButtonPressable: {
     width: 60,
     height: 60,
     borderRadius: 35,
-    backgroundColor: '#A2AA7B',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#A2AA7B",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalBackground: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContainer: {
     width: 300,
     padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   modalMessage: {
@@ -167,8 +180,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonContainerModal: {
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'center',
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "center",
   },
 });
+
+export default WalkPage_bottom;

@@ -5,7 +5,7 @@ import FriendModal from '../../FriendModal';
 import NoteModal from '../../NoteModal';
 import Popup from '../../Popup';
 
-export default function Label({ pic, title, content, name, UserLevel }) {
+export default function Label({ pic, title, content, name, UserLevel, onOpenPopup, onClose }) {
   const [UsermodalVisible, setUsermodalVisible] = useState(false);
   const [NoteModalVisible, setNoteModalVisible] = useState(false);
   const [DeletePopupVisible, setDeletePopupVisible] = useState(false);
@@ -39,7 +39,10 @@ export default function Label({ pic, title, content, name, UserLevel }) {
   const onPress = () => {
     if (name === 'message-square') {
       handleOpenNoteModal();
-    } else {
+    } else if (name === 'phone-call') {
+        onOpenPopup(title);
+        onClose();
+    } else if (name === 'x') {
       handleOpenDeletePopup();
     }
   };

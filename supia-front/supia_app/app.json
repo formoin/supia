@@ -15,11 +15,11 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.supia_app"
     },
     "web": {}
   },
-
   "@react-native-kakao/core": {
     "nativeAppKey": "{{native app key}}",
     "android": {

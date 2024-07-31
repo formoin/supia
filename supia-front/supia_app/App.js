@@ -1,15 +1,19 @@
 import { useEffect } from "react";
-import { StyleSheet, Text, View, Pressable, Platform, AsyncStora } from "react-native";
+import { StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getStatusBarHeight } from "react-native-status-bar-height";
 import BottomNavBar from "./components/organisms/BottomNavBar";
-import HomeScreen from "./components/Pages/HomePage";
 import LoginScreen from "./components/Pages/User/LoginPage";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 import SignUpScreen from "./components/Pages/User/SignUpPage";
-
+import StoreScreen from "./components/Pages/WalkRecordPage";
+import CallScreen from './components/Pages/CallPage';
+import Walking from './components/Pages/WalkPage'
 const statusBarHeight = getStatusBarHeight();
+import MyPageScreen from "./components/Pages/User/MyPage";
+
+
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -25,30 +29,21 @@ export default function App() {
     // useEffect 매개변수를 안넣어서 처음 마운트 될때만 기능
   }, []);
 
-  // return (
-  //   <View style={styles.container}>
-  //     <NavigationContainer>
-  //       <Stack.Navigator
-  //         initialRouteName="Home"
-  //         screenOptions={{ headerShown: false }}
-  //       >
-  //         <Stack.Screen name="Login" component={LoginScreen} />
-  //         <Stack.Screen name="Home" component={HomeScreen} />
-  //         <Stack.Screen name="Regist" component={SignUpScreen} />
-  //       </Stack.Navigator>
-  //     </NavigationContainer>
-  //   </View>
-  // );
-
-  return <BottomNavBar />
+  return (
+    <View style={styles.container}>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Home" component={BottomNavBar} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Regist" component={SignUpScreen} />
+          {/* <Stack.Screen name="WalkRecord" component={StoreScreen} /> */}
+          <Stack.Screen name="Walking" component={Walking} />
+          <Stack.Screen name="Call" component={CallScreen} />
+          <Stack.Screen name="MyPage" component={MyPageScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </View>
+  );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    //alignItems: "center",
-    //justifyContent: "center",
-    paddingTop: Platform.OS === "ios" ? 0 : statusBarHeight,
-  },
-});
+// Home 대신 BottomNavBar로 이동
+// BottomNavbar는 Home을 보여준다
