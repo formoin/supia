@@ -10,7 +10,7 @@ seg_model = SAM("mobile_sam.pt")
 cls_model = YOLO("yolov8n-cls.pt")
 
 image_path = "./img/input/dog.jpg"
-output_path = "./img/seg/segment1.jpg"
+output_path = "./img/seg/test.jpg"
 # Load the original image
 image = cv2.imread(image_path)
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -26,6 +26,41 @@ mask_coords = results[0].masks[0].xy[0]  # Extracting the first array from the l
 # Create a mask image with the same dimensions as the original image
 mask = np.zeros(image.shape[:2], dtype=np.uint8)
 
+bgdModel = np.zeros((1, 65), np.float64)
+fgdModel = np.zeros((1, 65), np.float64)
+
+# Define a rectangle around the object to segment
+rect = cv2.selectROI(image)
+
+# Apply grabCut algorithm
+cv2.grabCut(image, mask, rect, None, None, 5, cv2.GC_INIT_WITH_RECT)
+
+# Create a mask where sure and probable foreground pixels are set to 1, others set to 0
+mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype("uint8")
+
+# Create an image where the background is transparent
+img = image * mask2[:, :, np.newaxis]
+
+# Convert the image to grayscale
+tmp = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# Create an alpha channel based on the mask
+_, alpha = cv2.threshold(tmp, 0, 255, cv2.THRESH_BINARY)
+
+# Split the BGR channels
+b, g, r = cv2.split(img)
+
+# Merge the BGR channels and the alpha channel to get an RGBA image
+rgba = [b, g, r, alpha]
+dst = cv2.merge(rgba, 4)
+
+# Save the resulting image
+cv2.imwrite("test.png", dst)
+
+# Optionally, display the image using PIL
+# image_pil = Image.fromarray(transparent_image)
+# image_pil.show()
+exit()
 # Fill the mask with the predicted segment
 cv2.fillPoly(mask, [mask_coords.astype(np.int32)], 255)
 

@@ -57,10 +57,10 @@ def simplify_colors(image):
     # Reduce colors using k-means clustering
     kmeans = KMeans(n_clusters=num_colors, random_state=0).fit(img_array.reshape(-1, 3))
     
-    # 이미지의 각 픽셀을 가장 가까운 클러스터 중심으로 대체
+    # Replace image pixels to the center of nearest cluster
     clustered_img_array = kmeans.cluster_centers_[kmeans.labels_].reshape(img_array.shape).astype(np.uint8)
     
-    # numpy 배열 to 이미지 변환
+    # Convert numpy array to image
     return Image.fromarray(clustered_img_array)
 
 if __name__ == "__main__":
