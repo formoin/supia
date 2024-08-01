@@ -28,15 +28,16 @@ public class SecurityConfig {
                 .formLogin((login) -> login.disable());
         http
                 .httpBasic((basic) -> basic.disable());
+//        http
+//                .oauth2Login((oauth2) -> oauth2
+//                        .loginPage("/login")
+//                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+//                                .userService(customOAuth2UserService)));
         http
-                .oauth2Login((oauth2) -> oauth2
-                        .loginPage("/login")
-                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
-                                .userService(customOAuth2UserService)));
-        http
-                .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/login","/members/register", "/members/login", "members/my-info/**", "/oauth2/**").permitAll()
-                        .anyRequest().authenticated());
+                .authorizeHttpRequests((authorizeRequests) ->
+                authorizeRequests
+                        .anyRequest().permitAll()
+        );
         return http.build();
     }
 
