@@ -53,7 +53,7 @@ def downLoadURLResource(row):
 
     r = requests.get(url.rstrip(), stream=True)
     if r.status_code == 200:
-        target_file_name = f"{taxon.replace(" ", "_")}/{species_guess.replace(" ", "_")}.jpg"
+        target_file_name = "{}_{}.jpg".format(taxon, species_guess)
         with open(os.path.join(SAVE_DIR, target_file_name), "wb") as f:
             for chunk in r.iter_content(chunk_size=1024):
                 f.write(chunk)
@@ -65,11 +65,16 @@ def downLoadURLResource(row):
 csv_file_path = "./data/iNaturalist.csv"
 df = pd.read_csv(csv_file_path)
 
+# print(len(df))
 # Check if the 'image_url' and 'species_guess' columns exist in the dataframe
-if "image_url" in df.columns and "species_guess" in df.columns:
+if (
+    "image_url" in df.columns
+    and "species_guess" in df.columns
+    and "iconic_taxon_name" in df.columns
+):
     downloaded_files = df.apply(downLoadURLResource, axis=1)
     print(downloaded_files.dropna().tolist())
 else:
     print(
-        "The columns 'image_url' and/or 'species_guess' do not exist in the CSV file."
+        "The columns 'image_url' and/or 'species_guess' and/or 'iconic_taxon_name' do not exist in the CSV file."
     )
