@@ -42,4 +42,15 @@ public class ItemServiceImpl implements ItemService {
         return speciesDetailResponse;
     }
 
+    @Override
+    public boolean deleteItem(long itemId) {
+        try {
+            itemRepository.deleteById(itemId);
+            return true;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
+
 }

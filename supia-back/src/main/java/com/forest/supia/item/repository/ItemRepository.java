@@ -32,4 +32,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             nativeQuery = true
     )
     List<ItemResponse> findByMemberIdAndSpciesId(@Param("memberId") long memberId,@Param("speciesId") long speciesId);
+
+    void deleteById(long itemId);
 }

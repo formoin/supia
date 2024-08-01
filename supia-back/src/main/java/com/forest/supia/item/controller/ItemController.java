@@ -31,5 +31,14 @@ public class ItemController {
         return ResponseEntity.ok(itemDetail);
     }
 
+    @DeleteMapping
+    public ResponseEntity<?> deleteItem(@RequestParam("itemId") long itemId) throws Exception {
+
+        boolean result = itemService.deleteItem(itemId);
+        if(!result) return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("아이템 삭제 실패");
+        return ResponseEntity.ok(result);
+
+    }
+
 
 }
