@@ -14,7 +14,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query(
             value = "SELECT " +
-                    "new com.forest.supia.item.dto.SpeciesResponse(s.id, s.name, s.representative_img) " +
+                    "s.id as id, s.name as speciesName, s.representative_img as representativeImg " +
                     "FROM item i " +
                     "INNER JOIN species s ON s.id = i.species_id " +
                     "WHERE i.member_id = :memberId AND s.category = :category " +
@@ -22,4 +22,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             nativeQuery = true
     )
     List<SpeciesResponse> speciesResponseListJPQL(@Param("memberId") long memberId, @Param("category") String category);
+
+    Item findById(long id);
 }
