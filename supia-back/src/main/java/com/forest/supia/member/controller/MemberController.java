@@ -1,12 +1,11 @@
 package com.forest.supia.member.controller;
 
 import com.forest.supia.config.auth.JwtUtil;
-import com.forest.supia.member.model.Member;
+import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
 import com.forest.supia.member.service.MemberService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -39,24 +38,36 @@ public class MemberController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerMember(@RequestBody Member member) {
+    public ResponseEntity<Map<String, String>> registerMember(@RequestBody Member member) {
+        Member new_member = memberService.createMember(member);
 
-
-        Long id = memberService.saveMember(member);
-        if(id==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("산책 저장 실패");
-        return ResponseEntity.ok(id);
+        Map<String, String> response = new HashMap<>();
+        if(new_member != null) {
+            response.put("message", "회원 등록이 완료되었습니다.");
+            return ResponseEntity.ok().body(response);
+        } else {
+            response.put("message", "회원 등록에 실패하였습니다.");
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
+    @Transactional
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> loginMember(@RequestBody Map<String, String> user) {
-        String email = user.get("email");
-        String password = user.get("password");
+    public ResponseEntity<Map<String, String>> loginMember(@RequestBody Map<String, String> loginInfo) {
+        String email = loginInfo.get("email");
+        String password = loginInfo.get("password");
 
         Member member = memberService.findByEmail(email);
 
         Map<String, String> response = new HashMap<>();
 
         if (member != null && passwordEncoder.matches(password, member.getPassword())){
+            if (member.getVisit() == 0) {
+                memberService.updateExp(member.getMemberId());
+                response.put("exp", "첫 방문 5 경험치 적립이 완료되었습니다.");
+            } else {
+                response.put("exp", "이미 방문한 회원입니다.");
+            }
             String token = JwtUtil.generateToken(member);
             response.put("token", token);
             response.put("message", "로그인이 완료되었습니다.");
@@ -73,23 +84,34 @@ public class MemberController {
         return "login";
     }
 
+
     @Transactional
-    @PutMapping("/my-info/{memberEmail}")
-    public ResponseEntity<Map<String, String>> modifyMember(@PathVariable String memberEmail, @RequestBody Map<String, String> user) {
-        System.out.println(memberEmail);
-        Member mem = memberRepository.findByEmail(memberEmail);
-        System.out.println(mem);
+    @PutMapping("/my-info/{memberId}")
+    public ResponseEntity<Map<String, String>> modifyMember(@PathVariable("memberId") long memberId, @RequestBody Member member) {
+        String name = member.getName();
+        String nickname = member.getNickname();
+        String profileImg = member.getProfileImg();
+        Member modified_member = memberService.updateMember(memberId, name, nickname, profileImg);
         Map<String, String> response = new HashMap<>();
-        if (mem != null) {
-            mem.setNickname(user.get("name"));
-            mem.setName(user.get("nickname"));
-            response.put("nickname", mem.getNickname());
-            response.put("name", mem.getName());
+        if (modified_member != null) {
             response.put("message", "회원 정보 수정이 완료되었습니다.");
             return ResponseEntity.ok().body(response);
         } else {
             response.put("message", "회원 정보 수정에 실패하였습니다.");
             return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/my-info/{memberId}")
+    public ResponseEntity<Map<String, Member>> getMemberInfo(@PathVariable("memberId") long memberId) {
+        Member member = memberRepository.findByMemberId(memberId);
+        Map<String, Member> response = new HashMap<>();
+        if (member != null) {
+            response.put("member", member);
+            return ResponseEntity.ok().body(response);
+        } else {
+            response.put("error", member);
+            return ResponseEntity.ok().body(response);
         }
     }
 }
