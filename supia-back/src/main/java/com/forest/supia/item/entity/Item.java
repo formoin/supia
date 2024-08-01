@@ -1,6 +1,6 @@
 package com.forest.supia.item.entity;
 
-import com.forest.supia.member.model.Member;
+import com.forest.supia.member.entity.Member;
 import com.forest.supia.walk.entity.Walk;
 import jakarta.persistence.*;
 import lombok.Getter;
