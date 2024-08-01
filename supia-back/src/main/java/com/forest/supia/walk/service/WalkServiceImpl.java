@@ -2,6 +2,8 @@ package com.forest.supia.walk.service;
 
 import com.forest.supia.item.dto.ItemDto;
 import com.forest.supia.item.entity.Item;
+import com.forest.supia.item.entity.Species;
+import com.forest.supia.item.repository.SpeciesRepository;
 import com.forest.supia.member.model.Member;
 import com.forest.supia.member.repository.MemberRepository;
 import com.forest.supia.walk.repository.WalkRepository;
@@ -23,6 +25,7 @@ public class WalkServiceImpl implements WalkService{
 
     private final WalkRepository walkRepository;
     private final MemberRepository memberRepository;
+    private final SpeciesRepository speciesRepository;
 
     @Override
     @Transactional
@@ -45,7 +48,9 @@ public class WalkServiceImpl implements WalkService{
             String pos = itemDto.getPosition();
 
             String[] buf = pos.split(" ");
-            Item item = Item.createItem(member, walkDate, buf[0], buf[2], itemDto.getImageUrl(), itemDto.getOriginalUrl());
+            Species species = speciesRepository.findByName(itemDto.getSpecies()).orElseThrow();
+
+            Item item = Item.createItem(member, species, walkDate, buf[0], buf[2], itemDto.getImageUrl(), itemDto.getOriginalUrl());
             items.add(item);
         }
 

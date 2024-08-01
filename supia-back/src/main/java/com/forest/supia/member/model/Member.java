@@ -5,10 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.sql.Timestamp;
 
 @Getter @Setter
 @Entity
@@ -43,7 +40,7 @@ public class Member {
     }
 
     public void addPointItem(int cnt) {
-
+        this.exp += cnt*10;
         this.point += cnt*100;
     }
 

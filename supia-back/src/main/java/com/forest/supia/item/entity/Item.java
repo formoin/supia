@@ -33,11 +33,16 @@ public class Item {
     private Walk walk;
 
     private LocalDate acquireDate;
+    public void setSpecies(Species species) {
+        this.species = species;
+        species.getItems().add(this);
+    }
 
-    public static Item createItem(Member member, LocalDate acquireDate, String si, String dong, String imgUrl, String originUrl) {
+    public static Item createItem(Member member, Species species, LocalDate acquireDate, String si, String dong, String imgUrl, String originUrl) {
         Item item = new Item();
 
         item.member = member;
+        item.setSpecies(species);
         item.acquireDate = acquireDate;
         item.si = si;
         item.dong = dong;

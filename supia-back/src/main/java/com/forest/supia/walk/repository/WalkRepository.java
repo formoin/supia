@@ -8,4 +8,5 @@ public interface WalkRepository extends JpaRepository<Member, Long>  {
 
     Walk save(Walk walk);
 
+
 }
