@@ -1,5 +1,6 @@
 package com.forest.supia.config.auth;
 
+import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.model.*;
 import com.forest.supia.member.repository.MemberRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;

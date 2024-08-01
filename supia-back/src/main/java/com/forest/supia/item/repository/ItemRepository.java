@@ -2,6 +2,7 @@ package com.forest.supia.item.repository;
 
 
 
+import com.forest.supia.item.dto.ItemResponse;
 import com.forest.supia.item.dto.SpeciesResponse;
 import com.forest.supia.item.entity.Item;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,7 +22,14 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
                     "GROUP BY s.id",
             nativeQuery = true
     )
-    List<SpeciesResponse> speciesResponseListJPQL(@Param("memberId") long memberId, @Param("category") String category);
+    List<SpeciesResponse> speciesResponseList(@Param("memberId") long memberId, @Param("category") String category);
 
-    Item findById(long id);
+    @Query(
+            value = "SELECT " +
+                    "i.id, i.img_url, i.acquire_date " +
+                    "FROM item i " +
+                    "WHERE i.member_id = :memberId AND i.species_id = :speciesId",
+            nativeQuery = true
+    )
+    List<ItemResponse> findByMemberIdAndSpciesId(@Param("memberId") long memberId,@Param("speciesId") long speciesId);
 }
