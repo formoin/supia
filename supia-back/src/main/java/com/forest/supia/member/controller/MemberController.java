@@ -1,6 +1,9 @@
 package com.forest.supia.member.controller;
 
 import com.forest.supia.config.auth.JwtUtil;
+import com.forest.supia.member.dto.InfoUpdateDto;
+import com.forest.supia.member.dto.LoginDto;
+import com.forest.supia.member.dto.SignUpDto;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
 import com.forest.supia.member.service.MemberService;
@@ -38,8 +41,8 @@ public class MemberController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> registerMember(@RequestBody Member member) {
-        Member new_member = memberService.createMember(member);
+    public ResponseEntity<Map<String, String>> registerMember(@RequestBody SignUpDto signUpInfo) {
+        Member new_member = memberService.createMember(signUpInfo);
 
         Map<String, String> response = new HashMap<>();
         if(new_member != null) {
@@ -53,9 +56,9 @@ public class MemberController {
 
     @Transactional
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> loginMember(@RequestBody Map<String, String> loginInfo) {
-        String email = loginInfo.get("email");
-        String password = loginInfo.get("password");
+    public ResponseEntity<Map<String, String>> loginMember(@RequestBody LoginDto loginInfo) {
+        String email = loginInfo.getEmail();
+        String password = loginInfo.getPassword();
 
         Member member = memberService.findByEmail(email);
 
@@ -87,10 +90,10 @@ public class MemberController {
 
     @Transactional
     @PutMapping("/my-info/{memberId}")
-    public ResponseEntity<Map<String, String>> modifyMember(@PathVariable("memberId") long memberId, @RequestBody Member member) {
-        String name = member.getName();
-        String nickname = member.getNickname();
-        String profileImg = member.getProfileImg();
+    public ResponseEntity<Map<String, String>> modifyMember(@PathVariable("memberId") long memberId, @RequestBody InfoUpdateDto updatedInfo) {
+        String name = updatedInfo.getName();
+        String nickname = updatedInfo.getNickname();
+        String profileImg = updatedInfo.getProfileImg();
         Member modified_member = memberService.updateMember(memberId, name, nickname, profileImg);
         Map<String, String> response = new HashMap<>();
         if (modified_member != null) {

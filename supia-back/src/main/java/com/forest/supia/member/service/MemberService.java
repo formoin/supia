@@ -1,5 +1,6 @@
 package com.forest.supia.member.service;
 
+import com.forest.supia.member.dto.SignUpDto;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,16 +21,15 @@ public class MemberService {
         return memberRepository.findAll();
     }
 
-    public Member createMember (Member member) {
-        String encoded_password = passwordEncoder.encode((member.getPassword()));
+    public Member createMember (SignUpDto signUpInfo) {
+        String encoded_password = passwordEncoder.encode((signUpInfo.getPassword()));
         Member new_member = Member.builder()
-                .email(member.getEmail())
-                .name(member.getName())
-                .nickname(member.getNickname())
+                .email(signUpInfo.getEmail())
+                .name(signUpInfo.getName())
+                .nickname(signUpInfo.getNickname())
                 .password(encoded_password)
                 .build();
-        memberRepository.save(new_member);
-        return new_member;
+        return memberRepository.save(new_member);
     }
 
     public Member createSocialMember (String email, String name) {
