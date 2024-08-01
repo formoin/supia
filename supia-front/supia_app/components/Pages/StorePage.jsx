@@ -1,11 +1,12 @@
 import { View, Text } from "react-native";
-import Searchbar from "../organisms/SearchBar";
+import Header from "../atoms/Header";
 
 export default function StoreScreen() {
+
   return (
     <View>
-      <Text>StoreScreen</Text>
-      <Searchbar />
+      <Header label="상점" />
     </View>
   );
 }
+

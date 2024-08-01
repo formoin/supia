@@ -8,11 +8,11 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 import SignUpScreen from "./components/Pages/User/SignUpPage";
 import StoreScreen from "./components/Pages/WalkRecordPage";
-import CallScreen from './components/Pages/CallPage';
-import Walking from './components/Pages/WalkPage'
+import CallScreen from "./components/Pages/CallPage";
+import Walking from "./components/Pages/WalkPage";
 const statusBarHeight = getStatusBarHeight();
 import MyPageScreen from "./components/Pages/User/MyPage";
-
+import EditProfileScreen from "./components/Pages/User/EditMyPage";
 
 const Stack = createStackNavigator();
 
@@ -22,7 +22,7 @@ export default function App() {
     const checkLoginStatus = async () => {
       const token = await AsyncStorage.getItem("key");
       if (token) {
-        navigationRef.current?.navigate("Home");
+        navigationRef.current?.navigate("Main");
       }
     };
     checkLoginStatus();
@@ -30,20 +30,19 @@ export default function App() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Home" component={BottomNavBar} />
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Regist" component={SignUpScreen} />
-          {/* <Stack.Screen name="WalkRecord" component={StoreScreen} /> */}
-          <Stack.Screen name="Walking" component={Walking} />
-          <Stack.Screen name="Call" component={CallScreen} />
-          <Stack.Screen name="MyPage" component={MyPageScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Main" component={BottomNavBar} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Regist" component={SignUpScreen} />
+        {/* <Stack.Screen name="WalkRecord" component={StoreScreen} /> */}
+        {/* <Stack.Screen name="Walking" component={Walking} /> */}
+        <Stack.Screen name="Call" component={CallScreen} />
+        <Stack.Screen name="MyPage" component={MyPageScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
+
 // Home 대신 BottomNavBar로 이동
 // BottomNavbar는 Home을 보여준다

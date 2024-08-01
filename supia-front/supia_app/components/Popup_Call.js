@@ -5,12 +5,17 @@ import Label from './atoms/ListItem';
 import { Feather } from "@expo/vector-icons";
 import { StyleSheet, View, Text, Modal, Pressable } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
+import { TouchableWithoutFeedback } from 'react-native';
 
 const Popup_Call = ({ visible, onClose, onOpenPopup }) => {
   const navigation = useNavigation();
+
   const goCallPage = () => {
-    navigation.navigate('Call', {name:"Mill"})
-  }
+    navigation.navigate('Call', { name: "Mill" });
+  };
+
+  if (!visible) return null;
+
   return (
     <Modal
       animationType="slide"
@@ -18,25 +23,29 @@ const Popup_Call = ({ visible, onClose, onOpenPopup }) => {
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
-          <View style={styles.titleRow}>
-            <Text style={styles.modalTitle}>연락처</Text>
-            <Pressable onPress={onClose}>
-              <Octicons name="x" size={30} />
-            </Pressable>
-          </View>
-          <Searchbar active={true} style={styles.search} />
-          <View style={styles.line} />
-          <View style={styles.callOptionsRow}>
-            <Label pic="user" title="mill" content="김미량" name="phone-call" onClose={onClose} onOpenPopup={onOpenPopup}/>
-            <Pressable onPress={goCallPage}>
-              <Feather name="video" size={24} />
-            </Pressable>
-          </View>
-          <View style={styles.line} />
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.modalBackground}>
+          <TouchableWithoutFeedback>
+            <View style={styles.modalContainer}>
+              <View style={styles.titleRow}>
+                <Text style={styles.modalTitle}>연락처</Text>
+                <Pressable onPress={onClose}>
+                  <Octicons name="x" size={30} />
+                </Pressable>
+              </View>
+              <Searchbar active={true} style={styles.search} />
+              <View style={styles.line} />
+              <View style={styles.callOptionsRow}>
+                <Label pic="user" title="mill" content="김미량" name="phone-call" onClose={onClose} onOpenPopup={onOpenPopup} />
+                <Pressable onPress={goCallPage}>
+                  <Feather name="video" size={24} />
+                </Pressable>
+              </View>
+              <View style={styles.line} />
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };

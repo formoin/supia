@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { StyleSheet, View, Pressable, Modal, Text } from "react-native";
+import React, { useState, useCallback } from "react";
+import { StyleSheet, View, Pressable, Modal, Text, TouchableWithoutFeedback } from "react-native";
 import { Ionicons, Entypo, Feather } from "@expo/vector-icons";
 import useStore from "../store/useStore";
 import Button_Green from "../atoms/Button_Green";
@@ -7,9 +7,12 @@ import Button_Red from "../atoms/Button_Red";
 import { useNavigation } from "@react-navigation/native";
 import Popup_Call from "../Popup_Call";
 
-const WalkPage_bottom = ({onOpenPopup}) => {
+const WalkPage_bottom = ({ onOpenPopup, distance }) => {
   const navigation = useNavigation();
   const { resetStopwatch, pauseStopwatch, setWalkEndTime } = useStore();
+  const setRouteWidth = useStore((state) => state.setRouteWidth);
+  const finalDistance = useStore((state) => state.finalDistance); // Zustand에서 finalDistance 가져오기
+
   const [modalVisible, setModalVisible] = useState(false);
   const [popupVisible, setPopupVisible] = useState(false);
 
@@ -17,15 +20,19 @@ const WalkPage_bottom = ({onOpenPopup}) => {
     alert("camera");
   };
 
-  const onPressPause = () => {
+  const onPressPause = useCallback(() => {
     resetStopwatch(); // 스톱워치 리셋
     pauseStopwatch(); // 스톱워치 일시 정지
 
     const currentTime = new Date().toISOString();
     setWalkEndTime(currentTime);
 
+    setRouteWidth(4); // 경로 너비 설정
+    console.log("Final Distance:", distance.toFixed(2));
+
+    // 모달 팝업 시 산책 경로 표시
     setModalVisible(true);
-  };
+  }, [resetStopwatch, pauseStopwatch, setWalkEndTime, setRouteWidth, distance]);
 
   const onPressUser = () => {
     setPopupVisible(true);
@@ -46,93 +53,99 @@ const WalkPage_bottom = ({onOpenPopup}) => {
   };
 
   return (
-    <View style={styles.buttonContainer}>
-      <View style={styles.button}>
-        <Pressable onPress={onPressCamera}>
-          <Ionicons
-            name="camera-outline"
-            size={30}
-            color="#A2AA7B"
-            style={styles.whiteIcon}
-          />
-        </Pressable>
-        <View style={styles.iconWithCircle}>
-          <View style={styles.bg} />
-          <Pressable onPress={onPressPause} style={styles.walkButtonPressable}>
-            <Entypo
-              name="controller-paus"
+    <>
+      <View style={styles.container}>
+        <View style={styles.buttonWrapper}>
+          <Pressable onPress={onPressCamera} style={styles.iconContainer}>
+            <Ionicons
+              name="camera-outline"
               size={30}
-              color="#1D1B20"
-              style={styles.greenIcon}
+              color="#A2AA7B"
+              style={styles.whiteIcon}
+            />
+          </Pressable>
+          <View style={styles.iconWithCircle}>
+            <View style={styles.bg} />
+            <Pressable onPress={onPressPause} style={styles.pauseButton}>
+              <Entypo name="controller-paus" size={30} color="#141410" />
+            </Pressable>
+          </View>
+          <Pressable onPress={onPressUser} style={styles.iconContainer}>
+            <Feather
+              name="user"
+              size={30}
+              color="#A2AA7B"
+              style={styles.whiteIcon}
             />
           </Pressable>
         </View>
-        <Pressable onPress={onPressUser}>
-          <Feather
-            name="user"
-            size={30}
-            color="#A2AA7B"
-            style={styles.whiteIcon}
-          />
-        </Pressable>
-      </View>
 
-      <Modal
-        transparent={true}
-        visible={modalVisible}
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>산책 종료</Text>
-            <Text style={styles.modalMessage}>
-              산책 기록을 확인하시겠습니까?
-            </Text>
-            <View style={styles.buttonContainerModal}>
-              <Button_Green label="네" onPress={handleConfirm} />
-              <Button_Red label="아니오" onPress={handleCancel} />
+        <Modal
+          transparent={true}
+          visible={modalVisible}
+          animationType="slide"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>산책 종료</Text>
+              <Text style={styles.modalMessage}>
+                산책 기록을 확인하시겠습니까?
+              </Text>
+              <View style={styles.buttonContainerModal}>
+                <Button_Green label="네" onPress={handleConfirm} />
+                <Button_Red label="아니오" onPress={handleCancel} />
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      <Popup_Call visible={popupVisible} onClose={handlePopupClose} onOpenPopup={onOpenPopup}/>
-    </View>
+        <TouchableWithoutFeedback onPress={handlePopupClose}>
+          <View>
+            <Popup_Call
+              visible={popupVisible}
+              onClose={handlePopupClose}
+              onOpenPopup={onOpenPopup}
+            />
+          </View>
+        </TouchableWithoutFeedback>
+      </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  buttonContainer: {
+  container: {
     width: "100%",
     height: 58,
     alignItems: "center",
     justifyContent: "center",
     margin: 15,
   },
-  button: {
-    borderRadius: 10,
-    width: "100%",
-    height: "100%",
+  buttonWrapper: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    flexDirection: "row",
-    opacity: 1,
+    width: "100%",
+    height: "100%",
+  },
+  iconContainer: {
+    paddingHorizontal: 10,
   },
   whiteIcon: {
-    paddingRight: 8,
+    padding: 10,
     borderRadius: 50,
     backgroundColor: "#fff",
-    paddingLeft: 9,
-    paddingVertical: 9,
   },
-  greenIcon: {
-    paddingRight: 8,
-    borderRadius: 50,
+  pauseButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: "#A2AA7B",
-    paddingLeft: 7,
-    paddingVertical: 6,
-    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 3,
+    borderColor: "#A2AA7B",
   },
   bg: {
     width: 80,
@@ -144,18 +157,9 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   iconWithCircle: {
-    position: "relative",
     alignItems: "center",
     justifyContent: "center",
     marginHorizontal: 50,
-  },
-  walkButtonPressable: {
-    width: 60,
-    height: 60,
-    borderRadius: 35,
-    backgroundColor: "#A2AA7B",
-    justifyContent: "center",
-    alignItems: "center",
   },
   modalBackground: {
     flex: 1,

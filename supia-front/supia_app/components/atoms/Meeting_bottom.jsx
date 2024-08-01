@@ -8,7 +8,8 @@ export default function WalkPage_bottom({captureScreen}) {
   const navigation = useNavigation();
 
   const onPressEnd = () => {
-    navigation.push('Walking');
+    navigation.navigate('Walk');
+    // navigation.goback();
   }
   const onTakePicture = () => {
     captureScreen()

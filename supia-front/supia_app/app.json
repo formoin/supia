@@ -10,13 +10,21 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "앱이 위치를 사용할 수 있는 이유를 설명하는 메시지입니다.",
+        "NSLocationAlwaysUsageDescription": "앱이 항상 위치를 사용할 수 있는 이유를 설명하는 메시지입니다."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.supia_app"
+      "package": "com.anonymous.supia_app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {}
   },
@@ -28,5 +36,13 @@
     "ios": {
       "handleKakaoOpenUrl": true
     }
-  }
+  },
+  "plugins": [
+    [
+      "expo-location",
+      {
+        "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+      }
+    ]
+  ]
 }

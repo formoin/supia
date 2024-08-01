@@ -8,6 +8,8 @@ import FriendScreen from '../../Pages/FriendPage';
 import WalkingScreen from '../../Pages/WalkPage';
 import WalkRecordScreen from '../../Pages/WalkRecordPage';
 import MyPageScreen from '../../Pages/User/MyPage';
+import CallScreen from '../../Pages/CallPage';
+import DictionaryScreen from '../../Pages/DictionaryPage';
 
 import { Feather } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -133,6 +135,21 @@ function BottomNav() {
         component={WalkRecordScreen}
         options={{ tabBarButton: () => null }}
       />
+      <BottomTab.Screen
+        name="Dictionary"
+        component={DictionaryScreen}
+        options={{ tabBarButton: () => null }}
+      />
+      {/* <BottomTab.Screen
+        name="Call"
+        component={CallScreen}
+        options={{ 
+          tabBarButton: () => null,
+          tabBarStyle: {
+            display: 'none',
+          },
+        }}
+      /> */}
     </BottomTab.Navigator>
   );
 }

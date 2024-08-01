@@ -2,12 +2,10 @@ import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
 import { useRef, useState } from 'react';
 import Meeting_bottom from '../atoms/Meeting_bottom'
 import { AntDesign, SimpleLineIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 import ViewShot from 'react-native-view-shot';
 import CaptureModal from "../atoms/CaptureModal";
 
 export default function CallScreen({route}) {
-  const navigation = useNavigation();
   const captureRef  = useRef();
   const [imageUri, setImageUri] = useState(null);
   const [isModalVisible, setModalVisible] = useState(false);

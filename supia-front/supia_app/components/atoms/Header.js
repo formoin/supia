@@ -2,12 +2,13 @@ import React from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
 import { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Header({ label }) {
-  const [GoBack, setGoBack] = useState(false);
+  const navigation = useNavigation();
+
   const onPressBackIcon = () => {
-    setGoBack(true);
-    alert('goBack')
+    navigation.goBack();
   }
   return (
     <View style={styles.HeaderContainer}>

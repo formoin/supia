@@ -4,7 +4,7 @@ import PopupHeader from './atoms/PopupHeader'
 import Button_Green from './atoms/Button_Green'
 import Button_Red from './atoms/Button_Red'
 
-export default function NoteModal({onClose, Label, content, friendName}) {
+export default function Popup({onClose, Label, content, friendName}) {
   return (
     <View style={styles.container}>
       <PopupHeader Label={Label} onClose={onClose}/>

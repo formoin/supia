@@ -1,8 +1,8 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import ModalHeader from './atoms/ModalHeader'; // 실제 경로로 수정하세요
-import ModalImage from './atoms/ModalImage'; // 실제 경로로 수정하세요
-import ModalLevel from './atoms/ModalLevel'; // 실제 경로로 수정하세요
+import ModalHeader from './atoms/ModalHeader';
+import ModalImage from './atoms/ModalImage';
+import ModalLevel from './atoms/ModalLevel';
 
 export default function FriendModal({ UserName, UserLevel, onClose }) {
   return (

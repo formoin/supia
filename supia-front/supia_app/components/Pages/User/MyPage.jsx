@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  ScrollView,
   View,
   Text,
   Image,
@@ -12,8 +13,10 @@ import { Avatar } from "@rneui/themed";
 import Line from "../../atoms/Line";
 import { Octicons } from "@expo/vector-icons";
 import ActivityChart from "../../organisms/BarChart/profileChart";
+import { useNavigation } from "@react-navigation/native";
 
 const ProfileHeader = () => {
+  const navigation = useNavigation();
   const today = new Date();
   const [view, setView] = useState("month");
 
@@ -34,6 +37,7 @@ const ProfileHeader = () => {
   const nowExp = ((loginuser.exp - minExp) / (maxExp - minExp)) * 120;
 
   return (
+    <ScrollView>
     <View style={styles.container}>
       <Text style={styles.dateText}>{formattedDate}</Text>
       <View style={styles.profileContainer}>
@@ -47,7 +51,7 @@ const ProfileHeader = () => {
             title="Bj"
             containerStyle={{ backgroundColor: "grey" }}
           >
-            <Avatar.Accessory size={24} />
+            <Avatar.Accessory onPress={() => {}} size={24} />
           </Avatar>
         </View>
         <Text style={styles.username}>{loginuser.nickname}</Text>
@@ -96,6 +100,7 @@ const ProfileHeader = () => {
         </View>
       </View>
     </View>
+    </ScrollView>
   );
 };
 
