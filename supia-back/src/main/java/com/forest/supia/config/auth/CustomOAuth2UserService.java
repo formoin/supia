@@ -1,7 +1,12 @@
 package com.forest.supia.config.auth;
 
-import com.forest.supia.member.model.*;
+import com.forest.supia.member.dto.CustomOAuth2User;
+import com.forest.supia.member.dto.GoogleResponse;
+import com.forest.supia.member.dto.NaverResponse;
+import com.forest.supia.member.dto.OAuth2Response;
+import com.forest.supia.member.entity.*;
 import com.forest.supia.member.repository.MemberRepository;
+import com.forest.supia.member.service.MemberService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -13,6 +18,8 @@ import org.springframework.stereotype.Service;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final MemberRepository memberRepository;
+
+    private MemberService memberService;
 
     public CustomOAuth2UserService(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
@@ -41,18 +48,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String role = "ROLE_USER";
 
         if(existData == null) {
-            Member member = new Member();
-            member.setEmail(oAuth2Response.getEmail());
-            member.setPassword(null);
-            member.setName(oAuth2Response.getName());
-            member.setNickname(null);
-            member.setProfileImg(null);
-
-            memberRepository.save(member);
-        }
-        else {
-            existData.setEmail(oAuth2Response.getEmail());
-            memberRepository.save(existData);
+            Member member = memberService.createSocialMember(oAuth2Response.getEmail(), oAuth2Response.getName());
         }
 
         return new CustomOAuth2User(oAuth2Response, role);
