@@ -4,7 +4,7 @@ import com.forest.supia.item.dto.ItemDto;
 import com.forest.supia.item.entity.Item;
 import com.forest.supia.item.entity.Species;
 import com.forest.supia.item.repository.SpeciesRepository;
-import com.forest.supia.member.model.Member;
+import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
 import com.forest.supia.walk.repository.WalkRepository;
 import com.forest.supia.walk.dto.WalkDto;

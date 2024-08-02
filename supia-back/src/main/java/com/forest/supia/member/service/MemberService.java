@@ -1,6 +1,6 @@
 package com.forest.supia.member.service;
 
-import com.forest.supia.member.model.Member;
+import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;

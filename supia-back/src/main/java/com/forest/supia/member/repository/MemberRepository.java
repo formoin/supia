@@ -1,6 +1,6 @@
 package com.forest.supia.member.repository;
 
-import com.forest.supia.member.model.Member;
+import com.forest.supia.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 

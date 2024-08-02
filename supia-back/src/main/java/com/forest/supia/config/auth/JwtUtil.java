@@ -1,10 +1,8 @@
 package com.forest.supia.config.auth;
 
-import com.forest.supia.member.model.Member;
-import io.jsonwebtoken.JwtBuilder;
+import com.forest.supia.member.entity.Member;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureAlgorithm;
 
 import java.security.Key;
 import java.util.Date;

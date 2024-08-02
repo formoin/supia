@@ -1,4 +1,4 @@
-package com.forest.supia.member.model;
+package com.forest.supia.member.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

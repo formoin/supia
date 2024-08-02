@@ -1,7 +1,7 @@
 package com.forest.supia.member.controller;
 
 import com.forest.supia.config.auth.JwtUtil;
-import com.forest.supia.member.model.Member;
+import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
 import com.forest.supia.member.service.MemberService;
 import jakarta.transaction.Transactional;

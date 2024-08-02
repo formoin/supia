@@ -2,10 +2,9 @@ package com.forest.supia.walk.entity;
 
 //import com.forest.supia.item.entity.Item;
 import com.forest.supia.item.entity.Item;
-import com.forest.supia.member.model.Member;
+import com.forest.supia.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 
 
 import java.time.LocalDate;
