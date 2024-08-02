@@ -7,6 +7,9 @@ WORKDIR /app
 # 요구사항 파일을 컨테이너로 복사
 COPY requirements.txt .
 
+# 설치시 사용자 입력을 요구하는 것을 방지하는 설정
+ENV DEBIAN_FRONTEND=noninteractive
+
 # 요구사항 설치
 RUN pip install -r requirements.txt
 RUN pip uninstall opencv-python
