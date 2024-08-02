@@ -59,7 +59,7 @@ new_image[mask == 255, 3] = 255  # Set alpha channel to 255 where mask is non-ze
 new_image_rgb = cv2.cvtColor(new_image, cv2.COLOR_RGBA2BGRA)
 
 # Save the new image
-cv2.imwrite("segtest.jpg", new_image_rgb)
+cv2.imwrite("segtest.png", new_image_rgb)
 
 
 """
@@ -83,21 +83,21 @@ converts the segmented image to the hand-drawing imagea
 """
 
 input_image_path = r"./img/seg/segment1.jpg"
-output_image_path = r"./img/output/blur_kmeans_image5.jpg"
-hand_drawing_img = color_crayon_style(input_image_path, output_image_path)
+output_image_path = r"./img/output/blur_kmeans_image5.png"
+hand_drawing_img = color_crayon_style(new_image, output_image_path)
 
 
-def remove_grabcut_bg(image):
-    image = np.array(image)
-    tmp = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    _, alpha = cv2.threshold(tmp, 0, 255, cv2.THRESH_BINARY)
-    r, g, b = cv2.split(image)
-    rgba = [r, g, b, alpha]
-    dst = cv2.merge(rgba, 4)
-    return dst
+# def remove_grabcut_bg(image):
+#     image = np.array(image)
+#     tmp = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+#     _, alpha = cv2.threshold(tmp, 0, 255, cv2.THRESH_BINARY)
+#     r, g, b = cv2.split(image)
+#     rgba = [r, g, b, alpha]
+#     dst = cv2.merge(rgba, 4)
+#     return dst
 
 
-remove_bg_image = remove_grabcut_bg(hand_drawing_img)
+# remove_bg_image = remove_grabcut_bg(hand_drawing_img)
 
 # Display the original image, the mask, and the overlay
 plt.figure(figsize=(15, 5))
@@ -114,7 +114,7 @@ plt.axis("off")
 
 plt.subplot(1, 3, 3)
 plt.title("Hand-drawing Image")
-plt.imshow(remove_bg_image)
+plt.imshow(hand_drawing_img)
 plt.axis("off")
 
 

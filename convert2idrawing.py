@@ -2,33 +2,37 @@ from PIL import Image, ImageDraw, ImageFilter
 import numpy as np
 import os
 from sklearn.cluster import KMeans
+from matplotlib import cm
 
 # Set the maximum number of CPU cores to use
 os.environ["LOKY_MAX_CPU_COUNT"] = "4"
 
 
-def color_crayon_style(image_path, output_path):
+def color_hand_drawing(image_array, output_path):
     # Open images
-    with Image.open(image_path) as img:
-        # Step 1: Convert image to RGB
-        img = img.convert("RGB")
+    # with Image.open("./img/seg/segment1.jpg") as img:
+    img = Image.fromarray(image_array)
+    # Step 1: Convert image to RGB
+    img = img.convert("RGBA")
 
-        # Step 2: Detect Edge
-        edges = detect_edges(img)
-        img = img.filter(ImageFilter.BoxBlur(radius=1))
-        # Step 3: Simplify colors
-        img = simplify_colors(img)
+    # Step 2: Detect Edge
+    edges = detect_edges(img)
 
-        # Step 4: Combine edges and colors
-        # combined_image = Image.composite(img, edges, edges.convert("L"))
-        combined_image = img
+    img = img.filter(ImageFilter.BoxBlur(radius=1))
 
-        # Save image
-        combined_image.save(output_path)
+    # Step 3: Simplify colors
+    img = simplify_colors(img)
 
-        # Display image
-        # combined_image.show()
-        return combined_image
+    # Step 4: Combine edges and colors
+    # combined_image = Image.composite(img, edges, edges.convert("L"))
+    combined_image = img
+
+    # Save image
+    combined_image.save(output_path)
+
+    # Display image
+    combined_image.show()
+    return combined_image
 
 
 def detect_edges(image):
@@ -57,8 +61,23 @@ def simplify_colors(image):
     # The number of colors to simplify
     num_colors = 16
 
+    # # Reduce colors using k-means clustering
+    # kmeans = KMeans(n_clusters=num_colors, random_state=0).fit(img_array.reshape(-1, 3))
+
+    # # Replace image pixels to the center of nearest cluster
+    # clustered_img_array = (
+    #     kmeans.cluster_centers_[kmeans.labels_]
+    #     .reshape(img_array.shape)
+    #     .astype(np.uint8)
+    # )
+
+    # # Convert numpy array to image
+    # return Image.fromarray(clustered_img_array)
+
     # Reduce colors using k-means clustering
-    kmeans = KMeans(n_clusters=num_colors, random_state=0).fit(img_array.reshape(-1, 3))
+    # Reshape the image array to (num_pixels, 4) for RGBA
+    reshaped_img_array = img_array.reshape(-1, 4)
+    kmeans = KMeans(n_clusters=num_colors, random_state=0).fit(reshaped_img_array)
 
     # Replace image pixels to the center of nearest cluster
     clustered_img_array = (
@@ -68,7 +87,7 @@ def simplify_colors(image):
     )
 
     # Convert numpy array to image
-    return Image.fromarray(clustered_img_array)
+    return Image.fromarray(clustered_img_array, "RGBA")
 
 
 # if __name__ == "__main__":
