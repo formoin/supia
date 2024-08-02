@@ -9,6 +9,9 @@ import useStore from "../store/useStore";
 import IsCall from "../atoms/IsCall";
 import haversine from "haversine";
 import { useFocusEffect } from "@react-navigation/native";
+import axios from "axios";
+
+KAKAO_REST_API_KEY = ""
 
 export default function WalkingScreen() {
   const time = useStore((state) => state.time);
@@ -33,36 +36,46 @@ export default function WalkingScreen() {
   const [dong, setDong] = useState();
   const [si, setSi] = useState();
 
-  // reverseGeo. 위치 권한을 FocusEffect할 때 같이 하면 좋을 거 같은데 어렵다
-  // 맨 처음 로딩될때 + 아이템 찾기 버튼 클릭 시 실행
-  // 폰 언어 설정 한국어로 해야함!!!!
-  const getLocation = async () => {
+  const getLocation = async (latitude, longitude) => {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
       console.log("위치 권한이 필요합니다.");
       return;
     }
 
-    // 현재 위치 가져오기
-    let {
-      coords: { latitude, longitude },
-    } = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.High,
-    });
-
-    // 위치를 기반으로 리버스 지오코딩 실행
-    setLocationData(
-      await Location.reverseGeocodeAsync(
-        { latitude, longitude },
-        { useGoogleMaps: false }
-      )
+    const locationData = await Location.reverseGeocodeAsync(
+      { latitude, longitude },
+      { useGoogleMaps: false }
     );
 
+    setLocationData(locationData);
+
     // 시, 동 변수에 저장
-    // apple 본사 나오는 곳은 동이 없어서 현재 View에는 si가 나오는 중
-    setDong(locationData[0].district);
-    setSi(locationData[0].region);
+    if (locationData.length > 0) {
+      setDong(locationData[0].street);
+      setSi(locationData[0].region);
+      console.log("Location Data:", locationData[0]);
+      console.log(locationData[0].street);
+      console.log(locationData[0].region);
+    }
+    // 카카오
+    // try {
+    //   const response = await axios.get(
+    //     `https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=${longitude}&y=${latitude}`,
+    //     { headers: { Authorization: `KakaoAK ${KAKAO_REST_API_KEY}` } }
+    //   );
+
+    //   if (response.data.documents.length > 0) {
+    //     const location = response.data.documents[0].region_3depth_name;
+    //     console.log("카카오 API - 법정동 이름:", location);
+    //   }
+    // } catch (error) {
+    //   console.error("Error fetching location from Kakao API:", error);
+    // }
+
   };
+
+
 
   useEffect(() => {
     let interval = null;
@@ -79,14 +92,12 @@ export default function WalkingScreen() {
       let intervalId;
 
       (async () => {
-        // 위치 권한 요청
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
           console.log("위치 권한이 필요합니다.");
           return;
         }
 
-        // 현재 위치 가져오기
         let { coords } = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.High,
         });
@@ -106,7 +117,7 @@ export default function WalkingScreen() {
         setRouteWidth(0);
 
         let currentLocation = initialLocation;
-        getLocation();
+        await getLocation(coords.latitude, coords.longitude);
 
         intervalId = setInterval(() => {
           const newLatitude = currentLocation.latitude - 2 / 111320;
@@ -136,7 +147,10 @@ export default function WalkingScreen() {
   );
 
   const handleCurrentLocation = async () => {
-    getLocation();
+    const { coords } = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.High,
+    });
+    await getLocation(coords.latitude, coords.longitude);
     if (mapRef.current && location) {
       mapRef.current.animateToRegion(location, 1000);
     }
@@ -165,6 +179,11 @@ export default function WalkingScreen() {
     setMapRegion(region);
   };
 
+  const handleMapPress = async (event) => {
+    const { latitude, longitude } = event.nativeEvent.coordinate;
+    await getLocation(latitude, longitude);
+  };
+
   return (
     <View style={styles.container}>
       <MapView
@@ -174,6 +193,7 @@ export default function WalkingScreen() {
         showsUserLocation
         onRegionChangeComplete={handleRegionChange}
         showsMyLocationButton={false}
+        onLongPress={handleMapPress} // 지도 클릭하면 주소
       >
         <Polyline
           coordinates={route}
@@ -188,7 +208,7 @@ export default function WalkingScreen() {
           <IsCall callerName={callerName} onClose={handlePopupClose} />
         )}
         <View style={styles.popupContainer}>
-          <Popup_White dong={si} />
+          <Popup_White si={si} dong={dong} />
         </View>
         <View style={styles.bottomContainer}>
           <WalkPage_bottom onOpenPopup={handlePopupOpen} distance={totalDistance}/>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, Image } from "react-native";
 import { FontAwesome6, Octicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import WeatherInfo from "../atoms/HomeInfo/WeatherInfo";
@@ -12,6 +12,10 @@ export default function HomeScreen() {
 
   const goDictionary = () => {
     navigation.navigate("Dictionary");
+  }
+
+  const goMyForest = () => {
+    navigation.navigate("MyForest")
   }
 
   return (
@@ -32,8 +36,13 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View style={styles.thumbnail}>
-          {/* 썸네일 */}
+        <View>
+            <Pressable onPress={goMyForest}>
+              <Image
+                source={require('../../assets/basic/forest_1.png')} // 이미지 경로
+                style={styles.thumbnail}
+              />
+            </Pressable>
         </View>
 
         <View style={styles.foryou}>
@@ -96,12 +105,11 @@ const styles = StyleSheet.create({
     marginBottom: 5
   },
   thumbnail:{
-    width: '100%',
-    height: '30%', // Set the height to 30% of the container
-    borderWidth: 2,
-    borderColor: '#E5E5E5',
-    borderRadius: 15, // Optional: Adjust border radius for rounded corners
-    marginBottom: 10, // Add some spacing below the thumbnail
+    width: '90%',
+    height: 220,
+    marginLeft: 20,
+    marginBottom: 20,
+    borderRadius: 15,
   },
   info: {
     width: '90%',
@@ -112,12 +120,13 @@ const styles = StyleSheet.create({
   },
   slideHandleContainer: {
     position: 'absolute',
-    top: 0,
+    top: '40%',
     bottom: 0,
     right: 0,
     width: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    height:'10%',
   },
   slideHandle: {
     width: 10,

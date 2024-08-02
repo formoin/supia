@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, StyleSheet, Pressable, Platform, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../../Pages/HomePage';
@@ -10,6 +10,8 @@ import WalkRecordScreen from '../../Pages/WalkRecordPage';
 import MyPageScreen from '../../Pages/User/MyPage';
 import CallScreen from '../../Pages/CallPage';
 import DictionaryScreen from '../../Pages/DictionaryPage';
+import MyForestScreen from '../../Pages/MyForest';
+// import DictionaryDetailScreen from '../../Pages/DictionaryDetailPage';
 
 import { Feather } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -47,7 +49,7 @@ function BottomNav() {
     }
 
     const location = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.High
+      accuracy: Location.Accuracy.High,
     });
 
     const { latitude, longitude } = location.coords;
@@ -140,16 +142,30 @@ function BottomNav() {
         component={DictionaryScreen}
         options={{ tabBarButton: () => null }}
       />
-      {/* <BottomTab.Screen
+      <BottomTab.Screen
+        name="MyForest"
+        component={MyForestScreen}
+        options={{
+          tabBarButton: () => null,
+          tabBarLabel: () => {},
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+{/*       <BottomTab.Screen */}
+{/*         name="DictionaryDetail" */}
+{/*         component={DictionaryDetailScreen} */}
+{/*         options={{ tabBarButton: () => null }} */}
+{/*       /> */}
+      <BottomTab.Screen
         name="Call"
         component={CallScreen}
-        options={{ 
+        options={{
           tabBarButton: () => null,
           tabBarStyle: {
             display: 'none',
           },
         }}
-      /> */}
+      />
     </BottomTab.Navigator>
   );
 }

@@ -1,11 +1,14 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Image } from "react-native";
+import { useRoute } from '@react-navigation/native'; // import useRoute
 import Header from '../atoms/Header';
 import Line from '../atoms/Line';
 import useStore from '../store/useStore';
 
-
 export default function WalkRecordScreen() {
+    const route = useRoute();
+    const { distance } = route.params || {}; // get distance from route params
+
     const images = {
         '씨앗': require('../../assets/level/씨앗.png'),
         '새싹': require('../../assets/level/새싹.png'),
@@ -37,6 +40,9 @@ export default function WalkRecordScreen() {
                 <Text style={styles.mapText}>코스 지도</Text>
                 <View style={styles.rectangleContainer}>
                     <View style={styles.rectangle} />
+                    {distance !== undefined && (
+                        <Text>{distance.toFixed(2)}km</Text> // Display distance
+                    )}
                 </View>
                 <Line style={styles.lineSpacing} />
                 <Text style={styles.itemHeader}>획득한 아이템</Text>
@@ -92,6 +98,8 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#a9a9a9',
         marginBottom: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     lineTopSpacing: {
         marginBottom: 30
@@ -125,5 +133,3 @@ const styles = StyleSheet.create({
         marginTop: 40,
     }
 });
-
-

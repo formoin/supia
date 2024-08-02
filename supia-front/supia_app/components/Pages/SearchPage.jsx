@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet } from "react-native";
-import { useIsFocused, useFocusEffect } from '@react-navigation/native'; // 네비게이션 훅 임포트
+import { useIsFocused, useFocusEffect } from '@react-navigation/native';
 import Header from "../atoms/Header";
 import Searchbar from "../organisms/SearchBar";
 import Divide from "../Divide";

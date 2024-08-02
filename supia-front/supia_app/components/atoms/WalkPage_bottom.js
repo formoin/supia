@@ -6,12 +6,15 @@ import Button_Green from "../atoms/Button_Green";
 import Button_Red from "../atoms/Button_Red";
 import { useNavigation } from "@react-navigation/native";
 import Popup_Call from "../Popup_Call";
+import axios from 'axios';
 
 const WalkPage_bottom = ({ onOpenPopup, distance }) => {
   const navigation = useNavigation();
   const { resetStopwatch, pauseStopwatch, setWalkEndTime } = useStore();
   const setRouteWidth = useStore((state) => state.setRouteWidth);
-  const finalDistance = useStore((state) => state.finalDistance); // Zustand에서 finalDistance 가져오기
+  const finalDistance = useStore((state) => state.finalDistance);
+  const walkStartTime = useStore((state) => state.walkStartTime);
+  const walkEndTime = useStore((state) => state.walkEndTime);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [popupVisible, setPopupVisible] = useState(false);
@@ -20,13 +23,45 @@ const WalkPage_bottom = ({ onOpenPopup, distance }) => {
     alert("camera");
   };
 
+  const formatTime = (isoString) => {
+        if (!isoString) return '00:00';
+        const date = new Date(isoString);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+  };
+
+  const sendWalkData = async () => {
+    const currentTime = new Date().toISOString();
+    const walkData = {
+        walkStart: formatTime(walkStartTime),
+        walkEnd: formatTime(currentTime),
+        distance: distance.toFixed(2),
+    };
+
+    try {
+        const response = await axios.post('http://i11b304.p.ssafy.io/api/walk', walkData);
+
+        if (response.status === 200) {
+            console.log(walkData);
+            console.log("산책 정보 저장");
+        } else {
+            console.log(walkData);
+            console.log("산책 저장 실패");
+        }
+    } catch (error) {
+        console.log(walkData);
+        console.error("요청 중 오류 발생:", error);
+    }
+  };
+
   const onPressPause = useCallback(() => {
     resetStopwatch(); // 스톱워치 리셋
     pauseStopwatch(); // 스톱워치 일시 정지
 
     const currentTime = new Date().toISOString();
     setWalkEndTime(currentTime);
-
+    sendWalkData(); // 산책 정보를 서버로 전송
     setRouteWidth(4); // 경로 너비 설정
     console.log("Final Distance:", distance.toFixed(2));
 
@@ -40,7 +75,7 @@ const WalkPage_bottom = ({ onOpenPopup, distance }) => {
 
   const handleConfirm = () => {
     setModalVisible(false);
-    navigation.navigate("WalkRecord");
+    navigation.navigate("WalkRecord", { distance });
   };
 
   const handleCancel = () => {

@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
-import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 
 export default function Header({ label }) {
@@ -10,15 +9,18 @@ export default function Header({ label }) {
   const onPressBackIcon = () => {
     navigation.goBack();
   }
+
   return (
     <View style={styles.HeaderContainer}>
-      <Pressable onPress={onPressBackIcon}>
-        <Entypo
-          name="chevron-small-left"
-          size={24}
-          style={styles.BackIcon}
-        />
-      </Pressable>
+      {label !== "배경" && (
+        <Pressable onPress={onPressBackIcon}>
+          <Entypo
+            name="chevron-small-left"
+            size={24}
+            style={styles.BackIcon}
+          />
+        </Pressable>
+      )}
       <Text style={styles.label}>{label}</Text>
     </View>
   );
@@ -33,13 +35,12 @@ const styles = StyleSheet.create({
     paddingTop: 20
   },
   BackIcon: {
-    marginRight: 10, // 아이콘 오른쪽 여백 추가
+    marginRight: 10,
   },
   label: {
-    flex: 1, // 나머지 공간을 차지하도록 설정
+    flex: 1,
     fontSize: 20,
     color: '#000',
-    textAlign: 'center', // 텍스트 중앙 정렬
+    textAlign: 'center',
   },
 });
-
