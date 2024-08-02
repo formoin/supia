@@ -9,7 +9,7 @@ COPY requirements.txt .
 
 # 요구사항 설치
 RUN pip install -r requirements.txt
-RUN pip install opencv-python
+RUN pip install --upgrade --force-reinstall opencv-python
 RUN apt-get install libgl1-mesa-glx
 # 모든 애플리케이션 파일을 컨테이너로 복사
 COPY . .
