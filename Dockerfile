@@ -10,8 +10,11 @@ COPY requirements.txt .
 # 요구사항 설치
 RUN pip install -r requirements.txt
 RUN pip uninstall opencv-python -y
-RUN pip install opencv-python-headless
+RUN pip install --no-cache-dir opencv-python
 RUN apt-get update && apt-get install libgl1-mesa-glx -y
+RUN apt-get install libglib2.0-0
+RUN python -c 'import cv2'
+
 # 모든 애플리케이션 파일을 컨테이너로 복사
 COPY . .
 
