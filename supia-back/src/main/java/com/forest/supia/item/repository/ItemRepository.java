@@ -33,5 +33,16 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     )
     List<ItemResponse> findByMemberIdAndSpciesId(@Param("memberId") long memberId,@Param("speciesId") long speciesId);
 
+    @Query(
+            value = "SELECT " +
+                    "s.id as id, s.name as speciesName, s.representative_img as representativeImg " +
+                    "FROM item i " +
+                    "INNER JOIN species s ON s.id = i.species_id " +
+                    "WHERE i.si = :si AND i.dong = :dong " +
+                    "GROUP BY s.id",
+            nativeQuery = true
+    )
+    List<SpeciesResponse> speciesResponseListByDong(@Param("si") String si, @Param("dong") String dong);
+
     void deleteById(long itemId);
 }

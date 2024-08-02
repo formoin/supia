@@ -1,9 +1,7 @@
 package com.forest.supia.member.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.forest.supia.forest.entity.Forest;
+import jakarta.persistence.*;
 import lombok.*;
 
 
@@ -13,6 +11,10 @@ public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberId;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "fo")
+    private Forest forest;
     private String email;
     private String name;
     private String nickname;
@@ -22,6 +24,7 @@ public class Member {
     private int exp;
     private int point;
     private int visit;
+
 
 
     public static Member createMember(String email, String name, String nickname, String password) {
