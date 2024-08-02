@@ -47,7 +47,7 @@ public class Member {
 
     public void addPointDistance(double distance) {
 
-        this.point += (int)(distance/100) * 10;
+        this.point += (int) (distance / 100) * 10;
     }
 
     public void addPointItem(int cnt) {
@@ -68,6 +68,12 @@ public class Member {
     }
 //    public void addExp
 
+    public void addExpSendGift() {
+        this.exp += 5;
+    }
 
+    public void addExpItem(int cnt) {
+        this.exp += cnt * 10;
+    }
 
 }
