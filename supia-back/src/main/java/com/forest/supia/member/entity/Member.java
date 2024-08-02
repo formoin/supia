@@ -66,14 +66,5 @@ public class Member {
     public void addExpItem(int cnt) {
         this.exp += cnt * 10;
     }
-//    public void addExp
-
-    public void addExpSendGift() {
-        this.exp += 5;
-    }
-
-    public void addExpItem(int cnt) {
-        this.exp += cnt * 10;
-    }
 
 }
