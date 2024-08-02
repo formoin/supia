@@ -20,7 +20,7 @@ seg_image_path = "./img/seg/seg_image.png"
 output_image_path = "./img/output/hand_drawing_image.png"
 
 
-@app.post("/process-image/")
+@app.post("/ai/process-image/")
 async def process_image(file: UploadFile = File(...)):
     if not file:
         raise HTTPException(status_code=400, detail="File is required")
