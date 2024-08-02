@@ -35,7 +35,7 @@ async def process_image(file: UploadFile = File(...)):
         image_bgr = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR)
 
         # Save the image temporarily
-        # cv2.imwrite(temp_image_path, image_bgr)
+        cv2.imwrite(temp_image_path, image_bgr)
 
         # Segment the image
         center_x = image_rgb.shape[1] // 2
