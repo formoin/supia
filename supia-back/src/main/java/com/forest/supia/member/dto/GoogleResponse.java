@@ -1,4 +1,4 @@
-package com.forest.supia.member.model;
+package com.forest.supia.member.dto;
 
 import java.util.Map;
 

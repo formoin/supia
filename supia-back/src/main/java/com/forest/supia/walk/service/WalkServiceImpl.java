@@ -1,8 +1,10 @@
 package com.forest.supia.walk.service;
 
 import com.forest.supia.item.dto.ItemDto;
+import com.forest.supia.item.dto.SpeciesResponse;
 import com.forest.supia.item.entity.Item;
 import com.forest.supia.item.entity.Species;
+import com.forest.supia.item.repository.ItemRepository;
 import com.forest.supia.item.repository.SpeciesRepository;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
@@ -26,6 +28,7 @@ public class WalkServiceImpl implements WalkService{
     private final WalkRepository walkRepository;
     private final MemberRepository memberRepository;
     private final SpeciesRepository speciesRepository;
+    private final ItemRepository itemRepository;
 
     @Override
     @Transactional
@@ -45,12 +48,13 @@ public class WalkServiceImpl implements WalkService{
         List<Item> items = new ArrayList<>();
 
         for(ItemDto itemDto : walkDto.getItems()) {
-            String pos = itemDto.getPosition();
+            String address = itemDto.getPosition();
 
-            String[] buf = pos.split(" ");
+            //TODO: 주소 요청 데이터 형태 확인 및 시, 동 string 변환
+            String[] addressSplit = address.split(" ");
             Species species = speciesRepository.findByName(itemDto.getSpecies()).orElseThrow();
 
-            Item item = Item.createItem(member, species, walkDate, buf[0], buf[2], itemDto.getImageUrl(), itemDto.getOriginalUrl());
+            Item item = Item.createItem(member, species, walkDate, addressSplit[0], addressSplit[2], itemDto.getImageUrl(), itemDto.getOriginalUrl());
             items.add(item);
         }
 
@@ -61,6 +65,18 @@ public class WalkServiceImpl implements WalkService{
 
         walkRepository.save(walk);
         return walk.getId();
+    }
+
+    @Override
+    public List<SpeciesResponse> getSpeciesByDong(String address) {
+        //TODO: 주소에서 시, 동 변환 하는 로직
+
+        String[] addressSplit = address.split(" ");
+
+        String si = addressSplit[0];
+        String dong = addressSplit[2];
+
+        return itemRepository.speciesResponseListByDong(si, dong);
     }
 
 }

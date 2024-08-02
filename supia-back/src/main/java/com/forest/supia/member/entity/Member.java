@@ -1,18 +1,23 @@
 package com.forest.supia.member.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+//import com.forest.supia.forest.entity.Forest;
+import jakarta.persistence.*;
 import lombok.*;
 
 
-@Getter @Setter
+@Getter
+@Builder
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberId;
+
+//    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    @JoinColumn(name = "fo")
+//    private Forest forest;
     private String email;
     private String name;
     private String nickname;
@@ -22,6 +27,12 @@ public class Member {
     private int exp;
     private int point;
     private int visit;
+
+    public void updateMemberInfo(String name, String nickname, String profileImg){
+        this.name = name;
+        this.nickname = nickname;
+        this.profileImg = profileImg;
+    }
 
 
     public static Member createMember(String email, String name, String nickname, String password) {
@@ -44,6 +55,17 @@ public class Member {
         this.point += cnt*100;
     }
 
+    public void addExpVisit() {
+        this.visit = 1;
+        this.exp += 5;
+    }
+    public void addExpSendGift() {
+        this.exp += 5;
+    }
+
+    public void addExpItem(int cnt) {
+        this.exp += cnt * 10;
+    }
 //    public void addExp
 
 
