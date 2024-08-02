@@ -35,7 +35,7 @@ async def process_image(file: UploadFile = File(...)):
         image_bgr = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR)
 
         # Save the image temporarily
-        cv2.imwrite(temp_image_path, image_bgr)
+        # cv2.imwrite(temp_image_path, image_bgr)
 
         # Segment the image
         center_x = image_rgb.shape[1] // 2
@@ -60,7 +60,7 @@ async def process_image(file: UploadFile = File(...)):
 
         # Convert to BGRA for saving
         new_image_bgra = cv2.cvtColor(new_image, cv2.COLOR_RGBA2BGRA)
-        cv2.imwrite(seg_image_path, new_image_bgra)
+        # cv2.imwrite(seg_image_path, new_image_bgra)
 
         # Classification
         cls_result = cls_model(new_image)
@@ -68,7 +68,7 @@ async def process_image(file: UploadFile = File(...)):
         probs_name = cls_result[0].names[probs]
 
         # Illustration
-        hand_drawing_img = color_hand_drawing(new_image, output_image_path)
+        hand_drawing_img = color_hand_drawing(new_image)
 
         # Save hand-drawing image to bytes
         img_byte_arr = BytesIO()
