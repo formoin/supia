@@ -13,6 +13,8 @@ RUN pip uninstall opencv-python -y
 RUN pip install --no-cache-dir opencv-python-headless
 RUN apt-get update && apt-get install libgl1-mesa-glx -y
 RUN pip list
+RUN python -c 'import cv2'
+
 # 모든 애플리케이션 파일을 컨테이너로 복사
 COPY . .
 
