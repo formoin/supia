@@ -1,16 +1,13 @@
-import os
-import cv2
-import numpy as np
-from PIL import Image
-
-import base64
-from io import BytesIO
-from fastapi import FastAPI, File, UploadFile, Request, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
-from json import JSONDecodeError
-
+from PIL import Image
+from io import BytesIO
+import numpy as np
+import cv2
 from ultralytics import SAM, YOLO
 from convert2idrawing import color_hand_drawing
+import base64
+import os
 
 app = FastAPI()
 
@@ -23,28 +20,11 @@ seg_image_path = "./img/seg/seg_image.png"
 output_image_path = "./img/output/hand_drawing_image.png"
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-# @app.post("/")
-# async def main(request: Request):
-#     content_type = request.headers.get("Content-Type")
-
-#     if content_type is None:
-#         raise HTTPException(status_code=400, detail="No Content-Type provided")
-#     elif content_type == "application/json":
-#         try:
-#             return await request.json()
-#         except JSONDecodeError:
-#             raise HTTPException(status_code=400, detail="Invalid JSON data")
-#     else:
-#         raise HTTPException(status_code=400, detail="Content-Type not supported")
-
-
 @app.post("/process-image/")
 async def process_image(file: UploadFile = File(...)):
+    if not file:
+        raise HTTPException(status_code=400, detail="File is required")
+
     try:
         # Read image
         image_data = await file.read()
@@ -103,7 +83,7 @@ async def process_image(file: UploadFile = File(...)):
             status_code=200,
         )
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=400)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 if __name__ == "__main__":
