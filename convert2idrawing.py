@@ -8,7 +8,7 @@ from matplotlib import cm
 os.environ["LOKY_MAX_CPU_COUNT"] = "4"
 
 
-def color_hand_drawing(image_array, output_path):
+def color_hand_drawing(image_array):
     # Open images
     # with Image.open("./img/seg/segment1.jpg") as img:
     img = Image.fromarray(image_array)
@@ -23,16 +23,7 @@ def color_hand_drawing(image_array, output_path):
     # Step 3: Simplify colors
     img = simplify_colors(img)
 
-    # Step 4: Combine edges and colors
-    # combined_image = Image.composite(img, edges, edges.convert("L"))
-    combined_image = img
-
-    # Save image
-    combined_image.save(output_path)
-
-    # Display image
-    combined_image.show()
-    return combined_image
+    return img
 
 
 def detect_edges(image):
@@ -61,19 +52,6 @@ def simplify_colors(image):
     # The number of colors to simplify
     num_colors = 16
 
-    # # Reduce colors using k-means clustering
-    # kmeans = KMeans(n_clusters=num_colors, random_state=0).fit(img_array.reshape(-1, 3))
-
-    # # Replace image pixels to the center of nearest cluster
-    # clustered_img_array = (
-    #     kmeans.cluster_centers_[kmeans.labels_]
-    #     .reshape(img_array.shape)
-    #     .astype(np.uint8)
-    # )
-
-    # # Convert numpy array to image
-    # return Image.fromarray(clustered_img_array)
-
     # Reduce colors using k-means clustering
     # Reshape the image array to (num_pixels, 4) for RGBA
     reshaped_img_array = img_array.reshape(-1, 4)
@@ -88,9 +66,3 @@ def simplify_colors(image):
 
     # Convert numpy array to image
     return Image.fromarray(clustered_img_array, "RGBA")
-
-
-# if __name__ == "__main__":
-#     input_image_path = r"./img/seg/segment1.jpg"
-#     output_image_path = r"./img/output/blur_kmeans_image4.jpg"
-#     color_crayon_style(input_image_path, output_image_path)
