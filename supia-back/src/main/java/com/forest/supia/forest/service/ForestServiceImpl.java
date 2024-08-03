@@ -36,6 +36,7 @@ public class ForestServiceImpl implements ForestService{
         for(ForestItem forestItem : forestItems) {
             ForestItemResponse forestItemResponse = new ForestItemResponse();
 
+            forestItemResponse.setId(forestItem.getId());
             forestItemResponse.setImgUrl(forestItem.getItem().getImgUrl());
             forestItemResponse.setItemId(forestItem.getItem().getId());
             forestItemResponse.setX(forestItem.getX());
@@ -51,7 +52,7 @@ public class ForestServiceImpl implements ForestService{
     }
 
     @Override
-    public ForestItem setItemToForest(ForestItemRequest forestItemRequest) {
+    public ForestItem setItemForest(ForestItemRequest forestItemRequest) {
         Item item = itemRepository.findById(forestItemRequest.getItemId());
         Forest forest = forestRepository.findById(forestItemRequest.getForestId()).orElseThrow();
 
@@ -59,5 +60,27 @@ public class ForestServiceImpl implements ForestService{
 
         return forestItemRepository.save(forestItem);
 
+    }
+
+    @Override
+    public ForestItem updateItemForest(ForestItemRequest forestItemRequest) {
+        ForestItem forestItem = forestItemRepository.findById(forestItemRequest.getId()).orElse(new ForestItem());
+
+        forestItem.update(forestItemRequest);
+
+
+        return forestItemRepository.save(forestItem);
+
+    }
+
+    @Override
+    public boolean deleteItemForest(long forestItemId) {
+        try {
+            forestItemRepository.deleteById(forestItemId);
+            return true;
+        }
+        catch (Exception e) {
+            return false;
+        }
     }
 }

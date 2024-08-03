@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter @Setter
 public class ForestItemResponse {
 
+    private long id;
     private long itemId;
     private double x;
     private double y;

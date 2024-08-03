@@ -7,5 +7,8 @@ import com.forest.supia.forest.entity.ForestItem;
 public interface ForestService {
     ForestResponse getForest(long memberId);
 
-    ForestItem setItemToForest(ForestItemRequest forestItemRequest);
+    ForestItem setItemForest(ForestItemRequest forestItemRequest);
+    ForestItem updateItemForest(ForestItemRequest forestItemRequest);
+
+    boolean deleteItemForest(long forestItemId);
 }

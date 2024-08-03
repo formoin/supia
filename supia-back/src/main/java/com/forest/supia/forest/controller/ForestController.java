@@ -29,10 +29,30 @@ public class ForestController {
     public ResponseEntity<?> setItemToForest(@RequestBody ForestItemRequest forestItemRequest) throws Exception {
 
 
-        ForestItem forestItem = forestService.setItemToForest(forestItemRequest);
+        ForestItem forestItem = forestService.setItemForest(forestItemRequest);
 
         if(forestItem == null) ResponseEntity.status(HttpStatus.BAD_REQUEST).body("숲 아이템 저장에 실패했습니다.");
         return ResponseEntity.ok(forestItem);
+    }
+
+    @PatchMapping
+    public ResponseEntity<?> updateItemToForest(@RequestBody ForestItemRequest forestItemRequest) throws Exception {
+
+
+        ForestItem forestItem = forestService.updateItemForest(forestItemRequest);
+
+        if(forestItem == null) ResponseEntity.status(HttpStatus.BAD_REQUEST).body("숲 아이템 업데이트에 실패했습니다.");
+        return ResponseEntity.ok(forestItem);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteItemFromForest(@RequestParam("forestItemId") long forestItemId) throws Exception {
+
+
+        boolean result = forestService.deleteItemForest(forestItemId);
+
+        if(!result) ResponseEntity.status(HttpStatus.BAD_REQUEST).body("숲 아이템 삭제에 실패했습니다.");
+        return ResponseEntity.ok(result);
     }
 
     
