@@ -34,7 +34,7 @@ public class WalkServiceImpl implements WalkService{
     @Transactional
     public Long walk(WalkDto walkDto) {
 
-        Member member = memberRepository.findByMemberId(walkDto.getMemberId());
+        Member member = memberRepository.findById(walkDto.getMemberId()).orElseThrow();
 
 
         LocalDateTime startDateTime = walkDto.getWalkStart();
