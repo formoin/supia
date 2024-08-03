@@ -1,11 +1,14 @@
 package com.forest.supia.forest.service;
 
+import com.forest.supia.forest.dto.ForestItemRequest;
 import com.forest.supia.forest.dto.ForestItemResponse;
 import com.forest.supia.forest.dto.ForestResponse;
 import com.forest.supia.forest.entity.Forest;
 import com.forest.supia.forest.entity.ForestItem;
 import com.forest.supia.forest.repository.ForestItemRepository;
 import com.forest.supia.forest.repository.ForestRepository;
+import com.forest.supia.item.entity.Item;
+import com.forest.supia.item.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +21,7 @@ public class ForestServiceImpl implements ForestService{
 
     private final ForestRepository forestRepository;
     private final ForestItemRepository forestItemRepository;
+    private final ItemRepository itemRepository;
     @Override
     public ForestResponse getForest(long memberId) {
         Forest forest = forestRepository.findByMemberId(memberId);
@@ -44,5 +48,16 @@ public class ForestServiceImpl implements ForestService{
         forestResponse.setItems(forestItemResponseList);
 
         return forestResponse;
+    }
+
+    @Override
+    public ForestItem setItemToForest(ForestItemRequest forestItemRequest) {
+        Item item = itemRepository.findById(forestItemRequest.getItemId());
+        Forest forest = forestRepository.findById(forestItemRequest.getForestId()).orElseThrow();
+
+        ForestItem forestItem = ForestItem.createForestItem(item, forest, forestItemRequest.getX(), forestItemRequest.getY(), true);
+
+        return forestItemRepository.save(forestItem);
+
     }
 }

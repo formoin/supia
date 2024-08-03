@@ -21,4 +21,16 @@ public class ForestItem {
 
     private boolean soundOn;
 
+    public static ForestItem createForestItem(Item item, Forest forest, double x, double y, boolean soundOn) {
+        ForestItem forestItem = new ForestItem();
+
+        forestItem.item = item;
+        forestItem.forest = forest;
+        forestItem.x = x;
+        forestItem.y = y;
+        forestItem.soundOn = soundOn;
+
+        return forestItem;
+    }
+
 }
