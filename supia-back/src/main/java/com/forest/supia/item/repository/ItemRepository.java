@@ -44,5 +44,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     )
     List<SpeciesResponse> speciesResponseListByDong(@Param("si") String si, @Param("dong") String dong);
 
+    Item findById(long itemId);
     void deleteById(long itemId);
 }

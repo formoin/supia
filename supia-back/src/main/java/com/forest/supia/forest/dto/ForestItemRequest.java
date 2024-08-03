@@ -4,12 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class ForestItemResponse {
-
+public class ForestItemRequest {
     private long id;
+    private long forestId;
     private long itemId;
     private double x;
     private double y;
-    private String imgUrl;
-    private String sound;
+    private boolean soundOn;
 }

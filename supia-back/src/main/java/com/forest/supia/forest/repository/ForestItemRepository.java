@@ -8,4 +8,6 @@ import java.util.List;
 public interface ForestItemRepository extends JpaRepository<ForestItem, Long> {
     List<ForestItem> findByForestId(long forestId);
 
+    ForestItem findByItemId(long itemId);
+
 }
