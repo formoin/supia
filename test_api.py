@@ -1,7 +1,7 @@
 import requests
 import base64
 
-url = "http://localhost:8000/process-image/"
+url = "http://localhost:8000/ai/process-image/"
 
 image_path = "./img/input/dog.jpg"
 

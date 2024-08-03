@@ -4,11 +4,12 @@ import numpy as np
 import cv2
 from PIL import Image
 from ultralytics import SAM, YOLO
-from draw import color_crayon_style, simplify_colors
+from convert2idrawing import color_hand_drawing
 
 # Load models
 seg_model = SAM("mobile_sam.pt")
 cls_model = YOLO("yolov8n-cls.pt")
+
 
 
 """
@@ -84,7 +85,7 @@ converts the segmented image to the hand-drawing imagea
 
 input_image_path = r"./img/seg/segment1.jpg"
 output_image_path = r"./img/output/blur_kmeans_image5.png"
-hand_drawing_img = color_crayon_style(new_image, output_image_path)
+hand_drawing_img = color_hand_drawing(new_image)
 
 
 # def remove_grabcut_bg(image):
