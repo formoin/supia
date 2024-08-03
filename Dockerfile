@@ -11,6 +11,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 RUN pip uninstall opencv-python -y
 RUN pip install --no-cache-dir opencv-python
+RUN pip install python-multipart
 RUN apt-get update && apt-get install libgl1-mesa-glx -y
 RUN apt-get install libglib2.0-0
 
