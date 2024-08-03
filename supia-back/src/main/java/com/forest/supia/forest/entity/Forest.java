@@ -25,11 +25,17 @@ public class Forest {
     @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "forest")
     private List<ForestItem> itemForestList = new ArrayList<>();
 
+    public void setMember(Member member) {
+        this.member = member;
+        member.setForest(this);
+    }
+
     public static Forest createForest(Member member, String thumbnail){
         Forest forest = new Forest();
 
-        forest.member = member;
+        forest.setMember(member);
         forest.thumbnail = thumbnail;
+
 
         return forest;
     }
