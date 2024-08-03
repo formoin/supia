@@ -1,8 +1,11 @@
 package com.forest.supia.member.service;
 
+import com.forest.supia.forest.entity.Forest;
+import com.forest.supia.forest.repository.ForestRepository;
 import com.forest.supia.member.dto.SignUpDto;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -10,12 +13,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class MemberService {
-    @Autowired
-    private MemberRepository memberRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    private final ForestRepository forestRepository;
 
     public List<Member> listMember() {
         return memberRepository.findAll();
@@ -29,7 +33,12 @@ public class MemberService {
                 .nickname(signUpInfo.getNickname())
                 .password(encoded_password)
                 .build();
-        return memberRepository.save(new_member);
+        Member member =  memberRepository.save(new_member);
+
+        Forest forest = Forest.createForest(member, "Default thumbnail");
+        forestRepository.save(forest);
+
+        return member;
     }
 
     public Member createSocialMember (String email, String name) {
@@ -44,13 +53,13 @@ public class MemberService {
     }
 
     public Member updateMember(Long memberId, String name, String nickname, String profileImg) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow();
         member.updateMemberInfo(name, nickname, profileImg);
         return member;
     }
 
     public void updateExp(Long memberId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow();
         member.addExpVisit();
     }
 
@@ -59,7 +68,7 @@ public class MemberService {
     }
 
     public Member findByMemberId(long memberId) {
-        return memberRepository.findByMemberId(memberId);
+        return memberRepository.findById(memberId).orElseThrow();
     }
 
 }

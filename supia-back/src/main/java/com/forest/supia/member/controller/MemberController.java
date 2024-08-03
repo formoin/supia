@@ -44,6 +44,8 @@ public class MemberController {
     public ResponseEntity<Map<String, String>> registerMember(@RequestBody SignUpDto signUpInfo) {
         Member new_member = memberService.createMember(signUpInfo);
 
+
+
         Map<String, String> response = new HashMap<>();
         if(new_member != null) {
             response.put("message", "회원 등록이 완료되었습니다.");
@@ -66,7 +68,7 @@ public class MemberController {
 
         if (member != null && passwordEncoder.matches(password, member.getPassword())){
             if (member.getVisit() == 0) {
-                memberService.updateExp(member.getMemberId());
+                memberService.updateExp(member.getId());
                 response.put("exp", "첫 방문 5 경험치 적립이 완료되었습니다.");
             } else {
                 response.put("exp", "이미 방문한 회원입니다.");
@@ -107,7 +109,7 @@ public class MemberController {
 
     @GetMapping("/my-info/{memberId}")
     public ResponseEntity<Map<String, Member>> getMemberInfo(@PathVariable("memberId") long memberId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow();
         Map<String, Member> response = new HashMap<>();
         if (member != null) {
             response.put("member", member);

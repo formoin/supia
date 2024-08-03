@@ -22,7 +22,16 @@ public class Forest {
 //    private Music music;
 //    private Theme theme;
 
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "forest")
     private List<ForestItem> itemForestList = new ArrayList<>();
+
+    public static Forest createForest(Member member, String thumbnail){
+        Forest forest = new Forest();
+
+        forest.member = member;
+        forest.thumbnail = thumbnail;
+
+        return forest;
+    }
 
 }

@@ -13,6 +13,9 @@ public class ForestItem {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Item item;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "forest_id")
+    private Forest forest;
     private double x;
     private double y;
 
