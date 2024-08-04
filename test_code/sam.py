@@ -9,8 +9,8 @@ from ultralytics import SAM, YOLO
 from convert2idrawing import color_hand_drawing
 
 # Load models
-seg_model = SAM("./model/mobile_sam.pt")
-cls_model = YOLO("./model/yolov8n-cls.pt")
+seg_model = SAM("../model/mobile_sam.pt")
+cls_model = YOLO("../model/yolov8n-cls.pt")
 
 # Set AWS S3
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -33,8 +33,8 @@ segments the input image
 classifies the segmented image
 """
 
-image_path = "./img/input/dog.jpg"
-output_path = "./img/seg/test1jpg"
+image_path = "../img/input/dog.jpg"
+output_path = "../img/seg/test1jpg"
 # Load the original image
 image = cv2.imread(image_path)
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -98,8 +98,8 @@ Illustration:
 converts the segmented image to the hand-drawing imagea
 """
 
-input_image_path = r"./img/seg/segment1.jpg"
-output_image_path = r"./img/output/blur_kmeans_image5.png"
+input_image_path = r"../img/seg/segment1.jpg"
+output_image_path = r"../img/output/blur_kmeans_image5.png"
 hand_drawing_img = color_hand_drawing(new_image)
 
 # Save hand-drawing image to bytes

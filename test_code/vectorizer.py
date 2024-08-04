@@ -16,9 +16,9 @@ vectorizer.configuration.path_builder = path_builder
 vectorizer.configuration.colors_limit = 1024  # Example color limit
 vectorizer.configuration.line_width = 0.1  # Example line width
 
-input_path = "./img/seg/"
+input_path = "../img/seg/"
 input_img = "segment1.jpg"
-output_path = "./img/output/"
+output_path = "../img/output/"
 output_svg = "output1.svg"
 output_img = "vactor_image.jpg"
 
