@@ -5,12 +5,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-@Table(name = "bgm")
-public class BackgroundImage {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long bgmId;
+@Table(name = "bgi")
+public class Bgi extends BackgroundItem {
 
-    private String name;
-    private String path;
 }
