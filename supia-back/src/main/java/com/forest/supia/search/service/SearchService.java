@@ -1,5 +1,6 @@
 package com.forest.supia.search.service;
 
+import com.forest.supia.member.dto.MemberResponse;
 import com.forest.supia.search.dto.ItemSearchResponse;
 import com.forest.supia.search.dto.MemberSearchResponse;
 
@@ -10,4 +11,5 @@ public interface SearchService {
 
     List<MemberSearchResponse> searchMember(String keyword);
 
+    MemberResponse memberDetail(long memberId);
 }
