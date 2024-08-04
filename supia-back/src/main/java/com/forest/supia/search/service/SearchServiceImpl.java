@@ -4,6 +4,7 @@ import com.forest.supia.item.entity.Item;
 import com.forest.supia.item.entity.Species;
 import com.forest.supia.item.repository.ItemRepository;
 import com.forest.supia.item.repository.SpeciesRepository;
+import com.forest.supia.member.repository.MemberRepository;
 import com.forest.supia.search.dto.ItemSearchResponse;
 import com.forest.supia.search.dto.MemberSearchResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,28 +17,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SearchServiceImpl implements SearchService{
     private final ItemRepository itemRepository;
-    private final SpeciesRepository speciesRepository;
+    private final MemberRepository memberRepository;
 
     @Override
     public List<ItemSearchResponse> searchItem(String keyword) {
 
-
-        List<ItemSearchResponse> itemSearchResponses = itemRepository.findItemByKeyword(keyword);
-
-//        for(Item item : items) {
-//            ItemSearchResponse itemSearchResponse = new ItemSearchResponse();
-//            itemSearchResponse.setItemId(item.getId());
-//            itemSearchResponse.setAddress(item.getSi() + " " + item.getDong());
-//            itemSearchResponse.setSpeciesName(item.getSpecies().getName());
-//            itemSearchResponse.setImgUrl(item.getImgUrl());
-//            itemSearchResponses.add(itemSearchResponse);
-//        }
-        System.out.println(itemSearchResponses.get(0).getAddress());
-        return itemSearchResponses;
+        return itemRepository.findItemByKeyword(keyword);
     }
 
     @Override
     public List<MemberSearchResponse> searchMember(String keyword) {
-        return List.of();
+
+        return memberRepository.findMemberByKeyword(keyword);
     }
 }
