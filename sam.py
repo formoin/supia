@@ -1,16 +1,31 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2
+import os
+import boto3
+from io import BytesIO
 from PIL import Image
 from ultralytics import SAM, YOLO
 from convert2idrawing import color_hand_drawing
 
 # Load models
-seg_model = SAM("mobile_sam.pt")
-cls_model = YOLO("yolov8n-cls.pt")
+seg_model = SAM("./model/mobile_sam.pt")
+cls_model = YOLO("./model/yolov8n-cls.pt")
+
+# Set AWS S3
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_S3_BUCKET_NAME = os.getenv("AWS_S3_BUCKET_NAME")
+AWS_REGION = os.getenv("AWS_REGION")
+AWS_S3_URL = f"https://{AWS_S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com"
 
 
+s3_client = boto3.client(
+    "s3",
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    region_name=AWS_REGION,
+)
 
 """
 Segmentation:
@@ -87,6 +102,23 @@ input_image_path = r"./img/seg/segment1.jpg"
 output_image_path = r"./img/output/blur_kmeans_image5.png"
 hand_drawing_img = color_hand_drawing(new_image)
 
+# Save hand-drawing image to bytes
+img_byte_arr = BytesIO()
+hand_drawing_img.save(img_byte_arr, format="PNG")
+# img_byte_arr.seek(0)
+img_byte_arr_content = img_byte_arr.getvalue()
+
+
+# Upload to S3
+s3_file_name = f"item/illustrated/{5}_{55}_{555}_{5555}_{55555}_{123}"
+s3_client.put_object(
+    Bucket=AWS_S3_BUCKET_NAME,
+    Key=s3_file_name,
+    Body=str(img_byte_arr_content),
+    ContentType='image/png'
+)
+file_url = f"{AWS_S3_URL}/{s3_file_name}"
+print(s3_file_name)
 
 # def remove_grabcut_bg(image):
 #     image = np.array(image)
@@ -101,22 +133,22 @@ hand_drawing_img = color_hand_drawing(new_image)
 # remove_bg_image = remove_grabcut_bg(hand_drawing_img)
 
 # Display the original image, the mask, and the overlay
-plt.figure(figsize=(15, 5))
+# plt.figure(figsize=(15, 5))
 
-plt.subplot(1, 3, 1)
-plt.title("Original Image")
-plt.imshow(image_rgb)
-plt.axis("off")
+# plt.subplot(1, 3, 1)
+# plt.title("Original Image")
+# plt.imshow(image_rgb)
+# plt.axis("off")
 
-plt.subplot(1, 3, 2)
-plt.title(f"{probs_name}")
-plt.imshow(new_image)
-plt.axis("off")
+# plt.subplot(1, 3, 2)
+# plt.title(f"{probs_name}")
+# plt.imshow(new_image)
+# plt.axis("off")
 
-plt.subplot(1, 3, 3)
-plt.title("Hand-drawing Image")
-plt.imshow(hand_drawing_img)
-plt.axis("off")
+# plt.subplot(1, 3, 3)
+# plt.title("Hand-drawing Image")
+# plt.imshow(hand_drawing_img)
+# plt.axis("off")
 
 
-plt.show()
+# plt.show()

@@ -1,13 +1,13 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from PIL import Image
 from io import BytesIO
 import numpy as np
 import cv2
+import os
+import boto3
 from ultralytics import SAM, YOLO
 from convert2idrawing import color_hand_drawing
-import base64
-import os
 
 app = FastAPI()
 
@@ -15,13 +15,28 @@ app = FastAPI()
 seg_model = SAM("./model/mobile_sam.pt")
 cls_model = YOLO("./model/yolov8n-cls.pt")
 
+# Set AWS S3
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_S3_BUCKET_NAME = os.getenv("AWS_S3_BUCKET_NAME")
+AWS_REGION = os.getenv("AWS_REGION")
+AWS_S3_URL = f"https://{AWS_S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com"
+
+
+s3_client = boto3.client(
+    "s3",
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    region_name=AWS_REGION,
+)
+
 temp_image_path = "./img/input/temp_image.png"
-seg_image_path = "./img/seg/seg_image.png"
-output_image_path = "./img/output/hand_drawing_image.png"
+output_image_path = "./img/output/illustrated.png"
 
 
 @app.post("/ai/process-image/")
-async def process_image(file: UploadFile = File(...)):
+async def process_image(member_id: str = Form(...), date: str = Form(...),
+    time: str = Form(...), file: UploadFile = File(...)):
     if not file:
         raise HTTPException(status_code=400, detail="File is required")
 
@@ -63,23 +78,26 @@ async def process_image(file: UploadFile = File(...)):
         # cv2.imwrite(seg_image_path, new_image_bgra)
 
         # Classification
-        cls_result = cls_model(new_image)
+        cls_result = cls_model(new_image) 
         probs = cls_result[0].probs.top1
         probs_name = cls_result[0].names[probs]
+        category = "animal"
 
         # Illustration
         hand_drawing_img = color_hand_drawing(new_image)
 
-        # Save hand-drawing image to bytes
-        img_byte_arr = BytesIO()
-        hand_drawing_img.save(img_byte_arr, format="PNG")
-        img_byte_arr = img_byte_arr.getvalue()
+        # Save hand-drawing image to file
+        hand_drawing_img.save(output_image_path)
 
-        # Convert to Base64
-        img_base64 = base64.b64encode(img_byte_arr).decode("utf-8")
+        # Upload to S3
+        s3_file_name = f"item/illustrated/{member_id}_{date}_{time}_{category}_{probs_name}.png"
+
+        s3_client.upload_file(output_image_path, AWS_S3_BUCKET_NAME, s3_file_name)
+
+        file_url = f"{AWS_S3_URL}/{s3_file_name}"
 
         return JSONResponse(
-            content={"hand_drawing_img": img_base64, "probs_name": probs_name},
+            content={"hand_drawing_img_url": file_url, "probs_name": probs_name},
             status_code=200,
         )
     except Exception as e:
