@@ -9,10 +9,13 @@ import com.forest.supia.member.repository.MemberRepository;
 import com.forest.supia.member.service.MemberService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,18 +93,24 @@ public class MemberController {
 
     @Transactional
     @PutMapping("/my-info/{memberId}")
-    public ResponseEntity<Map<String, String>> modifyMember(@PathVariable("memberId") long memberId, @RequestBody InfoUpdateDto updatedInfo) {
-        String name = updatedInfo.getName();
-        String nickname = updatedInfo.getNickname();
-        String profileImg = updatedInfo.getProfileImg();
-        Member modified_member = memberService.updateMember(memberId, name, nickname, profileImg);
-        Map<String, String> response = new HashMap<>();
-        if (modified_member != null) {
-            response.put("message", "회원 정보 수정이 완료되었습니다.");
-            return ResponseEntity.ok().body(response);
-        } else {
-            response.put("message", "회원 정보 수정에 실패하였습니다.");
-            return ResponseEntity.badRequest().body(response);
+    public ResponseEntity<Map<String, String>> modifyMember(@PathVariable("memberId") long memberId,
+                                                            @RequestParam("name") String name,
+                                                            @RequestParam("nickname") String nickname,
+                                                            @RequestParam(value = "profileImg", required = false) MultipartFile profileImg) {
+        try {
+            Member modified_member = memberService.updateMember(memberId, name, nickname, profileImg);
+            Map<String, String> response = new HashMap<>();
+            if (modified_member != null) {
+                response.put("message", "회원 정보 수정이 완료되었습니다.");
+                response.put("profileImgUrl", modified_member.getProfileImg());
+                return ResponseEntity.ok().body(response);
+            } else {
+                response.put("message", "회원 정보 수정에 실패하였습니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
