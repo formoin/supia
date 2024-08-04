@@ -6,7 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface SpeciesRepository extends JpaRepository<Species, String> {
-    Optional<Species> findByName(String name);
+    Optional<Species> findByNameContaining(String name);
 
     Optional<Species> findById(long id);
+
 }

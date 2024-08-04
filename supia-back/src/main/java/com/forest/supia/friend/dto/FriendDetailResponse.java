@@ -1,4 +1,4 @@
-package com.forest.supia.friends.dto;
+package com.forest.supia.friend.dto;
 
 import lombok.Getter;
 import lombok.Setter;
