@@ -45,16 +45,24 @@ public class MemberController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> registerMember(@RequestBody SignUpDto signUpInfo) {
-        Member new_member = memberService.createMember(signUpInfo);
-
+        Member check_exist = memberService.findByEmail(signUpInfo.getEmail());
         Map<String, String> response = new HashMap<>();
-        if(new_member != null) {
-            response.put("message", "회원 등록이 완료되었습니다.");
-            return ResponseEntity.ok().body(response);
+        if (check_exist == null) {
+            Member new_member = memberService.createMember(signUpInfo);
+
+            if(new_member != null) {
+                response.put("message", "회원 등록이 완료되었습니다.");
+                return ResponseEntity.ok().body(response);
+            } else {
+                response.put("message", "회원 등록에 실패하였습니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
         } else {
-            response.put("message", "회원 등록에 실패하였습니다.");
+            response.put("message", "이미 가입한 회원입니다.");
             return ResponseEntity.badRequest().body(response);
         }
+
+
     }
 
     @Transactional
