@@ -18,4 +18,5 @@ public abstract class BackgroundItem {
     private String name;
     private String path;
     private String level;
+    private int price;
 }

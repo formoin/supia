@@ -1,6 +1,7 @@
 package com.forest.supia.background.service;
 
 import com.forest.supia.background.dto.OwnResponseDto;
+import com.forest.supia.background.dto.PurchaseResponseDto;
 import com.forest.supia.background.entity.Bgi;
 import com.forest.supia.background.entity.OwnBgi;
 import com.forest.supia.background.entity.PurchaseHistory;
@@ -31,15 +32,24 @@ public class OwnBgiService {
     @Autowired
     private PurchaseHistoryRepository purchaseHistoryRepository;
 
-    public void purchaseBgi(Long memberId, Long bgiId) {
+    public PurchaseResponseDto purchaseBgi(Long memberId, Long bgiId) {
         Member member = memberRepository.findByMemberId(memberId);
         Bgi bgi = bgiRepository.findById(bgiId).orElseThrow(() -> new IllegalArgumentException("Invalid BGI ID"));
 
-        OwnBgi ownBgi = new OwnBgi(member, bgi);
-        ownBgiRepository.save(ownBgi);
+        if (member.getPoint() >= bgi.getPrice()) {
+            member.deductPoints(bgi.getPrice());
+            memberRepository.save(member);
+            OwnBgi ownBgi = new OwnBgi(member, bgi);
+            ownBgiRepository.save(ownBgi);
 
-        PurchaseHistory purchaseHistory = new PurchaseHistory(member, 2, LocalDateTime.now(), bgiId);
-        purchaseHistoryRepository.save(purchaseHistory);
+            PurchaseHistory purchaseHistory = new PurchaseHistory(member, 2, LocalDateTime.now(), bgiId);
+            purchaseHistoryRepository.save(purchaseHistory);
+            return new PurchaseResponseDto(memberId, bgiId, bgi.getPrice(), member.getPoint(), "bgi");
+        } else {
+            throw new IllegalArgumentException("포인트가 부족합니다.");
+        }
+
+
     }
 
     public List<OwnResponseDto> getOwnBgis(Long memberId) {

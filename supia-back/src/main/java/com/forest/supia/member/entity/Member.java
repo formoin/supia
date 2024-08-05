@@ -73,4 +73,12 @@ public class Member {
         this.exp += cnt * 10;
     }
 
+    public void deductPoints(int points) {
+        if (this.point >= points) {
+            this.point -= points;
+        } else {
+            throw new IllegalArgumentException("포인트가 부족합니다.");
+        }
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.forest.supia.background.controller;
 
 import com.forest.supia.background.dto.OwnResponseDto;
+import com.forest.supia.background.dto.PurchaseResponseDto;
 import com.forest.supia.background.entity.Bgi;
 import com.forest.supia.background.entity.Bgm;
 import com.forest.supia.background.service.BgiService;
@@ -47,14 +48,25 @@ public class BackgroundController {
              return ResponseEntity.badRequest().body(null);
          }
     }
+
     @PostMapping("/purchase/bgm")
-    public void purchaseBgm(@RequestParam("memberId") Long memberId, @RequestParam("bgmId") Long bgmId) {
-        ownBgmService.purchaseBgm(memberId, bgmId);
+    public ResponseEntity<PurchaseResponseDto> purchaseBgm(@RequestParam("memberId") Long memberId, @RequestParam("bgmId") Long bgmId) {
+        try {
+            PurchaseResponseDto response = ownBgmService.purchaseBgm(memberId, bgmId);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
     @PostMapping("/purchase/bgi")
-    public void purchaseBgi(@RequestParam("memberId") Long memberId, @RequestParam("bgiId") Long bgiId) {
-        ownBgiService.purchaseBgi(memberId, bgiId);
+    public ResponseEntity<PurchaseResponseDto> purchaseBgi(@RequestParam("memberId") Long memberId, @RequestParam("bgiId") Long bgiId) {
+        try {
+            PurchaseResponseDto response = ownBgiService.purchaseBgi(memberId, bgiId);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
     @GetMapping("/own-bgm")

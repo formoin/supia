@@ -2,6 +2,7 @@ package com.forest.supia.background.service;
 
 
 import com.forest.supia.background.dto.OwnResponseDto;
+import com.forest.supia.background.dto.PurchaseResponseDto;
 import com.forest.supia.background.entity.Bgm;
 import com.forest.supia.background.entity.OwnBgm;
 import com.forest.supia.background.entity.PurchaseHistory;
@@ -32,15 +33,23 @@ public class OwnBgmService {
     @Autowired
     private PurchaseHistoryRepository purchaseHistoryRepository;
 
-    public void purchaseBgm(Long memberId, Long bgmId) {
+    public PurchaseResponseDto purchaseBgm (Long memberId, Long bgmId) {
         Member member = memberRepository.findByMemberId(memberId);
         Bgm bgm = bgmRepository.findById(bgmId).orElseThrow(() -> new IllegalArgumentException("유효하지 않은 BGMㅇㅂ니다."));
 
-        OwnBgm ownBgm = new OwnBgm(member, bgm);
-        ownBgmRepository.save(ownBgm);
+        if (member.getPoint() >= bgm.getPrice()) {
+            member.deductPoints(bgm.getPrice());
+            memberRepository.save(member);
+            OwnBgm ownBgm = new OwnBgm(member, bgm);
+            ownBgmRepository.save(ownBgm);
+            PurchaseHistory purchaseHistory = new PurchaseHistory(member, 1, LocalDateTime.now(), bgmId);
+            purchaseHistoryRepository.save(purchaseHistory);
+            return new PurchaseResponseDto(memberId, bgmId, bgm.getPrice(), member.getPoint(), "bgm");
+        } else {
+            throw new IllegalArgumentException("포인트가 부족합니다.");
+        }
 
-        PurchaseHistory purchaseHistory = new PurchaseHistory(member, 1, LocalDateTime.now(), bgmId);
-        purchaseHistoryRepository.save(purchaseHistory);
+
     }
 
     public List<OwnResponseDto> getOwnBgms(Long memberId) {
