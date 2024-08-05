@@ -98,11 +98,11 @@ public class MemberController {
                                                             @RequestParam("nickname") String nickname,
                                                             @RequestParam(value = "profileImg", required = false) MultipartFile profileImg) {
         try {
-            Member modified_member = memberService.updateMember(memberId, name, nickname, profileImg);
+            String fileUrl = memberService.updateMember(memberId, name, nickname, profileImg);
             Map<String, String> response = new HashMap<>();
-            if (modified_member != null) {
+            if (fileUrl != null) {
                 response.put("message", "회원 정보 수정이 완료되었습니다.");
-                response.put("profileImgUrl", modified_member.getProfileImg());
+                response.put("profileImgUrl", fileUrl);
                 return ResponseEntity.ok().body(response);
             } else {
                 response.put("message", "회원 정보 수정에 실패하였습니다.");

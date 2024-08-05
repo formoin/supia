@@ -62,7 +62,7 @@ public class MemberService {
 
 
 
-    public Member updateMember(long memberId, String name, String nickname, MultipartFile profileImg) throws IOException, java.io.IOException {
+    public String updateMember(long memberId, String name, String nickname, MultipartFile profileImg) throws IOException, java.io.IOException {
         Member member = memberRepository.findByMemberId(memberId);
 
         if(member != null) {
@@ -75,8 +75,13 @@ public class MemberService {
 
                 String fileUrl = url + "/" + fileName;
                 member.updateMemberInfo(name, nickname, fileUrl);
+
+                memberRepository.save(member);
+                return fileUrl;
+            } else {
+                memberRepository.save(member);
+                return "modify completed without profile";
             }
-            return memberRepository.save(member);
         } else {
             return null;
         }

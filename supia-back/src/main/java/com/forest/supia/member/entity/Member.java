@@ -10,6 +10,7 @@ import lombok.*;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "Member")
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +28,7 @@ public class Member {
     private int exp;
     private int point;
     private int visit;
+    private String token;
 
     public void updateMemberInfo(String name, String nickname, String profileImg){
         this.name = name;
