@@ -8,6 +8,9 @@ import os
 import boto3
 from ultralytics import SAM, YOLO
 from convert2idrawing import color_hand_drawing
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -31,12 +34,16 @@ s3_client = boto3.client(
 )
 
 temp_image_path = "./img/input/temp_image.png"
-output_image_path = "./img/output/illustrated.png"
+output_image_path = r"illustrated.png"
 
 
 @app.post("/ai/process-image/")
-async def process_image(member_id: str = Form(...), date: str = Form(...),
-    time: str = Form(...), file: UploadFile = File(...)):
+async def process_image(
+    member_id: str = Form(...),
+    date: str = Form(...),
+    time: str = Form(...),
+    file: UploadFile = File(...),
+):
     if not file:
         raise HTTPException(status_code=400, detail="File is required")
 
@@ -78,7 +85,7 @@ async def process_image(member_id: str = Form(...), date: str = Form(...),
         # cv2.imwrite(seg_image_path, new_image_bgra)
 
         # Classification
-        cls_result = cls_model(new_image) 
+        cls_result = cls_model(new_image)
         probs = cls_result[0].probs.top1
         probs_name = cls_result[0].names[probs]
         category = "animal"
@@ -90,7 +97,9 @@ async def process_image(member_id: str = Form(...), date: str = Form(...),
         hand_drawing_img.save(output_image_path)
 
         # Upload to S3
-        s3_file_name = f"item/illustrated/{member_id}_{date}_{time}_{category}_{probs_name}.png"
+        s3_file_name = (
+            f"item/illustrated/{member_id}_{date}_{time}_{category}_{probs_name}.png"
+        )
 
         s3_client.upload_file(output_image_path, AWS_S3_BUCKET_NAME, s3_file_name)
 

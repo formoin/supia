@@ -99,7 +99,7 @@ converts the segmented image to the hand-drawing imagea
 """
 
 input_image_path = r"../img/seg/segment1.jpg"
-output_image_path = r"../img/output/blur_kmeans_image5.png"
+output_image_path = r"../img/output/blur_kmeans_image3.jpg"
 hand_drawing_img = color_hand_drawing(new_image)
 
 # Save hand-drawing image to bytes
@@ -110,13 +110,8 @@ img_byte_arr_content = img_byte_arr.getvalue()
 
 
 # Upload to S3
-s3_file_name = f"item/illustrated/{5}_{55}_{555}_{5555}_{55555}_{123}"
-s3_client.put_object(
-    Bucket=AWS_S3_BUCKET_NAME,
-    Key=s3_file_name,
-    Body=str(img_byte_arr_content),
-    ContentType='image/png'
-)
+s3_file_name = f"item/illustrated/{5}_{55}_{555}_{5555}_{55555}_{123}.png"
+s3_client.upload_file(output_image_path, AWS_S3_BUCKET_NAME, s3_file_name)
 file_url = f"{AWS_S3_URL}/{s3_file_name}"
 print(s3_file_name)
 
