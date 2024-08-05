@@ -47,6 +47,7 @@ public class Member {
         member.name = name;
         member.nickname = nickname;
         member.password = password;
+
         return member;
     }
 

@@ -38,9 +38,9 @@ public class SearchController {
     }
 
     @GetMapping("/member")
-    public ResponseEntity<?> searchMember(@RequestParam("memberId") long memberId) throws Exception {
+    public ResponseEntity<?> searchMember(@RequestParam("memberId") long memberId, @RequestParam("findId") long findId) throws Exception {
 
-        MemberResponse memberResponse = searchService.memberDetail(memberId);
+        MemberResponse memberResponse = searchService.memberDetail(memberId, findId);
         if(memberResponse == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("검색 결과가 없습니다.");
         else return ResponseEntity.ok(memberResponse);
 

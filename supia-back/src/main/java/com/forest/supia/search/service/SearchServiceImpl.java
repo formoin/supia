@@ -1,5 +1,7 @@
 package com.forest.supia.search.service;
 
+import com.forest.supia.friend.entity.Friend;
+import com.forest.supia.friend.repository.FriendRepository;
 import com.forest.supia.item.entity.Item;
 import com.forest.supia.item.entity.Species;
 import com.forest.supia.item.repository.ItemRepository;
@@ -20,6 +22,7 @@ import java.util.List;
 public class SearchServiceImpl implements SearchService{
     private final ItemRepository itemRepository;
     private final MemberRepository memberRepository;
+    private final FriendRepository friendRepository;
 
     @Override
     public List<ItemSearchResponse> searchItem(String keyword) {
@@ -33,20 +36,34 @@ public class SearchServiceImpl implements SearchService{
         return memberRepository.findMemberByKeyword(keyword);
     }
 
-    public MemberResponse memberDetail(long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(null);
+    public MemberResponse memberDetail(long memberId, long findId) {
+        Member findMember = memberRepository.findById(memberId).orElseThrow(null);
 
         MemberResponse memberResponse = new MemberResponse();
-        memberResponse.setMemberId(memberId);
-        memberResponse.setName(member.getName());
-        memberResponse.setNickname(member.getNickname());
-        memberResponse.setLevel(member.getLevel());
-        memberResponse.setProfileImg(member.getProfileImg());
-        memberResponse.setThumbnail(member.getForest().getThumbnail());
+        memberResponse.setMemberId(findId);
+        memberResponse.setName(findMember.getName());
+        memberResponse.setNickname(findMember.getNickname());
+        memberResponse.setLevel(findMember.getLevel());
+        memberResponse.setProfileImg(findMember.getProfileImg());
+        memberResponse.setThumbnail(findMember.getForest().getThumbnail());
 
-//        Boolean isFriend =
-//        memberResponse.setFriend(isFriend);
+        boolean isFriend = false;
 
+        List<Friend> friendListFrom = friendRepository.findByFromMember(findMember);
+        List<Friend> friendListTo = friendRepository.findByToMember(findMember);
+
+        for(Friend friend : friendListFrom){
+            if(friend.getToMember().getId() == memberId && friend.isAreWeFriend()){
+                isFriend = true;
+            }
+        }
+        for(Friend friend : friendListTo){
+            if(friend.getFromMember().getId() == memberId && friend.isAreWeFriend()){
+                isFriend = true;
+            }
+        }
+
+        memberResponse.setFriend(isFriend);
         return memberResponse;
     }
 }
