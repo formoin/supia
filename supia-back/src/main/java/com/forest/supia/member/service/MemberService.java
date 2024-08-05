@@ -2,6 +2,8 @@ package com.forest.supia.member.service;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.forest.supia.config.auth.JwtUtil;
+import com.forest.supia.member.dto.LoginDto;
 import com.forest.supia.member.dto.SignUpDto;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
@@ -24,6 +26,9 @@ public class MemberService {
 
     private final AmazonS3Client amazonS3Client;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
@@ -36,6 +41,20 @@ public class MemberService {
 
     public List<Member> listMember() {
         return memberRepository.findAll();
+    }
+
+    public String loginAndGetToken(LoginDto loginInfo) {
+        String email = loginInfo.getEmail();
+        String password = loginInfo.getPassword();
+        Member member = findByEmail(email);
+
+        if (member != null && passwordEncoder.matches(password, member.getPassword())) {
+            String token = jwtUtil.generateToken(member);
+            member.updateToken(token); // updateToken 메서드 사용
+            memberRepository.save(member);
+            return token;
+        }
+        return null;
     }
 
     public Member createMember (SignUpDto signUpInfo) {

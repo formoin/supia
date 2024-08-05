@@ -30,6 +30,10 @@ public class Member {
     private int visit;
     private String token;
 
+    public void updateToken(String token) {
+        this.token = token;
+    }
+
     public void updateMemberInfo(String name, String nickname, String profileImg){
         this.name = name;
         this.nickname = nickname;

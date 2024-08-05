@@ -68,21 +68,10 @@ public class MemberController {
     @Transactional
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> loginMember(@RequestBody LoginDto loginInfo) {
-        String email = loginInfo.getEmail();
-        String password = loginInfo.getPassword();
-
-        Member member = memberService.findByEmail(email);
-
         Map<String, String> response = new HashMap<>();
 
-        if (member != null && passwordEncoder.matches(password, member.getPassword())){
-            if (member.getVisit() == 0) {
-                memberService.updateExp(member.getMemberId());
-                response.put("exp", "첫 방문 5 경험치 적립이 완료되었습니다.");
-            } else {
-                response.put("exp", "이미 방문한 회원입니다.");
-            }
-            String token = JwtUtil.generateToken(member);
+        String token = memberService.loginAndGetToken(loginInfo);
+        if (token != null) {
             response.put("token", token);
             response.put("message", "로그인이 완료되었습니다.");
             return ResponseEntity.ok().body(response);
@@ -90,7 +79,6 @@ public class MemberController {
             response.put("message", "유효하지 않은 로그인입니다.");
             return ResponseEntity.badRequest().body(response);
         }
-
     }
 
     @GetMapping("/social-login")
