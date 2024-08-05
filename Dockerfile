@@ -9,6 +9,8 @@ COPY requirements.txt .
 
 # 
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
+RUN apt-get update && apt-get install libgl1-mesa-glx -y
+
 
 # 
 COPY . .
