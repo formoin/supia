@@ -27,17 +27,25 @@ public class FriendController {
 
     @PostMapping
     public ResponseEntity<?> sendFriendRequest(@RequestBody FriendRequest friendRequest) {
-        boolean result = friendService.sendFriendRequest(friendRequest);
+        long result = friendService.sendFriendRequest(friendRequest);
 
-        if(!result) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("등록에 실패했습니다.");
+        if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("등록에 실패했습니다.");
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/accept")
     public ResponseEntity<?> acceptFriendRequest(@RequestParam("friendId") long friendId) {
-        boolean result = friendService.acceptFriendRequest(friendId);
+        long result = friendService.acceptFriendRequest(friendId);
 
-        if(!result) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("등록에 실패했습니다.");
+        if(result ==0 ) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("등록에 실패했습니다.");
+        return ResponseEntity.ok(result);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteFriend(@RequestParam("friendId") long friendId) {
+        long result = friendService.deleteFriend(friendId);
+
+        if(result ==0 ) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("등록에 실패했습니다.");
         return ResponseEntity.ok(result);
     }
 }

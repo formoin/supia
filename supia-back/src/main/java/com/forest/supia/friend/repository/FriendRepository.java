@@ -13,4 +13,6 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
 
     Friend save(Friend friend);
 
+    void deleteById(long friendId);
+
 }

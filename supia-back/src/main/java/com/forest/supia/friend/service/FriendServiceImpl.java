@@ -51,7 +51,7 @@ public class FriendServiceImpl implements FriendService {
             friendResponse.setNickname(friend.getNickname());
             friendResponse.setProfileImg(friend.getProfileImg());
             friendResponse.setMemberId(friend.getId());
-            friendResponse.setForestId(friend.getForest().getId());
+//            friendResponse.setForestId(friend.getForest().getId());
             friendResponseList.add(friendResponse);
         }
 
@@ -60,32 +60,45 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public boolean sendFriendRequest(FriendRequest friendRequest) {
+    public long sendFriendRequest(FriendRequest friendRequest) {
         Member fromMember = memberRepository.findById(friendRequest.getFromId()).orElseThrow();
         Member toMember = memberRepository.findById(friendRequest.getToId()).orElseThrow();
 
 
         try {
             Friend friend = Friend.createFriend(fromMember, toMember);
-            friendRepository.save(friend);
-            return true;
+            Friend result = friendRepository.save(friend);
+            return result.getId();
         }
         catch (Exception e) {
-            return false;
+            return 0;
         }
     }
 
     @Override
-    public boolean acceptFriendRequest(long friendId) {
+    public long acceptFriendRequest(long friendId) {
         Friend friend = friendRepository.findById(friendId).orElseThrow();
 
         friend.updateFriend(friend);
         try {
-            friendRepository.save(friend);
-            return true;
+            Friend result = friendRepository.save(friend);
+            return result.getId();
         }
         catch (Exception e) {
-            return false;
+            return 0;
         }
+    }
+
+    @Override
+    public long deleteFriend(long friendId) {
+
+        try {
+            friendRepository.deleteById(friendId);
+            return 1;
+        }
+        catch (Exception e) {
+            return 0;
+        }
+
     }
 }

@@ -10,6 +10,5 @@ public class FriendResponse {
     private String name;
     private String nickname;
     private String profileImg;
-    private long forestId;
 }
 

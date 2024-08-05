@@ -8,7 +8,9 @@ import java.util.List;
 public interface FriendService {
     List<FriendResponse> getFriendsList(long memberId);
 
-    boolean sendFriendRequest(FriendRequest friendRequest);
+    long sendFriendRequest(FriendRequest friendRequest);
 
-    boolean acceptFriendRequest(long friendId);
+    long acceptFriendRequest(long friendId);
+
+    long deleteFriend(long friendId);
 }
