@@ -34,9 +34,9 @@ public class Forest {
     public static Forest createForest(Member member, String thumbnail){
         Forest forest = new Forest();
 
-        forest.setMember(member);
-        forest.thumbnail = thumbnail;
 
+        forest.thumbnail = thumbnail;
+        forest.setMember(member);
 
         return forest;
     }

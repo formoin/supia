@@ -4,6 +4,7 @@ import com.forest.supia.friend.dto.FriendRequest;
 import com.forest.supia.friend.dto.FriendResponse;
 import com.forest.supia.friend.entity.Friend;
 import com.forest.supia.friend.repository.FriendRepository;
+import com.forest.supia.member.dto.MemberResponse;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,33 @@ public class FriendServiceImpl implements FriendService {
 
 
         return friendResponseList;
+    }
+
+    @Override
+    public MemberResponse getFriendProfile(long friendId, long memberId) {
+        Friend friend = friendRepository.findById(friendId).orElseThrow();
+        long findId =0;
+        if(friend.getToMember().getId() == memberId) {
+            findId = friend.getFromMember().getId();
+        }
+        else {
+            findId = friend.getToMember().getId();
+        }
+
+        Member member = memberRepository.findById(findId).orElseThrow(null);
+        if(member== null) return null;
+
+        MemberResponse friendProfile = new MemberResponse();
+        friendProfile.setMemberId(memberId);
+        friendProfile.setName(member.getName());
+        friendProfile.setNickname(member.getNickname());
+        friendProfile.setLevel(member.getLevel());
+        friendProfile.setProfileImg(member.getProfileImg());
+        friendProfile.setThumbnail(member.getForest().getThumbnail());
+        friendProfile.setFriend(true);
+
+
+        return friendProfile;
     }
 
     @Override

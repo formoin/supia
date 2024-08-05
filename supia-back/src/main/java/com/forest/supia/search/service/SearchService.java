@@ -11,5 +11,5 @@ public interface SearchService {
 
     List<MemberSearchResponse> searchMember(String keyword);
 
-    MemberResponse memberDetail(long memberId);
+    MemberResponse memberDetail(long memberId, long findId);
 }

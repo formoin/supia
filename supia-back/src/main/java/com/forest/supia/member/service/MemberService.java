@@ -36,8 +36,9 @@ public class MemberService {
         Member member =  memberRepository.save(new_member);
 
         Forest forest = Forest.createForest(member, "Default thumbnail");
-        forestRepository.save(forest);
-
+        Forest result = forestRepository.save(forest);
+        System.out.println("New member: " +result.getMember().getId());
+        System.out.println("New forest: " +member.getForest().getId());
         return member;
     }
 
