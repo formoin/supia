@@ -1,6 +1,8 @@
 package com.forest.supia.member.entity;
 
 //import com.forest.supia.forest.entity.Forest;
+import com.forest.supia.forest.entity.Forest;
+import com.forest.supia.forest.entity.ForestItem;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,11 +16,12 @@ import lombok.*;
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long memberId;
+    private Long id;
 
-//    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @JoinColumn(name = "fo")
-//    private Forest forest;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "forest_id")
+    private Forest forest;
+
     private String email;
     private String name;
     private String nickname;
@@ -40,6 +43,9 @@ public class Member {
         this.profileImg = profileImg;
     }
 
+    public void setForest(Forest forest){
+        this.forest = forest;
+    }
 
     public static Member createMember(String email, String name, String nickname, String password) {
         Member member = new Member();
@@ -50,6 +56,7 @@ public class Member {
 
         return member;
     }
+
 
     public void addPointDistance(double distance) {
 

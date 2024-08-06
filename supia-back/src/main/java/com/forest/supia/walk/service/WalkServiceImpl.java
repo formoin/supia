@@ -34,7 +34,7 @@ public class WalkServiceImpl implements WalkService{
     @Transactional
     public Long walk(WalkDto walkDto) {
 
-        Member member = memberRepository.findByMemberId(walkDto.getMemberId());
+        Member member = memberRepository.findById(walkDto.getMemberId()).orElseThrow();
 
 
         LocalDateTime startDateTime = walkDto.getWalkStart();
@@ -52,7 +52,8 @@ public class WalkServiceImpl implements WalkService{
 
             //TODO: 주소 요청 데이터 형태 확인 및 시, 동 string 변환
             String[] addressSplit = address.split(" ");
-            Species species = speciesRepository.findByName(itemDto.getSpecies()).orElseThrow();
+            //TODO: 찾는 종 데이터 없을 시, 예외 처리. 이름 저장하게 하기
+            Species species = speciesRepository.findByNameContaining(itemDto.getSpecies()).orElseThrow();
 
             Item item = Item.createItem(member, species, walkDate, addressSplit[0], addressSplit[2], itemDto.getImageUrl(), itemDto.getOriginalUrl());
             items.add(item);

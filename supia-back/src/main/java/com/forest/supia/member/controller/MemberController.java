@@ -112,7 +112,7 @@ public class MemberController {
 
     @GetMapping("/my-info/{memberId}")
     public ResponseEntity<Map<String, Member>> getMemberInfo(@PathVariable("memberId") long memberId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow();
         Map<String, Member> response = new HashMap<>();
         if (member != null) {
             response.put("member", member);

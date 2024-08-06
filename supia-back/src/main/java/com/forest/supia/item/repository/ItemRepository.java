@@ -5,6 +5,8 @@ package com.forest.supia.item.repository;
 import com.forest.supia.item.dto.ItemResponse;
 import com.forest.supia.item.dto.SpeciesResponse;
 import com.forest.supia.item.entity.Item;
+import com.forest.supia.item.entity.Species;
+import com.forest.supia.search.dto.ItemSearchResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,5 +46,17 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     )
     List<SpeciesResponse> speciesResponseListByDong(@Param("si") String si, @Param("dong") String dong);
 
+    Item findById(long itemId);
     void deleteById(long itemId);
+
+    @Query(
+            value = "SELECT " +
+                    "i.id AS itemId, s.name AS speciesName, i.si+' '+i.dong AS address, i.img_url AS imgUrl " +
+                    "FROM item i " +
+                    "INNER JOIN species s ON i.species_id = s.id " +
+                    "WHERE s.name LIKE concat('%', :keyword, '%') OR i.dong LIKE concat('%', :keyword, '%') OR i.si LIKE concat('%', :keyword, '%')",
+            nativeQuery = true
+    )
+    List<ItemSearchResponse> findItemByKeyword(@Param("keyword") String keyword);
+
 }
