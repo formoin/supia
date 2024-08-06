@@ -52,7 +52,7 @@ def downLoadURLResource(row):
     url = row["image_url"]
 
     r = requests.get(url.rstrip(), stream=True)
-    if r.status_code == 200:
+    if r.status_code == 200 and "Frog" in species_guess:
         target_file_name = "{}_{}.jpg".format(taxon, species_guess)
         with open(os.path.join(SAVE_DIR, target_file_name), "wb") as f:
             for chunk in r.iter_content(chunk_size=1024):
