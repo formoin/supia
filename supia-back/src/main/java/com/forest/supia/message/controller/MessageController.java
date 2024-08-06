@@ -7,6 +7,7 @@ import com.forest.supia.message.dto.MessageResponse;
 import com.forest.supia.message.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,7 +56,13 @@ public class MessageController {
     public ResponseEntity<?> deleteMessage(@RequestParam("messageId") long messageId) {
         long result = messageService.deleteMessage(messageId);
 
+        System.out.println("!!!");
         if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("선물 전송에 실패했습니다.");
         return ResponseEntity.ok(result);
     }
+
+//    @GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+//    public ResponseEntity<?> connect(
+//            @RequestHeader(value = "")
+//    )
 }

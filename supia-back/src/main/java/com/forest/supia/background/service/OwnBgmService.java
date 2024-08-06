@@ -34,7 +34,7 @@ public class OwnBgmService {
     private PurchaseHistoryRepository purchaseHistoryRepository;
 
     public PurchaseResponseDto purchaseBgm (Long memberId, Long bgmId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow();
         Bgm bgm = bgmRepository.findById(bgmId).orElseThrow(() -> new IllegalArgumentException("유효하지 않은 BGMㅇㅂ니다."));
 
         if (member.getPoint() >= bgm.getPrice()) {
@@ -53,17 +53,17 @@ public class OwnBgmService {
     }
 
     public List<OwnResponseDto> getOwnBgms(Long memberId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow();
         List<OwnBgm> ownBgms = ownBgmRepository.findByMember(member);
 
         return ownBgms.stream()
-                .map(ownBgm -> new OwnResponseDto(member.getMemberId(), ownBgm.getBgm().getName(), ownBgm.getBgm().getPath()))
+                .map(ownBgm -> new OwnResponseDto(member.getId(), ownBgm.getBgm().getName(), ownBgm.getBgm().getPath()))
                 .collect(Collectors.toList());
 
     }
 
     public void deleteOwnBgm(Long memberId, Long bgmId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow();
         OwnBgm ownBgm = ownBgmRepository.findByMemberAndBgmId(member, bgmId).orElseThrow(() -> new IllegalArgumentException("유효하지 않은 접근입니다."));
         ownBgmRepository.delete(ownBgm);
     }

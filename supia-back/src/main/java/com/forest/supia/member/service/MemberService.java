@@ -17,13 +17,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class MemberService {
+    @Autowired
+    private MemberRepository memberRepository;
 
-    private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
-
-    private final ForestRepository forestRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private final AmazonS3Client amazonS3Client;
 
@@ -66,13 +65,7 @@ public class MemberService {
                 .nickname(signUpInfo.getNickname())
                 .password(encoded_password)
                 .build();
-        Member member =  memberRepository.save(new_member);
-
-        Forest forest = Forest.createForest(member, "Default thumbnail");
-        Forest result = forestRepository.save(forest);
-        System.out.println("New member: " +result.getMember().getId());
-        System.out.println("New forest: " +member.getForest().getId());
-        return member;
+        return memberRepository.save(new_member);
     }
 
     public Member createSocialMember (String email, String name) {
@@ -89,7 +82,7 @@ public class MemberService {
 
 
     public String updateMember(long memberId, String name, String nickname, MultipartFile profileImg) throws IOException, java.io.IOException {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow();
 
         if(member != null) {
             if (profileImg != null && !profileImg.isEmpty()) {
