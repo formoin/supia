@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 @Table(name = "friend")
 public class Friend {
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -31,7 +31,7 @@ public class Friend {
         return friend;
     }
 
-    public Friend updateFriend(Friend friend) {
+    public Friend beFriend(Friend friend) {
         friend.areWeFriend = true;
 
         return friend;

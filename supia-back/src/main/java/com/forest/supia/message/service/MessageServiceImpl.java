@@ -12,6 +12,7 @@ import com.forest.supia.message.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,9 +37,84 @@ public class MessageServiceImpl implements MessageService{
     }
 
     @Override
+    public List<MessageResponse> getMessageBox(long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new InvalidParameterException("Cannot find member"));
+        List<Message> messages = messageRepository.findByToMemberAndCategoryAndToMemberDelete(member, 1, false);
+
+        List<MessageResponse> messageResponses = new ArrayList<>();
+        for(Message message : messages) {
+            MessageResponse messageResponse = new MessageResponse();
+            messageResponse.setMessageId(message.getId());
+            messageResponse.setCategory(message.getCategory());
+            messageResponse.setFromMemberNickname(message.getFromMember().getNickname());
+            messageResponse.setToMemberNickname(message.getToMember().getNickname());
+            messageResponse.setCheck(message.isCheck());
+            messageResponse.setContent(message.getContent());
+            messageResponse.setSentTime(message.getSentTime());
+
+            messageResponses.add(messageResponse);
+        }
+        return messageResponses;
+    }
+
+    @Override
+    public List<MessageResponse> getSenderMessageBox(long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new InvalidParameterException("Cannot find member"));
+        List<Message> messages = messageRepository.findByFromMemberAndCategoryAndFromMemberDelete(member, 1, false);
+
+        List<MessageResponse> messageResponses = new ArrayList<>();
+        for(Message message : messages) {
+            MessageResponse messageResponse = new MessageResponse();
+            messageResponse.setMessageId(message.getId());
+            messageResponse.setCategory(message.getCategory());
+            messageResponse.setFromMemberNickname(message.getFromMember().getNickname());
+            messageResponse.setToMemberNickname(message.getToMember().getNickname());
+            messageResponse.setCheck(message.isCheck());
+            messageResponse.setContent(message.getContent());
+            messageResponse.setSentTime(message.getSentTime());
+
+            messageResponses.add(messageResponse);
+        }
+        return messageResponses;
+    }
+
+    @Override
+    public MessageResponse getMessageDetail(long messageId, long memberId) {
+        Message message = messageRepository.findById(messageId).orElseThrow();
+
+        message.check(message, memberId);
+        MessageResponse messageResponse = new MessageResponse();
+        messageResponse.setMessageId(messageId);
+        messageResponse.setCategory(message.getCategory());
+        messageResponse.setContent(message.getContent());
+        messageResponse.setFromMemberNickname(message.getFromMember().getNickname());
+        messageResponse.setToMemberNickname(message.getToMember().getNickname());
+        messageResponse.setSentTime(message.getSentTime());
+        messageResponse.setCheck(message.isCheck());
+
+        messageRepository.save(message);
+        return messageResponse;
+    }
+
+    @Override
+    public long deleteMessage(long messageId, long memberId) {
+        try{
+            Message message = messageRepository.findById(messageId).orElseThrow(() -> new InvalidParameterException("Cannot find Message"));
+
+            message.delete(message, memberId);
+            messageRepository.save(message);
+            return message.getId();
+        }
+        catch (InvalidParameterException e) {
+            return 0;
+        }
+
+    }
+
+    @Override
     public long sendGift(GiftRequest giftRequest) {
-        Member fromMember = memberRepository.findById(giftRequest.getFromMemberId()).orElseThrow();
-        Member toMember = memberRepository.findById(giftRequest.getToMemberId()).orElseThrow();
+        Member fromMember = memberRepository.findById(giftRequest.getFromMemberId()).orElseThrow(() -> new InvalidParameterException("Cannot find member"));
+        Member toMember = memberRepository.findById(giftRequest.getToMemberId()).orElseThrow(() -> new InvalidParameterException("Cannot find member"));
 
         Item item = itemRepository.findById(giftRequest.getItemId());
         Message message = Message.createMessage(fromMember, toMember, 2, item.getImgUrl());
@@ -49,47 +125,46 @@ public class MessageServiceImpl implements MessageService{
     }
 
     @Override
-    public List<MessageResponse> getMessageBox(long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow();
-        List<Message> messages = messageRepository.findByToMember(member);
+    public List<MessageResponse> getNotificationBox(long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new InvalidParameterException("Cannot find member"));
+        List<Message> messages = messageRepository.findByToMemberAndCategoryGreaterThan(member, 1);
 
         List<MessageResponse> messageResponses = new ArrayList<>();
         for(Message message : messages) {
+
             MessageResponse messageResponse = new MessageResponse();
             messageResponse.setMessageId(message.getId());
             messageResponse.setCategory(message.getCategory());
-            messageResponse.setFromMemberId(message.getFromMember().getId());
+            messageResponse.setFromMemberNickname(message.getFromMember().getNickname());
+            messageResponse.setToMemberNickname(message.getToMember().getNickname());
+            messageResponse.setCheck(message.isCheck());
             messageResponse.setContent(message.getContent());
             messageResponse.setSentTime(message.getSentTime());
 
             messageResponses.add(messageResponse);
+
         }
         return messageResponses;
+
     }
 
     @Override
-    public MessageResponse getMessageDetail(long messageId) {
-        Message message = messageRepository.findById(messageId).orElseThrow();
+    public long acceptGift(long messageId) {
+        Message message = messageRepository.findById(messageId).orElseThrow(() -> new InvalidParameterException("Cannot find message"));
+        String url = message.getContent();
+        Item item = itemRepository.findByImgUrl(url);
+        item.setMember(message.getToMember());
 
-        message.check(message);
-        MessageResponse messageResponse = new MessageResponse();
-        messageResponse.setMessageId(messageId);
-        messageResponse.setCategory(message.getCategory());
-        messageResponse.setContent(message.getContent());
-        messageResponse.setFromMemberId(message.getFromMember().getId());
-        messageResponse.setSentTime(message.getSentTime());
-
-        return messageResponse;
+        return 1;
     }
 
     @Override
-    public long deleteMessage(long messageId) {
-        try{
-            messageRepository.deleteById(messageId);
-            return 1;
-        }
-        catch (Exception e){
-            return 0;
-        }
+    public long refuseGift(long messageId) {
+        Message message = messageRepository.findById(messageId).orElseThrow(() -> new InvalidParameterException("Cannot find message"));
+        String url = message.getContent();
+        Item item = itemRepository.findByImgUrl(url);
+        item.setMember(null);
+
+        return 1;
     }
 }

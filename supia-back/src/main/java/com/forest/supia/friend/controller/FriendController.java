@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 
 @RestController
@@ -28,18 +29,18 @@ public class FriendController {
 
     @PostMapping
     public ResponseEntity<?> sendFriendRequest(@RequestBody FriendRequest friendRequest) {
-        long result = friendService.sendFriendRequest(friendRequest);
 
-        if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("등록에 실패했습니다.");
-        return ResponseEntity.ok(result);
-    }
+        try {
+            long result = friendService.sendFriendRequest(friendRequest);
+            return ResponseEntity.ok(result);
+        }
+        catch (InvalidParameterException invalidParameterException) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 보낸 친구 신청입니다.");
+        }
+        catch (IllegalArgumentException illegalArgumentException) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("멤버를 찾을 수 없습니다.");
+        }
 
-    @GetMapping("/accept")
-    public ResponseEntity<?> acceptFriendRequest(@RequestParam("friendId") long friendId) {
-        long result = friendService.acceptFriendRequest(friendId);
-
-        if(result ==0 ) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("친구 수락에 실패했습니다.");
-        return ResponseEntity.ok(result);
     }
 
     @DeleteMapping
@@ -50,11 +51,27 @@ public class FriendController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/detail")
-    public ResponseEntity<?> getFriendProfile(@RequestParam("friendId") long friendId, @RequestParam("memberId") long memberId) {
-        MemberResponse result = friendService.getFriendProfile(friendId, memberId);
+    @GetMapping("/accept")
+    public ResponseEntity<?> acceptFriendRequest(@RequestParam("messageId") long messageId) {
+        long result = friendService.acceptFriendRequest(messageId);
 
-        if(result ==null ) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("친구 삭제에 실패했습니다.");
+        if(result ==0 ) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("친구 수락에 실패했습니다.");
+        return ResponseEntity.ok(result);
+    }
+
+    @DeleteMapping("/refuse")
+    public ResponseEntity<?> refuseFriendRequest(@RequestParam("messageId") long messageId) {
+        long result = friendService.refuseFriendRequest(messageId);
+
+        if(result ==0 ) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("친구 거절에 실패했습니다.");
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/detail")
+    public ResponseEntity<?> getFriendProfile (@RequestParam("memberId") long memberId) {
+        MemberResponse result = friendService.getFriendProfile(memberId);
+
+        if(result ==null ) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("친구 정보 불러오기에 실패했습니다.");
         return ResponseEntity.ok(result);
     }
 }

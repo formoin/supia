@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 public class Species {
 
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
 

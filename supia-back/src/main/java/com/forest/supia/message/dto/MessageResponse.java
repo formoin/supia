@@ -8,8 +8,10 @@ import java.time.LocalDateTime;
 @Getter @Setter
 public class MessageResponse {
     private long messageId;
-    private long fromMemberId;
+    private String fromMemberNickname;
+    private String toMemberNickname;
     private String content;
     private int category;
+    private boolean isCheck;
     private LocalDateTime sentTime;
 }

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Entity
 @Getter @Setter
 public class Item {
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String si;

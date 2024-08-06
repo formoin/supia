@@ -32,11 +32,15 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeRequests(auth -> auth
-                        .requestMatchers("/members/login", "/members/register", "/members/social-login").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                .authorizeHttpRequests((authorizeRequests) ->
+                        authorizeRequests
+                                .anyRequest().permitAll()
+                );
+//                .authorizeRequests(auth -> auth
+//                        .requestMatchers("/members/login", "/members/register", "/members/social-login").permitAll()
+//                        .anyRequest().authenticated()
+//                )
+//                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

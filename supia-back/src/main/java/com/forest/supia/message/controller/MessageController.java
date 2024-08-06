@@ -19,7 +19,7 @@ import java.util.List;
 public class MessageController {
     private final MessageService messageService;
 
-
+    // 메세지 보내기
     @PostMapping
     public ResponseEntity<?> sendMessage(@RequestBody MessageRequest messageRequest) {
         long result = messageService.sendMessage(messageRequest);
@@ -28,7 +28,8 @@ public class MessageController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping
+    // 메세지함
+    @GetMapping("/to")
     public ResponseEntity<?> messageBox(@RequestParam("memberId") long memberId) {
         List<MessageResponse> result = messageService.getMessageBox(memberId);
 
@@ -36,14 +37,35 @@ public class MessageController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/from")
+    public ResponseEntity<?> senderMessageBox(@RequestParam("memberId") long memberId) {
+        List<MessageResponse> result = messageService.getSenderMessageBox(memberId);
+
+        if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("메세지함이 비었습니다.");
+        return ResponseEntity.ok(result);
+    }
+
+    // 메세지 세부 정보
+    // 선물 크게 보기
     @GetMapping("/detail")
-    public ResponseEntity<?> messageDetail(@RequestParam("messageId") long messageId) {
-        MessageResponse result = messageService.getMessageDetail(messageId);
+    public ResponseEntity<?> messageDetail(@RequestParam("messageId") long messageId, @RequestParam("memberId") long memberId) {
+        MessageResponse result = messageService.getMessageDetail(messageId, memberId);
 
         if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("메세지 확인에 실패했습니다.");
         return ResponseEntity.ok(result);
     }
+    // 메세지 삭제
+    @DeleteMapping
+    public ResponseEntity<?> deleteMessage(@RequestParam("messageId") long messageId, @RequestParam("memberId") long memberId) {
+        long result = messageService.deleteMessage(messageId, memberId);
 
+        if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("메세지 삭제에 실패했습니다.");
+        return ResponseEntity.ok(result);
+    }
+
+
+
+    // 선물 보내기
     @PostMapping("/gift")
     public ResponseEntity<?> sendGift(@RequestBody GiftRequest giftRequest) {
         long result = messageService.sendGift(giftRequest);
@@ -52,12 +74,33 @@ public class MessageController {
         return ResponseEntity.ok(result);
     }
 
-    @DeleteMapping
-    public ResponseEntity<?> deleteMessage(@RequestParam("messageId") long messageId) {
-        long result = messageService.deleteMessage(messageId);
+    // 알림함 확인
+    @GetMapping("/notification")
+    public ResponseEntity<?> notificationBox(@RequestParam("memberId") long memberId) {
+        List<MessageResponse> result = messageService.getNotificationBox(memberId);
 
-        System.out.println("!!!");
-        if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("선물 전송에 실패했습니다.");
+        if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("알림함이 비었습니다.");
+        return ResponseEntity.ok(result);
+    }
+
+
+
+
+    // 선물 수락하기
+    @GetMapping("/gift")
+    public ResponseEntity<?> acceptGift(@RequestParam("messageId") long messageId) {
+        long result = messageService.acceptGift(messageId);
+
+        if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("선물 수락에 실패했습니다.");
+        return ResponseEntity.ok(result);
+    }
+
+    // 선물 거정하기
+    @DeleteMapping("/gift")
+    public ResponseEntity<?> refuseGift(@RequestParam("messageId") long messageId) {
+        long result = messageService.refuseGift(messageId);
+
+        if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("선물 수락에 실패했습니다.");
         return ResponseEntity.ok(result);
     }
 
