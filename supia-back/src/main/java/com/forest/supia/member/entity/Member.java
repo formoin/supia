@@ -12,6 +12,7 @@ import lombok.*;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "Member")
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +31,11 @@ public class Member {
     private int exp;
     private int point;
     private int visit;
+    private String token;
+
+    public void updateToken(String token) {
+        this.token = token;
+    }
 
     public void updateMemberInfo(String name, String nickname, String profileImg){
         this.name = name;
@@ -74,5 +80,12 @@ public class Member {
         this.exp += cnt * 10;
     }
 
+    public void deductPoints(int points) {
+        if (this.point >= points) {
+            this.point -= points;
+        } else {
+            throw new IllegalArgumentException("포인트가 부족합니다.");
+        }
+    }
 
 }

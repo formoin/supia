@@ -9,10 +9,13 @@ import com.forest.supia.member.repository.MemberRepository;
 import com.forest.supia.member.service.MemberService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,38 +45,33 @@ public class MemberController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> registerMember(@RequestBody SignUpDto signUpInfo) {
-        Member new_member = memberService.createMember(signUpInfo);
-
-
-
+        Member check_exist = memberService.findByEmail(signUpInfo.getEmail());
         Map<String, String> response = new HashMap<>();
-        if(new_member != null) {
-            response.put("message", "회원 등록이 완료되었습니다.");
-            return ResponseEntity.ok().body(response);
+        if (check_exist == null) {
+            Member new_member = memberService.createMember(signUpInfo);
+
+            if(new_member != null) {
+                response.put("message", "회원 등록이 완료되었습니다.");
+                return ResponseEntity.ok().body(response);
+            } else {
+                response.put("message", "회원 등록에 실패하였습니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
         } else {
-            response.put("message", "회원 등록에 실패하였습니다.");
+            response.put("message", "이미 가입한 회원입니다.");
             return ResponseEntity.badRequest().body(response);
         }
+
+
     }
 
     @Transactional
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> loginMember(@RequestBody LoginDto loginInfo) {
-        String email = loginInfo.getEmail();
-        String password = loginInfo.getPassword();
-
-        Member member = memberService.findByEmail(email);
-
         Map<String, String> response = new HashMap<>();
 
-        if (member != null && passwordEncoder.matches(password, member.getPassword())){
-            if (member.getVisit() == 0) {
-                memberService.updateExp(member.getId());
-                response.put("exp", "첫 방문 5 경험치 적립이 완료되었습니다.");
-            } else {
-                response.put("exp", "이미 방문한 회원입니다.");
-            }
-            String token = JwtUtil.generateToken(member);
+        String token = memberService.loginAndGetToken(loginInfo);
+        if (token != null) {
             response.put("token", token);
             response.put("message", "로그인이 완료되었습니다.");
             return ResponseEntity.ok().body(response);
@@ -81,7 +79,6 @@ public class MemberController {
             response.put("message", "유효하지 않은 로그인입니다.");
             return ResponseEntity.badRequest().body(response);
         }
-
     }
 
     @GetMapping("/social-login")
@@ -92,18 +89,24 @@ public class MemberController {
 
     @Transactional
     @PutMapping("/my-info/{memberId}")
-    public ResponseEntity<Map<String, String>> modifyMember(@PathVariable("memberId") long memberId, @RequestBody InfoUpdateDto updatedInfo) {
-        String name = updatedInfo.getName();
-        String nickname = updatedInfo.getNickname();
-        String profileImg = updatedInfo.getProfileImg();
-        Member modified_member = memberService.updateMember(memberId, name, nickname, profileImg);
-        Map<String, String> response = new HashMap<>();
-        if (modified_member != null) {
-            response.put("message", "회원 정보 수정이 완료되었습니다.");
-            return ResponseEntity.ok().body(response);
-        } else {
-            response.put("message", "회원 정보 수정에 실패하였습니다.");
-            return ResponseEntity.badRequest().body(response);
+    public ResponseEntity<Map<String, String>> modifyMember(@PathVariable("memberId") long memberId,
+                                                            @RequestParam("name") String name,
+                                                            @RequestParam("nickname") String nickname,
+                                                            @RequestParam(value = "profileImg", required = false) MultipartFile profileImg) {
+        try {
+            String fileUrl = memberService.updateMember(memberId, name, nickname, profileImg);
+            Map<String, String> response = new HashMap<>();
+            if (fileUrl != null) {
+                response.put("message", "회원 정보 수정이 완료되었습니다.");
+                response.put("profileImgUrl", fileUrl);
+                return ResponseEntity.ok().body(response);
+            } else {
+                response.put("message", "회원 정보 수정에 실패하였습니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
