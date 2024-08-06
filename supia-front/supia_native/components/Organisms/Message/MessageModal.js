@@ -9,9 +9,9 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import PopupHeader from '../Atoms/PopupHeader';
-import Button_Green from '../Atoms/Button_Green';
-import Button_Red from '../Atoms/Button_Red';
+import PopupHeader from '../../Atoms/PopupHeader';
+import Button_Green from '../../Atoms/Button_Green';
+import Button_Red from '../../Atoms/Button_Red';
 
 const MessageModal = ({
   visible,

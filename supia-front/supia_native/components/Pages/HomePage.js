@@ -21,7 +21,7 @@ export default function HomeScreen() {
 
   const goMessage = () => {
     navigation.navigate('Message');
-  }
+  };
 
   return (
     <View style={styles.container}>

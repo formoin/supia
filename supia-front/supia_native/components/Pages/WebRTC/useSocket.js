@@ -28,6 +28,7 @@ const configuration = {
       // STUN 서버 우선 사용
       // 나중에 TURN 서버를 구현해야 함
       urls: 'stun:stun.l.google.com:19302',
+
       //   urls: [TURN_SERVER], // TURN 서버의 URL
       //   username: CONFIG_USERNAME, // TURN 서버 인증용 사용자 이름
       //   credential: CONFIG_CREDENTIAL, // TURN 서버 인증용 비밀번호
@@ -128,6 +129,7 @@ const useMySocket = (userId, targetUserId) => {
 
     // 웹소켓 연결이 닫힐 때 호출되는 이벤트 핸들러입니다.
     ws.current.onclose = () => {
+      endCall();
       Alert.alert('연결이 종료되었습니다'); // 연결 종료 알림
     };
 
@@ -195,6 +197,13 @@ const useMySocket = (userId, targetUserId) => {
     }
   };
 
+  // WebRTC 연결을 종료하는 함수
+  const endCall = () => {
+    pc.current.close(); // PeerConnection 종료
+    ws.current.close(); // WebSocket 연결 종료
+    setRemoteStream(null); // 원격 스트림 상태 초기화
+  };
+
   // 컴포넌트가 마운트될 때 호출됩니다.
   useEffect(() => {
     const initialize = async () => {
@@ -207,6 +216,10 @@ const useMySocket = (userId, targetUserId) => {
       }
     };
     initialize();
+
+    return () => {
+      endCall();
+    };
   }, []);
 
   useEffect(() => {

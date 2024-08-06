@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
-import { useIsFocused, useFocusEffect } from '@react-navigation/native';
+import React, {useState, useEffect} from 'react';
+import {View, Text, StyleSheet, Pressable, Image} from 'react-native';
+import {useIsFocused, useFocusEffect} from '@react-navigation/native';
 import Header from '../Atoms/Header';
 import Divide from '../Divide';
 import Line from '../Atoms/Line';
@@ -8,31 +8,31 @@ import useStore from '../store/useStore';
 import Octicons from 'react-native-vector-icons/Octicons';
 import axios from 'axios';
 
-export default function BackgroundSetting({ goSetting, memberId }) {
-  const { activeText, setActiveText, resetActiveText } = useStore();
+export default function BackgroundSetting({goSetting, memberId}) {
+  const {activeText, setActiveText, resetActiveText} = useStore();
   const isFocused = useIsFocused();
   const [backgroundData, setBackgroundData] = useState(null);
 
   const getOwnBackground = async () => {
     try {
       const response = await axios.get(
-         `http://i11b304.p.ssafy.io/api/own/${memberId}`,
-         {
-           headers: {
-             Authorization: `Bearer ${token}`,
-           },
-         },
-       );
-         if (response.status === 200) {
-              console.log(response.data)
-              setBackgroundData(response.data);
-              console.log("테마 리스트 로딩 성공");
-         } else {
-              console.log("테마 리스트 로딩 실패");
-         }
-     } catch (error) {
-         console.error("요청 중 오류 발생:", error);
-     }
+        `http://i11b304.p.ssafy.io/api/own/${memberId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      if (response.status === 200) {
+        console.log(response.data);
+        setBackgroundData(response.data);
+        console.log('테마 리스트 로딩 성공');
+      } else {
+        console.log('테마 리스트 로딩 실패');
+      }
+    } catch (error) {
+      console.error('요청 중 오류 발생:', error);
+    }
   };
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export default function BackgroundSetting({ goSetting, memberId }) {
   useFocusEffect(
     React.useCallback(() => {
       resetActiveText();
-    }, [resetActiveText])
+    }, [resetActiveText]),
   );
 
   return (
@@ -58,10 +58,7 @@ export default function BackgroundSetting({ goSetting, memberId }) {
       </View>
       {activeText === 'text1' && (
         <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: '<path-to-image>' }}
-              style={styles.image}
-            />
+          <Image source={{uri: '<path-to-image>'}} style={styles.image} />
           <Text style={styles.text}>희망의 숲</Text>
         </View>
       )}
@@ -86,7 +83,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingRight: 20
+    paddingRight: 20,
   },
   closeButton: {
     padding: 7,

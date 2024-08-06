@@ -6,20 +6,19 @@ import SearchScreen from '../../Pages/SearchPage';
 import StoreScreen from '../../Pages/StorePage';
 import FriendScreen from '../../Pages/FriendPage';
 import WalkingScreen from '../../Pages/WalkPage';
-// import WalkRecordScreen from '../../Pages/WalkRecordPage';
+import WalkRecordScreen from '../../Pages/WalkRecordPage';
 import MyPageScreen from '../../Pages/User/MyPage';
 import CallScreen from '../../Pages/CallPage';
 import DictionaryScreen from '../../Pages/DictionaryPage';
 import MyForestScreen from '../../Pages/MyForest';
 import DictionaryDetailScreen from '../../Pages/DictionaryDetailPage';
 import MessageScreen from '../../Pages/MessagePage';
-
+import CaptureScreen from '../../Pages/CapturePage';
 import EditPageScreen from '../../Pages/User/EditMyPage';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import {useNavigation} from '@react-navigation/native';
 import useStore from '../../store/useStore';
-// import * as Location from 'expo-location';
 
 const BottomTab = createBottomTabNavigator();
 
@@ -42,19 +41,9 @@ function BottomNav() {
   const setCurrentLocation = useStore(state => state.setCurrentLocation); // 현재 위치를 상태에 저장하는 함수
 
   const handleWalkButtonPress = async () => {
-    // const { status } = await Location.requestForegroundPermissionsAsync();
-    // if (status !== 'granted') {
-    //   alert('Permission to access location was denied');
-    //   return;
-    // }
-    // const location = await Location.getCurrentPositionAsync({
-    //   accuracy: Location.Accuracy.High
-    // });
-    // const { latitude, longitude } = location.coords;
-    // const currentTime = new Date().toISOString(); // 현재 시간
-    // setWalkStartTime(currentTime); // 상태에 시간 저장
-    // setCurrentLocation({ latitude, longitude }); // 상태에 현재 위치 저장
-    // startStopwatch(); // 스톱워치 시작
+    const currentTime = new Date().toISOString(); // 현재 시간
+    setWalkStartTime(currentTime); // 상태에 시간 저장
+    startStopwatch(); // 스톱워치 시작
     navigation.navigate('Walk'); // 산책 페이지로 이동
   };
 
@@ -129,11 +118,11 @@ function BottomNav() {
         component={MyPageScreen}
         options={{tabBarButton: () => null}}
       />
-      {/* <BottomTab.Screen
+      <BottomTab.Screen
         name="WalkRecord"
         component={WalkRecordScreen}
         options={{tabBarButton: () => null}}
-      /> */}
+      />
       <BottomTab.Screen
         name="Dictionary"
         component={DictionaryScreen}
@@ -173,6 +162,16 @@ function BottomNav() {
         component={EditPageScreen}
         options={{tabBarButton: () => null}}
       />
+      {/* <BottomTab.Screen
+        name="Capture"
+        component={CaptureScreen}
+        options={{
+          tabBarButton: () => null,
+          tabBarStyle: {
+            display: 'none',
+          },
+        }}
+      /> */}
     </BottomTab.Navigator>
   );
 }

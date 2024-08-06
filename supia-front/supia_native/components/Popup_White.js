@@ -3,15 +3,21 @@ import { StyleSheet, View, Text, Image, ActivityIndicator } from 'react-native';
 import { useEffect, useState } from 'react';
 import axios from 'axios'
 
-const Popup_White = ({si, dong}) => {
+const Popup_White = ({ri, dong}) => {
   const [speciesData, setSpeciesData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { // api 받아오기
     const fetchSpeciesData = async () => {
       try {
-        const address = dong ? dong : si;
-        const response = await axios.get(`http://i11b304.p.ssafy.io/api/walk?address=${address}`)
+        const address = dong ? dong : ri;
+        const response = await axios.get(`http://i11b304.p.ssafy.io/api/walk?address=${address}`, 
+          {
+            headers: {
+              'content-type': 'multipart/form-data',
+            },
+          },
+        )
 
         const data = await response.json();
         setSpeciesData(data);
@@ -23,11 +29,12 @@ const Popup_White = ({si, dong}) => {
     };
 
     fetchSpeciesData();
-  }, [si, dong]);
+  }, [ri, dong]);
+
 
   return (
     <View style={styles.rectangle}>
-        <Text style={styles.text}>{dong ? `${dong}에서 발견된 자연물` : `${si}에서 발견된 자연물`}</Text>
+        <Text style={styles.text}>{ri ? `${ri}에서 발견된 자연물` : `${dong}에서 발견된 자연물`}</Text>
         <View style={styles.line} />
         {loading ? (
           <ActivityIndicator size="large" color="#0000ff" />
@@ -40,7 +47,7 @@ const Popup_White = ({si, dong}) => {
                   style={styles.image}
                 />
                 <Text style={styles.p_text}>{species.name}</Text>
-                <View style={styles.line} />
+                {/* <View style={styles.line} /> */}
               </View>
             ))
           ) : (

@@ -12,9 +12,9 @@ import Line from '../../Atoms/Line';
 import Octicons from 'react-native-vector-icons/Octicons';
 import ActivityChart from '../../Organisms/BarChart/profileChart';
 import {useNavigation} from '@react-navigation/native';
-
-// 환경 변수로 ContextPath 설정
-// import ContextPath from '@env'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import jwt_decode from 'jwt-decode';
 
 const MyPageScreen = ({navigation}) => {
   const today = new Date();
@@ -22,44 +22,46 @@ const MyPageScreen = ({navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [error, setError] = useState(null);
   const [loginuser, setLoginuser] = useState({
-    name: '이름',
-    nickname: '닉네임',
-    profile_img: '프로필 이미지',
-    level: '130',
-    exp: '410',
-    point: 'point',
+    name: '',
+    nickname: '',
+    profile_img: '',
+    level: '',
+    exp: '',
+    point: '',
   });
 
-  // useEffect(() => {
-  //   const fetchUserInfo = async () => {
-  //     try {
-  //       const token = await AsyncStorage.getItem('key');
-  //       if (token) {
-  //         // 토큰에서 유저 ID 추출
-  //         const decodedToken = jwtDecode(token);
-  //         const userId = decodedToken.userId;
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = await AsyncStorage.getItem('key');
+        if (token) {
+          // 토큰에서 유저 ID 추출
+          const decodedToken = jwt_decode(token);
+          console.log(decodedToken);
+          const memberId = decodedToken.memberId;
 
-  //         const response = await axios.get(
-  //           //ContextPath
-  //           `http://localhost:8080/members/my-info/${userId}`,
-  //           {
-  //             headers: {
-  //               Authorization: `Bearer ${token}`,
-  //             },
-  //           },
-  //         );
-  //         setLoginuser(response.data);
-  //       } else {
-  //         setError('No token found');
-  //       }
-  //     } catch (err) {
-  //       setError('Failed to fetch user info');
-  //       console.error(err);
-  //     }
-  //   };
+          const response = await axios.get(
+            `http://10.0.2.2:8080/api/members/my-info/${memberId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+              },
+            },
+          );
 
-  //   fetchUserInfo();
-  // }, []);
+          setLoginuser(response.data.member); // 서버 응답에 맞게 수정
+        } else {
+          setError('No token found');
+        }
+      } catch (err) {
+        setError('Failed to fetch user info');
+        console.error(err);
+      }
+    };
+    fetchUserInfo();
+  }, []);
 
   const minExp = 300;
   const maxExp = 500;
@@ -123,14 +125,12 @@ const MyPageScreen = ({navigation}) => {
           </View>
           <View style={styles.progressLabels}>
             <Text style={styles.progressLabel}>{minExp}</Text>
-
             <Text style={styles.progressLabel}>{maxExp}</Text>
           </View>
         </View>
         <View style={styles.infoSection}>
-
           <View style={{padding: 15, justifyContent: 'center'}}>
-            <ActivityChart></ActivityChart>
+            <ActivityChart />
           </View>
         </View>
       </ScrollView>
@@ -343,4 +343,3 @@ const styles = StyleSheet.create({
 });
 
 export default MyPageScreen;
-

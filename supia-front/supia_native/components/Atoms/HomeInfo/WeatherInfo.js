@@ -1,6 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
-import { StyleSheet, View, Text, ActivityIndicator, Image, PermissionsAndroid, Platform } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
+import {
+  StyleSheet,
+  View,
+  Text,
+  ActivityIndicator,
+  Image,
+  PermissionsAndroid,
+  Platform,
+} from 'react-native';
 import axios from 'axios';
 import Geolocation from 'react-native-geolocation-service';
 
@@ -40,18 +48,18 @@ export default function WeatherInfo() {
 
     const getCurrentLocation = () => {
       Geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setLocation({ latitude, longitude });
+        position => {
+          const {latitude, longitude} = position.coords;
+          setLocation({latitude, longitude});
           setErrorMsg(null);
           fetchWeatherAndLocation(latitude, longitude);
         },
-        (error) => {
+        error => {
           console.log(error.code, error.message);
           setErrorMsg('위치 정보를 가져오는 데 실패했습니다.');
           setLoading(false);
         },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+        {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
       );
     };
 
@@ -65,9 +73,14 @@ export default function WeatherInfo() {
               lon: lon,
               appid: API_KEY,
               units: 'metric',
-              lang: 'kr'
-            }
-          }
+              lang: 'kr',
+            },
+          },
+          {
+            headers: {
+              'content-type': 'multipart/form-data',
+            },
+          },
         );
         setWeather(response.data);
         setLoading(false);
@@ -103,30 +116,30 @@ export default function WeatherInfo() {
   }
 
   // 위치와 날씨 정보가 있는 경우
-  const weatherDescription = weather?.weather[0].description || '날씨 정보 없음';
+  const weatherDescription =
+    weather?.weather[0].description || '날씨 정보 없음';
   const iconCode = weather?.weather[0].icon || '0'; // 기본 아이콘 코드
   const weatherIconUrl = `http://openweathermap.org/img/wn/${iconCode}@2x.png`;
 
-
   return (
     <View style={styles.container}>
-       <Text style={styles.date}>{date}</Text>
-       {weather && (
-         <View style={styles.weatherContainer}>
-           <View style={styles.header}>
-             <SimpleLineIcons name="location-pin" size={30} color="#8C8677" />
-             <Text style={styles.cityName}>{weather.name}</Text>
-           </View>
-           <Image source={{ uri: weatherIconUrl }} style={styles.weatherIcon} />
-           <View style={styles.weatherDetails}>
-             <Text>날씨: {weatherDescription}</Text>
-             <Text>온도: {weather.main.temp}°C</Text>
-             <Text>습도: {weather.main.humidity}%</Text>
-             <Text>풍속: {weather.wind.speed} m/s</Text>
-           </View>
-         </View>
-       )}
-     </View>
+      <Text style={styles.date}>{date}</Text>
+      {weather && (
+        <View style={styles.weatherContainer}>
+          <View style={styles.header}>
+            <SimpleLineIcons name="location-pin" size={30} color="#8C8677" />
+            <Text style={styles.cityName}>{weather.name}</Text>
+          </View>
+          <Image source={{uri: weatherIconUrl}} style={styles.weatherIcon} />
+          <View style={styles.weatherDetails}>
+            <Text>날씨: {weatherDescription}</Text>
+            <Text>온도: {weather.main.temp}°C</Text>
+            <Text>습도: {weather.main.humidity}%</Text>
+            <Text>풍속: {weather.wind.speed} m/s</Text>
+          </View>
+        </View>
+      )}
+    </View>
   );
 }
 

@@ -5,18 +5,21 @@ import { StyleSheet, View, Text, Pressable, Image } from 'react-native';
 import Octicons from 'react-native-vector-icons/Octicons';
 import axios from 'axios';
 
-const Popup_Buy = ({ goBuy, memberId, themeId, musicId }) => {
+const Popup_Buy = ({ goBuy, memberId, itemId, price, remainingPoints, type }) => {
   const { activeText, setActiveText } = useStore();
   const [PopupVisible, setPopupVisible] = useState(false);
 
   const sendThemeData = async () => {
-    const Theme = {
+    const BGI = {
       memberId: memberId,
-      themeId: themeId,
+      itemId: itemId,
+      price: price,
+      remainingPoints: remainingPoints,
+      type: "bgi"
     };
 
     try {
-      const response = await axios.post('http://i11b304.p.ssafy.io/api/own-theme', Theme);
+      const response = await axios.post('http://i11b304.p.ssafy.io/api/purchase/bgi', BGI);
 
       if (response.status === 200) {
         console.log("테마 구매 정보 저장 성공");
@@ -29,13 +32,16 @@ const Popup_Buy = ({ goBuy, memberId, themeId, musicId }) => {
   };
 
   const sendMusicData = async () => {
-    const Music = {
+    const BGM = {
       memberId: memberId,
-      musicId: musicId
+      itemId: itemId,
+      price: price,
+      remainingPoints: remainingPoints,
+      type: "bgm"
     };
 
     try {
-      const response = await axios.post('http://i11b304.p.ssafy.io/api/own-music', Music);
+      const response = await axios.post('http://i11b304.p.ssafy.io/api/purchase/bgm', BGM);
 
       if (response.status === 200) {
         console.log("음악 구매 정보 저장 성공");

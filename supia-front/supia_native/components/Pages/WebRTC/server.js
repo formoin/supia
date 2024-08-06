@@ -7,26 +7,27 @@ const wss = new WebSocket.Server({port: 8080});
 
 const clients = {}; // 사용자 ID와 웹소켓 연결을 저장하는 객체
 
-// 웹소켓 연결 처리
 wss.on('connection', ws => {
   let userId;
 
   ws.on('message', message => {
-    const parsedMessage = JSON.parse(message);
-    const {type, data} = parsedMessage;
+    try {
+      const parsedMessage = JSON.parse(message);
+      const {type, data} = parsedMessage;
 
-    if (type === 'register') {
-      // 사용자가 로그인할 때
-      userId = data.userId;
-      if (userId) {
-        clients[userId] = ws; // 클라이언트 연결을 저장
-        console.log(`User ${userId} registered`);
+      if (type === 'register') {
+        userId = data.userId;
+        if (userId) {
+          clients[userId] = ws; // 클라이언트 연결 저장
+          console.log(`User ${userId} registered`);
+        }
+      } else if (type === 'offer' || type === 'answer' || type === 'ice') {
+        if (userId && clients[data.targetId]) {
+          clients[data.targetId].send(message); // 특정 사용자에게 메시지 전송
+        }
       }
-    } else if (type === 'offer' || type === 'answer' || type === 'ice') {
-      // 사용자가 등록된 경우에만 메시지 전송
-      if (userId && clients[data.targetId]) {
-        clients[data.targetId].send(message); // 특정 사용자에게 메시지 전송
-      }
+    } catch (error) {
+      console.error('Error handling message:', error);
     }
   });
 
@@ -35,6 +36,10 @@ wss.on('connection', ws => {
       delete clients[userId]; // 사용자 연결 삭제
       console.log(`User ${userId} disconnected`);
     }
+  });
+
+  ws.on('error', error => {
+    console.error('WebSocket error:', error);
   });
 });
 

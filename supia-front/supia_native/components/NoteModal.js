@@ -5,6 +5,7 @@ import Searchbar from './Organisms/SearchBar';
 import TextFrame from './Atoms/TextFrame';
 
 export default function NoteModal({onClose, friendName}) {
+
   return (
     <View style={styles.container}>
       <PopupHeader Label="쪽지 보내기" onClose={onClose} />

@@ -19,27 +19,33 @@ export default function SignUpScreen({navigation}) {
 
   // 회원가입 로직
   const onSignUpSubmit = async () => {
-    const member = new FormData();
-    member.append('email', values.email);
-    member.append('password', values.password);
-    member.append('name', values.name);
-    member.append('nickname', values.nickname);
-
+    const member = {
+      email: values.email,
+      password: values.password,
+      name: values.name,
+      nickname: values.nickname,
+    };
     if (values.password == values.passwordConfirm) {
       try {
-        response = await axios.post(
-          'http://localhost:8080/members/register',
+        const response = await axios.post(
+          'http://10.0.2.2:8080/api/members/register',
           member,
+          {
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json; charset=utf-8',
+            },
+          },
         );
+        console.log(response.data); // 성공 시 응답 데이터 로그 출력
+        navigation.navigate('Login');
       } catch (error) {
-        console.log(error);
+        console.log('Error during registration:', error.message);
+        console.log('Error details:', error.response?.data);
         alert('회원가입에 실패하였습니다.');
-        setValues(['', '', '', '', '']);
-        return;
       }
     } else {
-      // 비밀번호가 틀리면 그냥 onPress 함수를 리턴
-      return;
+      alert('비밀번호가 일치하지 않습니다.');
     }
   };
 
@@ -191,14 +197,14 @@ const styles = StyleSheet.create({
   loginContainer: {
     alignItems: 'center',
     backgroundColor: '#ECEADE',
-    height: '100%',
+    height: '100%', // 고정된 높이 설정
   },
   formBox: {
     borderRadius: 8,
     padding: 16,
     backgroundColor: 'white',
-    height: 'contain',
     width: '80%',
+    // height: 'contain' 잘못된 부분 수정
   },
   formText: {
     padding: 6,

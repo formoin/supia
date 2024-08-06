@@ -29,7 +29,8 @@ const WalkPage_bottom = ({onOpenPopup, distance}) => {
   const [popupVisible, setPopupVisible] = useState(false);
 
   const onPressCamera = () => {
-    alert('camera');
+    // 카메라를 만들어 보자
+    navigation.navigate('Capture');
   };
 
   const formatTime = isoString => {
@@ -63,7 +64,7 @@ const WalkPage_bottom = ({onOpenPopup, distance}) => {
       }
     } catch (error) {
       console.log(walkData);
-      console.error('요청 중 오류 발생:', error);
+      // console.error('요청 중 오류 발생:', error);
     }
   };
 

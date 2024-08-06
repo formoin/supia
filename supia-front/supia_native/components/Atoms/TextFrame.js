@@ -1,18 +1,42 @@
-import React, {useState} from 'react';
-import {StyleSheet, View, TextInput, Alert} from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, TextInput, Alert } from 'react-native';
 import Button_Green from './Button_Green';
+import axios from 'axios';
 
-export default function TextFrame() {
+export default function TextFrame({ memberId, friendId, onClose }) {
   const [text, setText] = useState('');
+
+  const sendMessage = async () => {
+    const Message = {
+      fromMemberId: memberId,
+      toMemberId: friendId,
+      content: text,
+    };
+
+    try {
+      const response = await axios.post('http://i11b304.p.ssafy.io/api/messages', Message);
+
+      if (response.status === 200) {
+        console.log("메세지 보내기 성공");
+        Alert.alert('전송 완료', '메세지가 성공적으로 전송되었습니다.');
+        setText('');
+        onClose();
+      } else {
+        console.log("메세지 보내기 실패");
+        Alert.alert('전송 실패', '메세지 전송에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error("요청 중 오류 발생:", error);
+      Alert.alert('오류', '메세지 전송 중 오류가 발생했습니다.');
+    }
+  };
 
   const NoteSubmit = () => {
     if (text.trim() === '') {
       Alert.alert('입력 오류', '텍스트를 입력해 주세요.');
       return;
     }
-    // 실제 제출 처리 로직을 여기에 추가합니다.
-    Alert.alert('제출 완료', `입력한 내용: ${text}`);
-    setText(''); // 제출 후 입력 필드를 비웁니다.
+    sendMessage();
   };
 
   return (
@@ -23,7 +47,7 @@ export default function TextFrame() {
           placeholder="내용을 입력하세요"
           value={text}
           onChangeText={setText}
-          multiline // 여러 줄 입력을 허용합니다.
+          multiline
         />
       </View>
       <Button_Green label="보내기" onPress={NoteSubmit} />
@@ -33,8 +57,8 @@ export default function TextFrame() {
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center', // 수직으로 가운데 정렬
-    alignItems: 'center', // 수평으로 가운데 정렬
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 16,
   },
   rectangle: {
@@ -45,14 +69,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#A2AA7B',
     opacity: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#fff',
-    marginBottom: 16, // 버튼과의 간격을 위해 여백 추가
+    marginBottom: 16,
   },
   textInput: {
     width: '100%',
-    height: '100%',
     padding: 8,
     fontSize: 16,
   },

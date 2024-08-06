@@ -1,27 +1,44 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import Label from '../Atoms/ListItem';
+import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import Label from '../../Atoms/ListItem';
 import React, { useState } from 'react';
+import axios from 'axios';
 import ReadMessageModal from './ReadMessageModal';
 
-export default function MessageBox() {
+export default function GiftBox({messageId, friendName}) {
   const [modalVisible, setModalVisible] = useState(false);
 
-  const handlePress = () => {
-    console.log('버튼이 눌렸습니다!');
-    setModalVisible(true);
+  const onPress = () => {
+    alert("선물 확인")
   };
+
+    const markMessageAsRead = async (messageId) => {
+      const url = "http://i11b304.p.ssafy.io/api/messages/detail";
+      const data = { is_check: true };
+
+      try {
+        const response = await axios.patch(url, data)
+
+        if (response.status === 200) {
+          console.log("메시지 읽음 처리 성공");
+        } else {
+          console.log("메시지 읽음 처리 실패");
+        }
+      } catch (error) {
+        console.error("요청 중 오류 발생:", error);
+      }
+    };
 
   return (
     <View>
       <View style={styles.container}>
         <View style={styles.messageHeader}>
-          <Text style={styles.messageText}>쪽지</Text>
+          <Text style={styles.messageText}>시스템</Text>
           <Text style={styles.timeText}>Today 10:30PM</Text>
         </View>
         <View style={styles.messageContent}>
-          <Label pic="smileo" title="formoin" content="뭐하니?" />
-          <Pressable style={styles.button} onPress={handlePress}>
-            <Text style={styles.buttonText}>읽기</Text>
+          <Label pic="infocirlceo" title="선물 도착" content={`${friendName}님이 개망초를 보냈습니다.`} />
+          <Pressable style={styles.button} onPress={onPress}>
+            <Text style={styles.buttonText}>확인</Text>
           </Pressable>
         </View>
       </View>

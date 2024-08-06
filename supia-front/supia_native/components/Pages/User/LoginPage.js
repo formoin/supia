@@ -4,151 +4,69 @@ import useLoginStore from '../../store/useLoginStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-// 환경 변수로 ContextPath 설정
-// import ContextPath from '@env'
-
-// const members = [
-//   {
-//     id: 1,
-//     email: 'alice@example.com',
-//     name: 'Alice Johnson',
-//     nickname: 'alice_j',
-//     profile_img: 'http://example.com/images/alice_johnson.jpg',
-//     level: 4,
-//     exp: 950,
-//     point: 420,
-//     password: 'hashed_password_alice',
-//     token: 'token_alice_123',
-//   },
-//   {
-//     id: 2,
-//     email: 'bob@example.com',
-//     name: 'Bob Brown',
-//     nickname: 'bobb',
-//     profile_img: 'http://example.com/images/bob_brown.jpg',
-//     level: 2,
-//     exp: 320,
-//     point: 150,
-//     password: 'hashed_password_bob',
-//     token: 'token_bob_456',
-//   },
-//   {
-//     id: 3,
-//     email: 'carol@example.com',
-//     name: 'Carol White',
-//     nickname: 'carol_w',
-//     profile_img: 'http://example.com/images/carol_white.jpg',
-//     level: 6,
-//     exp: 1800,
-//     point: 600,
-//     password: 'hashed_password_carol',
-//     token: 'token_carol_789',
-//   },
-//   {
-//     id: 4,
-//     email: 'dave@example.com',
-//     name: 'Dave Black',
-//     nickname: 'daveb',
-//     profile_img: 'http://example.com/images/dave_black.jpg',
-//     level: 1,
-//     exp: 150,
-//     point: 50,
-//     password: 'hashed_password_dave',
-//     token: 'token_dave_321',
-//   },
-//   {
-//     id: 5,
-//     email: 'eve@example.com',
-//     name: 'Eve Davis',
-//     nickname: 'eve_d',
-//     profile_img: 'http://example.com/images/eve_davis.jpg',
-//     level: 3,
-//     exp: 700,
-//     point: 300,
-//     password: 'hashed_password_eve',
-//     token: 'token_eve_654',
-//   },
-//   // 다른 회원 데이터 추가...
-// ];
-
+const API_BASE_URL = 'http://10.0.2.2:8080/api/members';
 
 const LoginScreen = ({navigation}) => {
-  // 로그인 정보
   const [values, setValues] = useState({
     email: '',
     password: '',
   });
 
-  // 여기 둘 건 아닌데 나중에 로그아웃할 때 사용!!
-  // const handleLogoutUser = () => {
-  //   useLoginStore.setState({
-  //  isLoggedIn: false,
-  //  });
-  //   AsyncStorage.removeItem("key");
-  //   alert("로그아웃 되었습니다.");
-  // };
-
   // input값 변경
-  const handleChange = async (field, value) => {
+  const handleChange = (field, value) => {
     setValues({...values, [field]: value});
   };
 
-
-  // // login logic 로그인 테스트
-  // const onLoginSubmit = async () => {
-  //   const {email, password} = values;
-
-  //   // JSON 데이터로 로그인 시뮬레이션
-  //   const member = members.find(
-  //     m => m.email === email && m.password === password,
-  //   );
-
-  //   if (member) {
-  //     const token = member.token;
-  //     await AsyncStorage.setItem('key', token);
-  //     alert('로그인 되었습니다.');
-  //     useLoginStore.setState({isLoggedIn: true});
-  //     navigation.navigate('Main');
-  //   } else {
-  //     alert('로그인에 실패하였습니다.');
-  //     setValues({email: '', password: ''});
-  //   }
-  // };
-
-
   // login logic
   const onLoginSubmit = async () => {
-    const loginMember = new FormData();
-    loginMember.append('email', values.email);
-    loginMember.append('password', values.password);
-
-    let response;
+    const loginMember = {
+      email: values.email,
+      password: values.password,
+    };
 
     try {
       // 로그인 post 요청
-      response = await axios.post(
-        'http://localhost:8080/members/login',
-        loginMember,
-      );
-      if (response.status == 200) {
-        let token = response.headers['authorization'].split(' ')[1];
+      const response = await axios.post(`${API_BASE_URL}/login`, loginMember, {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+      });
+
+      if (response.status === 200) {
+        const token = response.data.token; // 응답 본문에서 토큰 추출
         await AsyncStorage.setItem('key', token);
-        const getToken = await AsyncStorage.getItem('key');
         alert('로그인 되었습니다.');
         // 로그인 처리 및 Home으로 이동
         useLoginStore.setState({isLoggedIn: true});
-        navigation.navigate('HomeScreen');
+        navigation.navigate('Call', {});
       }
     } catch (error) {
-      console.log(error);
-      alert('로그인에 실패하였습니다.');
-      setValues(['', '']);
-      return;
+      console.log('Error during login:', error.message);
+      console.log('Error details:', error.response?.data);
+
+      // 자세한 오류 정보 출력
+      if (error.response) {
+        console.log('Response data:', error.response.data);
+        console.log('Response status:', error.response.status);
+        console.log('Response headers:', error.response.headers);
+        alert(
+          `로그인에 실패하였습니다: ${
+            error.response.data.message || '알 수 없는 오류입니다.'
+          }`,
+        );
+      } else if (error.request) {
+        console.log('Request data:', error.request);
+        alert('서버로부터 응답을 받지 못했습니다.');
+      } else {
+        console.log('Error message:', error.message);
+        alert(`로그인 요청 중 오류가 발생했습니다: ${error.message}`);
+      }
+
+      // 입력 필드 초기화
+      setValues({email: '', password: ''});
     }
-
   };
-
-  // 소셜 로그인 logic -> 확인 필요!!
 
   return (
     <View style={styles.loginContainer}>
@@ -172,15 +90,10 @@ const LoginScreen = ({navigation}) => {
           value={values.password}
           onChangeText={text => handleChange('password', text)}
         />
+
         <View style={{paddingTop: 10}}></View>
         <View style={styles.buttonGroup}>
-          <Pressable
-            mode="contained"
-            onPress={() => {
-              //console.log(values.email + " " + values.password);
-              onLoginSubmit();
-            }}
-            style={styles.button}>
+          <Pressable onPress={onLoginSubmit} style={styles.button}>
             <Text>로그인</Text>
           </Pressable>
         </View>
@@ -192,12 +105,11 @@ const LoginScreen = ({navigation}) => {
           </Text>
         </Pressable>
       </View>
+
       <Pressable
         mode="contained"
         onPress={() => {
-          {
-            // onSocialLoginSubmit(google);
-          }
+          // onSocialLoginSubmit(google);
         }}
         style={[
           styles.button,
@@ -210,7 +122,6 @@ const LoginScreen = ({navigation}) => {
         mode="contained"
         onPress={() => {
           // onSocialLoginSubmit(kakao);
-
         }}
         style={[
           styles.button,
@@ -238,12 +149,7 @@ const LoginScreen = ({navigation}) => {
         style={{
           marginTop: 30,
         }}>
-        <Text
-          style={{
-            color: '#B5B5B5',
-          }}>
-          아직 회원이 아니라면? 회원가입
-        </Text>
+        <Text style={{color: '#B5B5B5'}}>아직 회원이 아니라면? 회원가입</Text>
       </Pressable>
     </View>
   );

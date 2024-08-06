@@ -16,10 +16,19 @@ export default function FriendModal({ UserName, UserLevel, onClose, page, member
         toId: toId,
       };
 
+      const message = {
+      	from_user_id: memberId,
+      	to_user_id: toId,
+        title: "친구 신청",
+      	context: `${memberName}님이 친구를 요청했습니다.`,
+      	category: 2,
+      	is_check: 0,
+      }
+
       try {
-        const response = await axios.post('http://i11b304.p.ssafy.io/api/friends', friendRequest, {
+        const response = await axios.post('http://i11b304.p.ssafy.io/api/friends', friendRequest, message, {
           headers: {
-            'Content-Type': 'application/json'
+             Authorization: `Bearer ${token}`
           }
         });
 

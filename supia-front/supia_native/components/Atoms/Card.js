@@ -1,17 +1,23 @@
-import React from 'react';
-import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
+import React, {useState} from 'react';
+import { StyleSheet, View, Text, Image, TouchableOpacity, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-export default function Card({representativeImg, speciesName}) {
+export default function Card({representativeImg, speciesName, mini, setShowSticker }) {
+
   const navigation = useNavigation();
   const onPress = () => {
-    navigation.navigate('DictionaryDetail', { representativeImg, speciesName })
+    if (mini) {
+      setShowSticker({visible: true, speciesName, representativeImg});
+    } else {
+      navigation.navigate('DictionaryDetail', { representativeImg, speciesName });
+    }
   }
   return (
-    <TouchableOpacity onPress={onPress} style={styles.container}>
-      <Image source={{ uri: representativeImg}} style={{ width: 110, height: 110, marginVertical: 4 }}/>
-      <Text style={{ fontSize: 16 }}>{speciesName}</Text>
-    </TouchableOpacity>
+      <TouchableOpacity onPress={onPress} style={styles.container}>
+        <Image source={{ uri: representativeImg}} style={{ width: 110, height: 110, marginVertical: 4 }}/>
+        <Text style={{ fontSize: 16 }}>{speciesName}</Text>
+      </TouchableOpacity>
+
   );
 };
 
@@ -23,6 +29,6 @@ const styles = StyleSheet.create({
     borderWidth: 1, 
     margin: 5,
     alignItems: 'center',
-  }
+  },
 });
 

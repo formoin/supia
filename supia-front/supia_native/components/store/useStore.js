@@ -40,6 +40,13 @@ const useStore = create(set => ({
   // Current Location
   currentLocation: null, // 현재 위치를 저장할 상태
   setCurrentLocation: location => set({currentLocation: location}), // 현재 위치 설정 함수
+
+  // 숲 스티커
+  droppedImages: [],
+  addDroppedImage: (imageUri, position) => set((state) => ({
+    droppedImages: [...state.droppedImages, { imageUri, position }],
+  })),
+  
 }));
 
 export default useStore;

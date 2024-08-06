@@ -4,9 +4,10 @@ import useStore from '../store/useStore';
 import DicDivide from '../DicDivide';
 import Card from '../Atoms/Card';
 import Octicons from 'react-native-vector-icons/Octicons';
-import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { View, StyleSheet, Pressable, ScrollView, Button } from 'react-native';
+import DictionarySticker from './DictionarySticker'
 
-export default function DictionaryForest() {
+export default function DictionaryForest({goDictionary, showSticker, setShowSticker}) {
   const {activeDic, resetActiveDic} = useStore();
 
   const renderCard = () => {
@@ -15,8 +16,10 @@ export default function DictionaryForest() {
         return (
           <View style={styles.Cardcontainer}>
             <Card
-              imguri="https://newsimg-hams.hankookilbo.com/2023/06/16/c80476cb-0647-4485-a536-3a01c842a38f.jpg"
-              name="개망초"
+              representativeImg="https://newsimg-hams.hankookilbo.com/2023/06/16/c80476cb-0647-4485-a536-3a01c842a38f.jpg"
+              speciesName="개망초"
+              mini={true}
+              setShowSticker = {setShowSticker}
             />
             <Card
               imguri="https://newsimg-hams.hankookilbo.com/2023/06/16/c80476cb-0647-4485-a536-3a01c842a38f.jpg"
@@ -65,6 +68,9 @@ export default function DictionaryForest() {
     <View style={styles.container}>
         <View style={styles.headerContainer}>
             <Header label="나의 도감" goto="MyForest"/>
+            <Pressable onPress={goDictionary} style={styles.closeButton}>
+              <Octicons name="x" size={30} style={styles.closeIcon} />
+            </Pressable>
         </View>
           <View style={styles.p_value}>
             <DicDivide
@@ -77,6 +83,17 @@ export default function DictionaryForest() {
         <ScrollView>
           {renderCard()}
         </ScrollView>
+
+
+        {showSticker && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center' }}>
+          <DictionarySticker 
+            setShowSticker={setShowSticker} 
+            speciesName={showSticker.speciesName} 
+            representativeImg={showSticker.representativeImg}
+          />
+          </View>
+      )}
     </View>
   );
 }

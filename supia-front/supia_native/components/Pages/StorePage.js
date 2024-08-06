@@ -7,7 +7,7 @@ import useStore from '../store/useStore';
 import axios from 'axios';
 import { useIsFocused, useFocusEffect } from '@react-navigation/native';
 
-export default function StoreScreen({ memberId }) {
+export default function StoreScreen() {
   const { activeText, setActiveText, resetActiveText } = useStore();
   const [background, setBackground] = useState(null);
   const [music, setMusic] = useState(null);
@@ -28,9 +28,16 @@ export default function StoreScreen({ memberId }) {
     }
   }, [activeText]);
 
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMjM0QG5hdmVyLmNvbSIsIm1lbWJlcklkIjoxLCJpYXQiOjE3MjI5MjI3MDYsImV4cCI6MTc1NDQ1ODcwNn0.8dh878bIU9LeTY9v0c0zynhcj9n7drFVfu96CJmeGze6JyhiVlUCHp9NmeyBzrjmK8xDYz5-xg2frAz2K-PAZQ'
   const getBackground = async () => {
     try {
-      const response = await axios.get('http://i11b304.p.ssafy.io/api/background/bgm');
+      const response = await axios.get('https://i11b304.p.ssafy.io/api/background/bgm', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+      });
       if (response.status === 200) {
         console.log(response.data);
         setBackground(response.data);
@@ -45,7 +52,13 @@ export default function StoreScreen({ memberId }) {
 
   const getMusic = async () => {
     try {
-      const response = await axios.get('http://i11b304.p.ssafy.io/api/background/bgi');
+      const response = await axios.get('https://i11b304.p.ssafy.io/api/background/bgi', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+      });
       if (response.status === 200) {
         console.log(response.data);
         setMusic(response.data);
@@ -58,6 +71,7 @@ export default function StoreScreen({ memberId }) {
     }
   };
 
+  const memberId = 1
   const getPoint = async () => {
     try {
       const response = await axios.get(
@@ -65,6 +79,8 @@ export default function StoreScreen({ memberId }) {
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
           },
         }
       );

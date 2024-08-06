@@ -1,46 +1,40 @@
-import React from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import {PanGestureHandler} from 'react-native-gesture-handler';
-import Animated, {
-  useAnimatedGesture,
-  useSharedValue,
-  useAnimatedStyle,
-} from 'react-native-reanimated';
+import React, {useRef} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  PanResponder,
+} from 'react-native';
 
 export default function IsCall({callerName, onClose}) {
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
+  const pan = useRef(new Animated.ValueXY()).current;
 
-  // 의존성 업데이트로 기존 useAnimatedGestureHandler가 삭제되어 useAnimatedGesture 대체
-  const panGestureEvent = useAnimatedGesture({
-    onStart: (_, ctx) => {
-      ctx.startX = translateX.value;
-      ctx.startY = translateY.value;
-    },
-    onActive: (event, ctx) => {
-      translateX.value = ctx.startX + event.translationX;
-      translateY.value = ctx.startY + event.translationY;
-    },
-  });
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {translateX: translateX.value},
-        {translateY: translateY.value},
-      ],
-    };
-  });
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: Animated.event([null, {dx: pan.x, dy: pan.y}], {
+        useNativeDriver: false,
+      }),
+      onPanResponderRelease: () => {
+        Animated.spring(pan, {
+          toValue: {x: 0, y: 0},
+          useNativeDriver: false,
+        }).start();
+      },
+    }),
+  ).current;
 
   return (
-    <PanGestureHandler onGestureEvent={panGestureEvent}>
-      <Animated.View style={[styles.container, animatedStyle]}>
-        <Text style={styles.text}>통화중: {callerName}</Text>
-        <TouchableOpacity onPress={onClose} style={styles.button}>
-          <Text style={styles.buttonText}>통화종료</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    </PanGestureHandler>
+    <Animated.View
+      style={[styles.container, {transform: pan.getTranslateTransform()}]}
+      {...panResponder.panHandlers}>
+      <Text style={styles.text}>통화중: {callerName}</Text>
+      <TouchableOpacity onPress={onClose} style={styles.button}>
+        <Text style={styles.buttonText}>통화종료</Text>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
