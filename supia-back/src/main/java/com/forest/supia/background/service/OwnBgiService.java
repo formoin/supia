@@ -33,7 +33,7 @@ public class OwnBgiService {
     private PurchaseHistoryRepository purchaseHistoryRepository;
 
     public PurchaseResponseDto purchaseBgi(Long memberId, Long bgiId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow();
         Bgi bgi = bgiRepository.findById(bgiId).orElseThrow(() -> new IllegalArgumentException("Invalid BGI ID"));
 
         if (member.getPoint() >= bgi.getPrice()) {
@@ -53,16 +53,16 @@ public class OwnBgiService {
     }
 
     public List<OwnResponseDto> getOwnBgis(Long memberId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow();
         List<OwnBgi> ownBgis = ownBgiRepository.findByMember(member);
 
         return ownBgis.stream()
-                .map(ownBgi -> new OwnResponseDto(member.getMemberId(), ownBgi.getBgi().getName(), ownBgi.getBgi().getPath()))
+                .map(ownBgi -> new OwnResponseDto(member.getId(), ownBgi.getBgi().getName(), ownBgi.getBgi().getPath()))
                 .collect(Collectors.toList());
     }
 
     public void deleteOwnBgi(Long memberId, Long bgiId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow();
         OwnBgi ownBgi = ownBgiRepository.findByMemberAndBgiId(member, bgiId).orElseThrow(() -> new IllegalArgumentException("유효하지 않은 접근입니다."));
         ownBgiRepository.delete(ownBgi);
     }

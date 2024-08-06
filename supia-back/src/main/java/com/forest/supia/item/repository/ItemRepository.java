@@ -6,6 +6,7 @@ import com.forest.supia.item.dto.ItemResponse;
 import com.forest.supia.item.dto.SpeciesResponse;
 import com.forest.supia.item.entity.Item;
 import com.forest.supia.item.entity.Species;
+import com.forest.supia.member.entity.Member;
 import com.forest.supia.search.dto.ItemSearchResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -58,5 +59,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             nativeQuery = true
     )
     List<ItemSearchResponse> findItemByKeyword(@Param("keyword") String keyword);
+
+    List<Item> findAllByMember(Member member);
 
 }
