@@ -112,19 +112,6 @@ public class MessageServiceImpl implements MessageService{
     }
 
     @Override
-    public long sendGift(GiftRequest giftRequest) {
-        Member fromMember = memberRepository.findById(giftRequest.getFromMemberId()).orElseThrow(() -> new InvalidParameterException("Cannot find member"));
-        Member toMember = memberRepository.findById(giftRequest.getToMemberId()).orElseThrow(() -> new InvalidParameterException("Cannot find member"));
-
-        Item item = itemRepository.findById(giftRequest.getItemId());
-        Message message = Message.createMessage(fromMember, toMember, 2, item.getImgUrl());
-
-        messageRepository.save(message);
-
-        return message.getId();
-    }
-
-    @Override
     public List<MessageResponse> getNotificationBox(long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new InvalidParameterException("Cannot find member"));
         List<Message> messages = messageRepository.findByToMemberAndCategoryGreaterThan(member, 1);
@@ -149,6 +136,22 @@ public class MessageServiceImpl implements MessageService{
     }
 
     @Override
+    public long sendGift(GiftRequest giftRequest) {
+        Member fromMember = memberRepository.findById(giftRequest.getFromMemberId()).orElseThrow(() -> new InvalidParameterException("Cannot find member"));
+        Member toMember = memberRepository.findById(giftRequest.getToMemberId()).orElseThrow(() -> new InvalidParameterException("Cannot find member"));
+
+        Item item = itemRepository.findById(giftRequest.getItemId());
+        item.setMember(null);
+
+        itemRepository.save(item);
+        Message message = Message.createMessage(fromMember, toMember, 2, item.getImgUrl());
+
+        messageRepository.save(message);
+
+        return message.getId();
+    }
+
+    @Override
     public long acceptGift(long messageId) {
         Message message = messageRepository.findById(messageId).orElseThrow(() -> new InvalidParameterException("Cannot find message"));
         String url = message.getContent();
@@ -160,10 +163,8 @@ public class MessageServiceImpl implements MessageService{
 
     @Override
     public long refuseGift(long messageId) {
-        Message message = messageRepository.findById(messageId).orElseThrow(() -> new InvalidParameterException("Cannot find message"));
-        String url = message.getContent();
-        Item item = itemRepository.findByImgUrl(url);
-        item.setMember(null);
+
+        messageRepository.deleteById(messageId);
 
         return 1;
     }

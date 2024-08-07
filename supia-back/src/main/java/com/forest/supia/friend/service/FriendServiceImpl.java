@@ -126,6 +126,7 @@ public class FriendServiceImpl implements FriendService {
 
         try {
             friendRepository.deleteById(friend.getId());
+            messageRepository.deleteById(messageId);
             return 1;
         }
         catch (Exception e) {
