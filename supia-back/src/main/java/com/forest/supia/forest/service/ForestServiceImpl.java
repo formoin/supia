@@ -24,7 +24,7 @@ public class ForestServiceImpl implements ForestService{
     private final ItemRepository itemRepository;
     @Override
     public ForestResponse getForest(long memberId) {
-        Forest forest = forestRepository.findByMemberId(memberId);
+        Forest forest = forestRepository.findByMember_Id(memberId);
 
         ForestResponse forestResponse = new ForestResponse();
         forestResponse.setForestId(forest.getId());

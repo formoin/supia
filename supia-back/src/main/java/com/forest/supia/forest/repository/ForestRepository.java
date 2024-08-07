@@ -4,5 +4,6 @@ import com.forest.supia.forest.entity.Forest;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ForestRepository extends JpaRepository<Forest, Long> {
-    Forest findByMemberId(long memberId);
+    Forest findByMember_Id(Long memberId);
+
 }

@@ -128,11 +128,13 @@ public class MemberController {
         }
     }
 
-    @PutMapping("/delete")
+    @Transactional
+    @PostMapping("/delete")
     public ResponseEntity<Map<String, String>> deleteMember(@RequestHeader("Authorization") String token) {
         Map<String, String> response = new HashMap<>();
         Long memberId = jwtUtil.extractMemberId(token);
-        Member member = memberService.deleteMember(memberId);
+        memberService.deleteMember(memberId);
+        response.put("message", "회원 탈퇴가 완료되었습니다.");
         return ResponseEntity.ok(response);
     }
 
