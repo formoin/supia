@@ -47,6 +47,9 @@ async def process_image(
     if not file:
         raise HTTPException(status_code=400, detail="File is required")
 
+    if not file.filename.lower().endswith(".png"):
+        raise HTTPException(status_code=400, detail="Only .png files are allowed")
+
     try:
         # Read image
         image_data = await file.read()
