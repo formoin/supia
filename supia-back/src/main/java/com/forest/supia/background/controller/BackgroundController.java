@@ -8,6 +8,7 @@ import com.forest.supia.background.service.BgiService;
 import com.forest.supia.background.service.BgmService;
 import com.forest.supia.background.service.OwnBgiService;
 import com.forest.supia.background.service.OwnBgmService;
+import com.forest.supia.config.auth.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,9 @@ public class BackgroundController {
 
     @Autowired
     private OwnBgiService ownBgiService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @GetMapping("/bgm")
     public ResponseEntity<List<Bgm>> getAllBgms() {
@@ -50,8 +54,9 @@ public class BackgroundController {
     }
 
     @PostMapping("/purchase/bgm")
-    public ResponseEntity<PurchaseResponseDto> purchaseBgm(@RequestParam("memberId") Long memberId, @RequestParam("bgmId") Long bgmId) {
+    public ResponseEntity<PurchaseResponseDto> purchaseBgm(@RequestHeader("Authorization") String token, @RequestParam("bgmId") Long bgmId) {
         try {
+            long memberId = jwtUtil.extractMemberId(token);
             PurchaseResponseDto response = ownBgmService.purchaseBgm(memberId, bgmId);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
@@ -60,8 +65,9 @@ public class BackgroundController {
     }
 
     @PostMapping("/purchase/bgi")
-    public ResponseEntity<PurchaseResponseDto> purchaseBgi(@RequestParam("memberId") Long memberId, @RequestParam("bgiId") Long bgiId) {
+    public ResponseEntity<PurchaseResponseDto> purchaseBgi(@RequestHeader("Authorization") String token, @RequestParam("bgiId") Long bgiId) {
         try {
+            long memberId = jwtUtil.extractMemberId(token);
             PurchaseResponseDto response = ownBgiService.purchaseBgi(memberId, bgiId);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
@@ -70,12 +76,16 @@ public class BackgroundController {
     }
 
     @GetMapping("/own-bgm")
-    public List<OwnResponseDto> getMemberOwnBgms(@RequestParam("memberId") Long memberId) {
+    public List<OwnResponseDto> getMemberOwnBgms(@RequestHeader("Authorization") String token) {
+        long memberId = jwtUtil.extractMemberId(token);
+
         return ownBgmService.getOwnBgms(memberId);
     }
 
     @GetMapping("/own-bgi")
-    public List<OwnResponseDto> getMemberOwnBgis(@RequestParam("memberId") Long memberId) {
+    public List<OwnResponseDto> getMemberOwnBgis(@RequestHeader("Authorization") String token) {
+        long memberId = jwtUtil.extractMemberId(token);
+
         return ownBgiService.getOwnBgis(memberId);
     }
 

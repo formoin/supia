@@ -1,7 +1,6 @@
 package com.forest.supia.message.controller;
 
-import com.forest.supia.friend.dto.FriendRequest;
-import com.forest.supia.member.entity.Member;
+import com.forest.supia.config.auth.JwtUtil;
 import com.forest.supia.message.dto.GiftRequest;
 import com.forest.supia.message.dto.MessageRequest;
 import com.forest.supia.message.dto.MessageResponse;
@@ -9,9 +8,7 @@ import com.forest.supia.message.service.MessageService;
 import com.forest.supia.message.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -23,6 +20,7 @@ import java.util.List;
 public class MessageController {
     private final MessageService messageService;
     private final NotificationService notificationService;
+    private final JwtUtil jwtUtil;
     // 메세지 보내기
     @PostMapping
     public ResponseEntity<?> sendMessage(@RequestBody MessageRequest messageRequest) {
@@ -52,7 +50,10 @@ public class MessageController {
     // 메세지 세부 정보
     // 선물 크게 보기
     @GetMapping("/detail")
-    public ResponseEntity<?> messageDetail(@RequestParam("messageId") long messageId, @RequestParam("memberId") long memberId) {
+    public ResponseEntity<?> messageDetail(@RequestParam("messageId") long messageId, @RequestHeader("Authorization") String token) {
+
+        long memberId = jwtUtil.extractMemberId(token);
+
         MessageResponse result = messageService.getMessageDetail(messageId, memberId);
 
         if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("메세지 확인에 실패했습니다.");
@@ -60,7 +61,11 @@ public class MessageController {
     }
     // 메세지 삭제
     @DeleteMapping
-    public ResponseEntity<?> deleteMessage(@RequestParam("messageId") long messageId, @RequestParam("memberId") long memberId) {
+    public ResponseEntity<?> deleteMessage(@RequestParam("messageId") long messageId, @RequestHeader("Authorization") String token) {
+
+        long memberId = jwtUtil.extractMemberId(token);
+
+
         long result = messageService.deleteMessage(messageId, memberId);
 
         if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("메세지 삭제에 실패했습니다.");
@@ -72,7 +77,8 @@ public class MessageController {
 
     // 알림함 확인
     @GetMapping("/notification")
-    public ResponseEntity<?> notificationBox(@RequestParam("memberId") long memberId) {
+    public ResponseEntity<?> notificationBox(@RequestHeader("Authorization") String token) {
+        long memberId = jwtUtil.extractMemberId(token);
         List<MessageResponse> result = messageService.getNotificationBox(memberId);
 
         if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("알림함이 비었습니다.");
@@ -108,7 +114,8 @@ public class MessageController {
 
     
     @GetMapping(value = "/connect")
-    public ResponseEntity<?> connect(@RequestParam("memberId") long memberId ) {
+    public ResponseEntity<?> connect(@RequestHeader("Authorization") String token) {
+        long memberId = jwtUtil.extractMemberId(token);
         SseEmitter sseEmitter = notificationService.subscribe(memberId);
 
         return ResponseEntity.ok(sseEmitter);
