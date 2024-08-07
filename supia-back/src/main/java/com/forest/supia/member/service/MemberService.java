@@ -90,8 +90,6 @@ public class MemberService {
         return new_member;
     }
 
-
-
     public String updateMember(long memberId, String name, String nickname, MultipartFile profileImg) throws IOException, java.io.IOException {
         Member member = memberRepository.findById(memberId).orElseThrow();
 
@@ -130,4 +128,13 @@ public class MemberService {
         return memberRepository.findById(memberId).orElseThrow();
     }
 
+    public Member deleteMember(Long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow();
+        // friend 테이블 member 정보 삭제 (from member, to member 모두 삭제)
+        // walk 테이블 memberId 검색 후 삭제
+        // own_bgm 삭제
+        // item 테이블 memberId를 null로 수정
+        // member 테이블 해당 memberId 탈퇴 상태로 수정
+        return member;
+    }
 }
