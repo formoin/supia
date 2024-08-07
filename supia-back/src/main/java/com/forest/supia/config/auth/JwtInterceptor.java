@@ -22,18 +22,18 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String authHeader = request.getHeader("Authorization");
 
-//        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-//            String token = authHeader.substring(7);
-//            Long memberId = jwtUtil.extractMemberId(token);
-//
-//            Member member = memberRepository.findById(memberId).orElse(null);
-//
-//            if (member != null && jwtUtil.validateToken(token, member)) {
-//                return true;
-//            }
-//        }
-//
-//        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            Long memberId = jwtUtil.extractMemberId(token);
+
+            Member member = memberRepository.findById(memberId).orElse(null);
+
+            if (member != null && jwtUtil.validateToken(token, member)) {
+                return true;
+            }
+        }
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         return true;
     }
 }
