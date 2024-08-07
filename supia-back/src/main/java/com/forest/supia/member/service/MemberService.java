@@ -3,6 +3,8 @@ package com.forest.supia.member.service;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.forest.supia.config.auth.JwtUtil;
+import com.forest.supia.forest.entity.Forest;
+import com.forest.supia.forest.repository.ForestRepository;
 import com.forest.supia.member.dto.LoginDto;
 import com.forest.supia.member.dto.SignUpDto;
 import com.forest.supia.member.entity.Member;
@@ -20,6 +22,8 @@ import java.util.List;
 public class MemberService {
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private ForestRepository forestRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -65,7 +69,14 @@ public class MemberService {
                 .nickname(signUpInfo.getNickname())
                 .password(encoded_password)
                 .build();
-        return memberRepository.save(new_member);
+
+        Member member = memberRepository.save(new_member);
+        Forest forest = Forest.createForest(member, "Default thumbnail");
+        forestRepository.save(forest);
+
+        Forest result = forestRepository.save(forest);
+
+        return member;
     }
 
     public Member createSocialMember (String email, String name) {
