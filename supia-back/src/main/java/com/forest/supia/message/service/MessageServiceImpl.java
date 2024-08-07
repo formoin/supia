@@ -143,6 +143,7 @@ public class MessageServiceImpl implements MessageService{
         Item item = itemRepository.findById(giftRequest.getItemId());
         item.setMember(null);
 
+        System.out.println(item.getId() + " " + item.getMember());
         itemRepository.save(item);
         Message message = Message.createMessage(fromMember, toMember, 2, item.getImgUrl());
 
@@ -158,7 +159,8 @@ public class MessageServiceImpl implements MessageService{
         Item item = itemRepository.findByImgUrl(url);
         item.setMember(message.getToMember());
 
-        return 1;
+        itemRepository.save(item);
+        return item.getId();
     }
 
     @Override
