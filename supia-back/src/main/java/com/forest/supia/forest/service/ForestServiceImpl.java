@@ -1,5 +1,7 @@
 package com.forest.supia.forest.service;
 
+import com.forest.supia.exception.CustomException;
+import com.forest.supia.exception.ExceptionResponse;
 import com.forest.supia.forest.dto.*;
 import com.forest.supia.forest.entity.Forest;
 import com.forest.supia.forest.entity.ForestItem;
@@ -24,13 +26,13 @@ public class ForestServiceImpl implements ForestService{
     private final ItemRepository itemRepository;
     @Override
     public ForestResponse getForest(long memberId) {
-        Forest forest = forestRepository.findByMemberId(memberId);
+        Forest forest = forestRepository.findByMemberId(memberId).orElseThrow(() -> new ExceptionResponse(CustomException.NOT_FOUND_FOREST_EXCEPTION));
 
         ForestResponse forestResponse = new ForestResponse();
         forestResponse.setForestId(forest.getId());
 //        forestResponse.setMusic(forest.getMusic().getPath());
 //        forestResponse.setTheme(forest.getTheme().getPath());
-        List<ForestItem> forestItems = forestItemRepository.findByForestId(forest.getId());
+        List<ForestItem> forestItems = forestItemRepository.findByForestId(forest.getId()).orElse(null);
         List<ForestItemResponse> forestItemResponseList = new ArrayList<>();
 
         for(ForestItem forestItem : forestItems) {
