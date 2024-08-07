@@ -1,8 +1,7 @@
 package com.forest.supia.search.controller;
 
-import com.forest.supia.forest.dto.ForestResponse;
+import com.forest.supia.config.auth.JwtUtil;
 import com.forest.supia.member.dto.MemberResponse;
-import com.forest.supia.member.entity.Member;
 import com.forest.supia.search.dto.ItemSearchResponse;
 import com.forest.supia.search.dto.MemberSearchResponse;
 import com.forest.supia.search.service.SearchService;
@@ -19,6 +18,9 @@ import java.util.List;
 public class SearchController {
 
     private final SearchService searchService;
+    private final JwtUtil jwtUtil;
+
+
     @GetMapping
     public ResponseEntity<?> search(@RequestParam("type") int type, @RequestParam("keyword") String keyword)  throws Exception {
 
@@ -38,8 +40,9 @@ public class SearchController {
     }
 
     @GetMapping("/member")
-    public ResponseEntity<?> searchMember(@RequestParam("memberId") long memberId, @RequestParam("findId") long findId) throws Exception {
+    public ResponseEntity<?> searchMember(@RequestHeader("Authorization") String token, @RequestParam("findId") long findId) throws Exception {
 
+        long memberId = jwtUtil.extractMemberId(token);
         MemberResponse memberResponse = searchService.memberDetail(memberId, findId);
         if(memberResponse == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("검색 결과가 없습니다.");
         else return ResponseEntity.ok(memberResponse);
