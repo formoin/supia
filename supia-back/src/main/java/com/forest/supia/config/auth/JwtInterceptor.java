@@ -23,7 +23,7 @@ public class JwtInterceptor implements HandlerInterceptor {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+            String token = authHeader.substring(7).trim();
             Long memberId = jwtUtil.extractMemberId(token);
 
             Member member = memberRepository.findById(memberId).orElse(null);

@@ -32,6 +32,10 @@ public class MemberController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+
     @GetMapping("/list")
     public ResponseEntity<List<Member>> listMember(){
         List<Member> memberList = memberService.listMember();
@@ -121,5 +125,23 @@ public class MemberController {
             response.put("error", member);
             return ResponseEntity.ok().body(response);
         }
+    }
+
+    @PutMapping("/delete")
+    public ResponseEntity<Map<String, String>> deleteMember(@RequestHeader("Authorization") String token) {
+        Map<String, String> response = new HashMap<>();
+        Long memberId = jwtUtil.extractMemberId(token);
+        // friend 테이블 member 정보 삭제 (from member, to member 모두 삭제)
+        // walk 테이블 memberId 검색 후 삭제
+        // own_bgm 삭제
+        // item 테이블 memberId를 null로 수정
+        // member 테이블 해당 memberId 탈퇴 상태로 수정
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/auth-test")
+    public Long getMemberId(@RequestHeader(value = "Authorization") String token){
+
+        return jwtUtil.extractMemberId(token);
     }
 }

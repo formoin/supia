@@ -17,11 +17,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-
 @Service
 public class MemberService {
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private ForestRepository forestRepository;
+
     @Autowired
     private ForestRepository forestRepository;
 
