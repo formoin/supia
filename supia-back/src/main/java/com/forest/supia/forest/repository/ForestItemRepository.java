@@ -10,4 +10,6 @@ public interface ForestItemRepository extends JpaRepository<ForestItem, Long> {
 
     ForestItem findByItemId(long itemId);
 
+    void deleteByItemId(long itemId);
+
 }

@@ -1,6 +1,6 @@
 package com.forest.supia.forest.entity;
 
-import com.forest.supia.forest.dto.ForestItemRequest;
+import com.forest.supia.forest.dto.ForestItemSoundRequest;
 import com.forest.supia.item.entity.Item;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -42,11 +42,9 @@ public class ForestItem {
         return forestItem;
     }
 
-    public void update(ForestItemRequest forestItemRequest) {
+    public void update(ForestItemSoundRequest forestItemSoundRequest) {
 
-        this.x = forestItemRequest.getX();
-        this.y = forestItemRequest.getY();
-        this.soundOn = forestItemRequest.isSoundOn();
+        this.soundOn = forestItemSoundRequest.isSoundOn();
 
     }
 
