@@ -4,31 +4,41 @@ import useStore from './store/useStore';
 import { StyleSheet, View, Text, Pressable, Image } from 'react-native';
 import Octicons from 'react-native-vector-icons/Octicons';
 import axios from 'axios';
+import { useIsFocused } from '@react-navigation/native';
 
-const Popup_Buy = ({ goBuy, memberId, itemId, price, remainingPoints, type }) => {
+const Popup_Buy = ({ goBuy, itemId, price, remainingPoints, type }) => {
   const { activeText, setActiveText } = useStore();
   const [PopupVisible, setPopupVisible] = useState(false);
 
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDAxNzU2LCJleHAiOjE3NTQ1Mzc3NTZ9.yQ_IgYEQzmf5O2_csfB095x3RcWrxdJynXGy6XqJT3Zc5-tQ-sSs4ycdMCxwKiWgj1_m8L83O3kKibIi7x0JJA';
+  const memberId = 1;
+
   const sendThemeData = async () => {
     const BGI = {
-      memberId: memberId,
-      itemId: itemId,
-      price: price,
-      remainingPoints: remainingPoints,
-      type: "bgi"
+        memberId: memberId,
+        itemId: itemId,
+        price: price,
+        remainingPoints: remainingPoints,
+        type: "bgi"
     };
 
-    try {
-      const response = await axios.post('http://i11b304.p.ssafy.io/api/purchase/bgi', BGI);
+  try {
+    const response = await axios.post('https://i11b304.p.ssafy.io/api/background/purchase/bgi', BGI, {
+      headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+      },
+    });
 
-      if (response.status === 200) {
-        console.log("테마 구매 정보 저장 성공");
-      } else {
-        console.log("테마 구매 정보 저장 실패");
+        if (response.status === 200) {
+          console.log("테마 구매 정보 저장 성공");
+        } else {
+          console.log("테마 구매 정보 저장 실패");
+        }
+      } catch (error) {
+        console.error("테마 요청 중 오류 발생:", error);
       }
-    } catch (error) {
-      console.error("요청 중 오류 발생:", error);
-    }
   };
 
   const sendMusicData = async () => {
@@ -41,7 +51,13 @@ const Popup_Buy = ({ goBuy, memberId, itemId, price, remainingPoints, type }) =>
     };
 
     try {
-      const response = await axios.post('http://i11b304.p.ssafy.io/api/purchase/bgm', BGM);
+      const response = await axios.post('https://i11b304.p.ssafy.io/api/background/purchase/bgm', BGM, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+        },
+      });
 
       if (response.status === 200) {
         console.log("음악 구매 정보 저장 성공");
@@ -49,16 +65,16 @@ const Popup_Buy = ({ goBuy, memberId, itemId, price, remainingPoints, type }) =>
         console.log("음악 구매 정보 저장 실패");
       }
     } catch (error) {
-      console.error("요청 중 오류 발생:", error);
+      console.error("음악 요청 중 오류 발생:", error);
     }
   };
 
   const handleBuyPress = async () => {
     goBuy();
     if (activeText === 'text1') {
-      await sendThemeData();
+      sendThemeData();
     } else if (activeText === 'text2') {
-      await sendMusicData();
+      sendMusicData();
     }
   };
 

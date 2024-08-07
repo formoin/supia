@@ -11,8 +11,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import Geolocation from 'react-native-geolocation-service';
-
-const API_KEY = 'f02486b7ba56ed464a8ab7aba33d36c3'; // OpenWeatherMap API
+import {WEATHER_API_KEY} from '@env'
 
 export default function WeatherInfo() {
   const [location, setLocation] = useState(null);
@@ -71,7 +70,7 @@ export default function WeatherInfo() {
             params: {
               lat: lat,
               lon: lon,
-              appid: API_KEY,
+              appid: WEATHER_API_KEY,
               units: 'metric',
               lang: 'kr',
             },
@@ -132,7 +131,7 @@ export default function WeatherInfo() {
           </View>
           <Image source={{uri: weatherIconUrl}} style={styles.weatherIcon} />
           <View style={styles.weatherDetails}>
-            <Text>날씨: {weatherDescription}</Text>
+            <Text style={{marginBottom: 5}}>{weatherDescription}</Text>
             <Text>온도: {weather.main.temp}°C</Text>
             <Text>습도: {weather.main.humidity}%</Text>
             <Text>풍속: {weather.wind.speed} m/s</Text>

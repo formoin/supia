@@ -1,146 +1,219 @@
-//import React, {useRef, useState} from 'react';
-//import {
-//  View,
-//  StyleSheet,
-//  TouchableOpacity,
-//  Text,
-//  PermissionsAndroid,
-//  Platform,
-//  Alert,
-//} from 'react-native';
-//import {Camera, useCameraDevice} from 'react-native-vision-camera';
-//import RNFS from 'react-native-fs';
-//import axios from 'axios';
-//
-//function CaptureScreen() {
-//  const [isCameraActive, setIsCameraActive] = useState(true);
-//  const [photoUri, setPhotoUri] = useState(null);
-//  const cameraRef = useRef(null);
-//  const device = useCameraDevice('back');
-//
-//  // 권한 요청 함수
-//  const requestCameraPermission = async () => {
-//    if (Platform.OS === 'android') {
-//      try {
-//        const granted = await PermissionsAndroid.request(
-//          PermissionsAndroid.PERMISSIONS.CAMERA,
-//        );
-//        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-//          Alert.alert(
-//            '카메라 권한',
-//            '사진 촬영을 위해 카메라 권한이 필요합니다.',
-//          );
-//          return false;
-//        }
-//        return true;
-//      } catch (err) {
-//        console.warn(err);
-//        return false;
-//      }
-//    }
-//    return true;
-//  };
-//
-//  // 사진 촬영 함수
-//  const takePhoto = async () => {
-//    try {
-//      if (cameraRef.current) {
-//        const photo = await cameraRef.current.takePhoto({
-//          format: 'jpg', // 촬영할 이미지 형식 지정
-//        });
-//        const filePath = `${
-//          RNFS.DocumentDirectoryPath
-//        }/photo_${Date.now()}.jpg`;
-//        await RNFS.writeFile(filePath, photo.uri, 'base64');
-//
-//        setPhotoUri(filePath);
-//        sendPhotoToServer(filePath);
-//        setIsCameraActive(false); // 카메라 비활성화
-//      }
-//    } catch (error) {
-//      console.error('Error taking photo:', error);
-//      Alert.alert('Error', 'Failed to take photo.');
-//    }
-//  };
-//
-//  // 서버로 사진 전송
-//  const sendPhotoToServer = async filePath => {
-//    const now = new Date();
-//    const formData = new FormData();
-//    formData.append('member_id', 'example_member_id');
-//    formData.append('date', now.toISOString().split('T')[0]); // YYYY-MM-DD 형식
-//    formData.append('time', now.toTimeString().split(' ')[0]); // HH:MM:SS 형식
-//    formData.append('file', {
-//      uri: `file://${filePath}`,
-//      type: 'image/jpeg',
-//      name: 'capturedPhoto.jpg',
-//    });
-//
-//    try {
-//      const response = await axios.post(
-//        'https://yourserver.com/process_image',
-//        formData,
-//        {
-//          headers: {
-//            'Content-Type': 'multipart/form-data',
-//          },
-//        },
-//      );
-//      console.log('Photo uploaded successfully:', response.data);
-//    } catch (error) {
-//      console.error('Photo upload failed:', error);
-//      Alert.alert(
-//        'Upload Failed',
-//        'An error occurred while uploading the photo.',
-//      );
-//    }
-//  };
-//
-//  React.useEffect(() => {
-//    requestCameraPermission();
-//  }, []);
-//
-//  return (
-//    <View style={styles.container}>
-//      {isCameraActive && (
-//        <Camera
-//          ref={cameraRef}
-//          style={StyleSheet.absoluteFill}
-//          device={device}
-//          isActive={true}
-//          photo={true}
-//        />
-//      )}
-//      <TouchableOpacity onPress={takePhoto} style={styles.captureButton}>
-//        <Text style={styles.buttonText}>사진 촬영</Text>
-//      </TouchableOpacity>
-//      {photoUri && (
-//        <View>
-//          <Text>Photo captured at: {photoUri}</Text>
-//        </View>
-//      )}
-//    </View>
-//  );
-//}
-//
-//const styles = StyleSheet.create({
-//  container: {
-//    flex: 1,
-//    justifyContent: 'center',
-//    alignItems: 'center',
-//    backgroundColor: '#fff',
-//  },
-//  captureButton: {
-//    position: 'absolute',
-//    bottom: 30,
-//    padding: 10,
-//    backgroundColor: '#007bff',
-//    borderRadius: 5,
-//  },
-//  buttonText: {
-//    color: '#fff',
-//    fontSize: 16,
-//  },
-//});
-//
-//export default CaptureScreen;
+import React, {useEffect, useState, useRef} from 'react';
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  PermissionsAndroid,
+  Platform,
+  Text,
+} from 'react-native';
+import {Camera, useCameraDevices} from 'react-native-vision-camera';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import {Server_AI_IP} from '@env';
+
+const token =
+  'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDAxNzU2LCJleHAiOjE3NTQ1Mzc3NTZ9.yQ_IgYEQzmf5O2_csfB095x3RcWrxdJynXGy6XqJT3Zc5-tQ-sSs4ycdMCxwKiWgj1_m8L83O3kKibIi7x0JJA';
+const CapturePage = () => {
+  const [hasPermission, setHasPermission] = useState(false);
+  const [memberId, setMemberId] = useState(null);
+  const cameraRef = useRef(null);
+  const devices = useCameraDevices();
+  const device = devices ? devices.back : null;
+
+  useEffect(() => {
+    const getCameraPermission = async () => {
+      if (Platform.OS === 'android') {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.CAMERA,
+            {
+              title: 'Camera Permission',
+              message: 'App needs camera permission to take pictures',
+              buttonNeutral: 'Ask Me Later',
+              buttonNegative: 'Cancel',
+              buttonPositive: 'OK',
+            },
+          );
+          setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
+        } catch (err) {
+          console.warn(err);
+        }
+      } else {
+        setHasPermission(true); // iOS의 경우는 별도 권한 요청이 필요 없음
+      }
+    };
+
+    // const loadMemberId = async () => {
+    //   try {
+    //     const storedMemberId = await AsyncStorage.getItem('memberId');
+    //     if (storedMemberId !== null) {
+    //       setUserId(storedMemberId);
+    //     }
+    //   } catch (error) {
+    //     console.error('Failed to load userId:', error);
+    //   }
+    // };
+
+    getCameraPermission();
+    // loadMemberId();
+  }, []);
+
+  const takePictureAndUpload = async () => {
+    if (cameraRef.current) {
+      const photo = await cameraRef.current.takePhoto({
+        qualityPrioritization: 'balanced',
+        quality: 100,
+        format: 'png',
+      });
+      console.log(photo.path);
+      console.log(Server_AI_IP);
+      const newImageUri = 'file://' + photo.path;
+      console.log(newImageUri);
+
+      // 현재 날짜와 시간 추출
+      const currentDate = new Date();
+      const year = currentDate.getFullYear().toString().slice(2); // 연도 YY
+      const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // 월 MM
+      const day = currentDate.getDate().toString().padStart(2, '0'); // 일 DD
+      const date = year + month + day; // YYMMDD 형식
+
+      const hours = currentDate.getHours().toString().padStart(2, '0'); // 시 HH
+      const minutes = currentDate.getMinutes().toString().padStart(2, '0'); // 분 MM
+      const time = hours + minutes; // HHMM 형식
+
+      // 사진을 서버에 업로드
+      const formData = new FormData();
+      formData.append('file', {
+        uri: newImageUri,
+        type: 'image/png',
+        name: 'photo.png',
+      });
+      formData.append('date', date);
+      formData.append('time', time);
+      formData.append('member_id', '1');
+
+      try {
+        const response = await axios.post(
+          'https://i11b304.p.ssafy.io/ai/process-image/',
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+              Accept: 'application/json',
+            },
+            timeout: 50000,
+          },
+        );
+        console.log('Upload success', response.data);
+        // data 가지고 팝업 띄우기
+      } catch (error) {
+        console.error('Upload error', error);
+      }
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      {hasPermission ? (
+        device ? (
+          <>
+            <Camera
+              ref={cameraRef}
+              style={StyleSheet.absoluteFill}
+              device={device}
+              isActive={true}
+              photo={true}
+            />
+            <View style={styles.focusFrame}>
+              <View style={[styles.corner, styles.topLeft]} />
+              <View style={[styles.corner, styles.topRight]} />
+              <View style={[styles.corner, styles.bottomLeft]} />
+              <View style={[styles.corner, styles.bottomRight]} />
+            </View>
+          </>
+        ) : (
+          <Text>Loading camera...</Text>
+        )
+      ) : (
+        <Text>No camera permission</Text>
+      )}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.capture}
+          onPress={takePictureAndUpload}
+        />
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    backgroundColor: 'black',
+  },
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  capture: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  focusFrame: {
+    position: 'absolute',
+    left: '10%',
+    top: '30%',
+    width: '80%',
+    height: '40%',
+    marginLeft: 0,
+    marginTop: 0,
+  },
+  corner: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderColor: 'white',
+  },
+  topLeft: {
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    top: 0,
+    left: 0,
+  },
+  topRight: {
+    borderTopWidth: 2,
+    borderRightWidth: 2,
+    top: 0,
+    right: 0,
+  },
+  bottomLeft: {
+    borderBottomWidth: 2,
+    borderLeftWidth: 2,
+    bottom: 0,
+    left: 0,
+  },
+  bottomRight: {
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    bottom: 0,
+    right: 0,
+  },
+});
+
+export default CapturePage;

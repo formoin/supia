@@ -2,6 +2,9 @@ import React, {useState} from 'react';
 import {View, Pressable, TextInput, Text, StyleSheet} from 'react-native';
 import axios from 'axios';
 
+const API_BASE_URL = process.env.REACT_APP_Server_IP;
+console.log(API_BASE_URL);
+
 export default function SignUpScreen({navigation}) {
   const [values, setValues] = useState({
     email: '',
@@ -28,7 +31,7 @@ export default function SignUpScreen({navigation}) {
     if (values.password == values.passwordConfirm) {
       try {
         const response = await axios.post(
-          'http://10.0.2.2:8080/api/members/register',
+          `${API_BASE_URL}/members/register`,
           member,
           {
             headers: {

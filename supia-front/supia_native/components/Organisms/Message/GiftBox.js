@@ -55,9 +55,8 @@ export default function GiftBox({messageId, friendName}) {
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
-    width: '100%',
+    width: '95%',
     height: 100,
-    backgroundColor: '#ECEADE',
   },
   messageHeader: {
     flexDirection: 'row',

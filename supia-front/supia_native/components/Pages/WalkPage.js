@@ -1,6 +1,6 @@
 import React, {useEffect, useCallback, useState, useRef} from 'react';
 import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
-import MapView, {Marker, Polyline} from 'react-native-maps';
+import MapView, {Polyline} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 import WalkPage_bottom from '../Atoms/WalkPage_bottom';
 import Popup_White from '../Popup_White';
@@ -10,6 +10,7 @@ import haversine from 'haversine';
 import {useFocusEffect} from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import axios from 'axios';
+import {KAKAO_API_KEY} from '@env';
 
 export default function WalkingScreen() {
   const time = useStore(state => state.time);
@@ -32,45 +33,17 @@ export default function WalkingScreen() {
   const [location, setLocation] = useState(null);
   const [mapRegion, setMapRegion] = useState(null);
   const [locationData, setLocationData] = useState(null);
+  const [code, setCode] = useState();
   const [dong, setDong] = useState();
   const [ri, setRi] = useState();
 
-  // 위치를 기반으로 리버스 지오코딩 실행
-  const getLocationData = async ({latitude, longitude}) => {
-    try {
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
-      const response = await axios.get(url, {
-        headers: {
-          'content-type': 'multipart/form-data',
-        },
-      });
-      console.log('Response Data:', response.data);
 
-      const data = response.data;
-      setLocationData(data.address);
-      fetchLocationData(longitude, latitude)
-      // if (data){
-      //   setDong(data.address.suburb || data.address.neighbourhood);
-      //   setRi(data.address.state);
-      // }
-    } catch (error) {
-      if (error.response) {
-        // 서버가 응답을 반환했으나 상태 코드가 2xx가 아닌 경우
-        console.error('Error Response Data:', error.response.data);
-        console.error('Error Response Status:', error.response.status);
-      } else if (error.request) {
-        // 요청이 만들어졌지만 응답을 받지 못한 경우
-        console.error('Error Request Data:', error.request);
-      } else {
-        // 오류를 발생시킨 요청 설정
-        console.error('Error Message:', error.message);
-      }
-      console.error('Error Config:', error.config);
-    }
-  };
   const getLocation = () => {
+    let isMounted = true;
+
     Geolocation.getCurrentPosition(
       position => {
+        if (!isMounted) return;
         const {latitude, longitude} = position.coords;
         const initialLocation = {
           latitude,
@@ -85,10 +58,11 @@ export default function WalkingScreen() {
         setTotalDistance(0);
         setRouteWidth(0);
 
-        getLocationData({longitude, latitude});
+        fetchLocationData(longitude, latitude);
         let currentLocation = initialLocation;
 
         const intervalId = setInterval(() => {
+          if (!isMounted) return;
           // 위도를 2m 아래로 이동
           const newLatitude = currentLocation.latitude - 2 / 111320; // 1도는 약 111.32km
           const newLocation = {
@@ -109,7 +83,10 @@ export default function WalkingScreen() {
           currentLocation = newLocation;
         }, 1000);
 
-        return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 interval 정리
+        return () => {
+          isMounted = false;
+          clearInterval(intervalId);
+        }; // 컴포넌트 언마운트 시 interval 정리
       },
       error => console.log(error),
       {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
@@ -168,11 +145,11 @@ export default function WalkingScreen() {
     setMapRegion(region);
   };
 
-  const handleMapPress = async (event) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-    console.log('이동', latitude,  longitude)
-    fetchLocationData(longitude, latitude)
-    console.log('------------')
+  const handleMapPress = async event => {
+    const {latitude, longitude} = event.nativeEvent.coordinate;
+    console.log('이동', latitude, longitude);
+    fetchLocationData(longitude, latitude);
+    console.log('------------');
   };
 
   const fetchLocationData = async (lon, lat) => {
@@ -180,14 +157,17 @@ export default function WalkingScreen() {
       const url = `https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=${lon}&y=${lat}`;
       const response = await axios.get(url, {
         headers: {
-          Authorization: `KakaoAK 14d4367bf5afdfec92cd29e90c165730`
+
+          Authorization: `KakaoAK ${KAKAO_API_KEY}`
         }
       });
       
-      // 행정동과 법정동 정보 설정
+      // 동 정보 설정
       setDong(response.data.documents[0].region_3depth_name);
       setRi(response.data.documents[0].region_4depth_name);
+      setCode(response.data.documents[0].code);
       console.log(response.data.documents);
+
     } catch (error) {
       console.log('실패:', error);
     }
@@ -216,7 +196,7 @@ export default function WalkingScreen() {
           <IsCall callerName={callerName} onClose={handlePopupClose} />
         )}
         <View style={styles.popupContainer}>
-          <Popup_White dong={dong} ri={ri}/>
+          <Popup_White dong={dong} ri={ri} code={code}/>
         </View>
         <View style={styles.bottomContainer}>
           <WalkPage_bottom

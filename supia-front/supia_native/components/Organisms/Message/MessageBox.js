@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import ReadMessageModal from './ReadMessageModal';
 
-export default function MessageBox({messageId}) {
+export default function MessageBox({messageId, type}) {
   const [modalVisible, setModalVisible] = useState(false);
 
   const handlePress = () => {
@@ -12,21 +12,31 @@ export default function MessageBox({messageId}) {
     markMessageAsRead(messageId);
   };
 
-const markMessageAsRead = async (messageId) => {
-  const url = "http://i11b304.p.ssafy.io/api/messages/detail";
 
-  try {
-    const response = await axios.patch(url, messageId)
+  const markMessageAsRead = async (messageId) => {
+      const url = "https://i11b304.p.ssafy.io/api/messages/detail";
 
-    if (response.status === 200) {
-      console.log("메시지 읽음 처리 성공");
-    } else {
-      console.log("메시지 읽음 처리 실패");
-    }
-  } catch (error) {
-    console.error("요청 중 오류 발생:", error);
-  }
-};
+      try {
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+          params: {
+            messageId: messageId,
+          }
+        })
+
+        if (response.status === 200) {
+          console.log("메시지 읽음 처리 성공");
+        } else {
+          console.log("메시지 읽음 처리 실패");
+        }
+      } catch (error) {
+        console.error("메세지 요청 중 오류 발생:", error);
+      }
+    };
 
   return (
     <View>
@@ -55,9 +65,8 @@ const markMessageAsRead = async (messageId) => {
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
-    width: '100%',
+    width: '95%',
     height: 100,
-    backgroundColor: '#ECEADE',
   },
   messageHeader: {
     flexDirection: 'row',

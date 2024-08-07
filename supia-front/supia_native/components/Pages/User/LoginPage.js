@@ -4,7 +4,8 @@ import useLoginStore from '../../store/useLoginStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://10.0.2.2:8080/api/members';
+const API_BASE_URL = process.env.REACT_APP_Server_IP;
+console.log(API_BASE_URL);
 
 const LoginScreen = ({navigation}) => {
   const [values, setValues] = useState({
@@ -26,12 +27,16 @@ const LoginScreen = ({navigation}) => {
 
     try {
       // 로그인 post 요청
-      const response = await axios.post(`${API_BASE_URL}/login`, loginMember, {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json; charset=utf-8',
+      const response = await axios.post(
+        `${API_BASE_URL}/member/login`,
+        loginMember,
+        {
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
         },
-      });
+      );
 
       if (response.status === 200) {
         const token = response.data.token; // 응답 본문에서 토큰 추출
@@ -39,7 +44,7 @@ const LoginScreen = ({navigation}) => {
         alert('로그인 되었습니다.');
         // 로그인 처리 및 Home으로 이동
         useLoginStore.setState({isLoggedIn: true});
-        navigation.navigate('Call', {});
+        navigation.navigate('Call', {userId: 1, targetUserId: 2});
       }
     } catch (error) {
       console.log('Error during login:', error.message);

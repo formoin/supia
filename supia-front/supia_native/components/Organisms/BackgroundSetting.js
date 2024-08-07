@@ -15,11 +15,12 @@ export default function BackgroundSetting({goSetting, memberId}) {
 
   const getOwnBackground = async () => {
     try {
-      const response = await axios.get(
-        `http://i11b304.p.ssafy.io/api/own/${memberId}`,
+      const response = await axios.get(`https://i11b304.p.ssafy.io/api/own/${memberId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
           },
         },
       );

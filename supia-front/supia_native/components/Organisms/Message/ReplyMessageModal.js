@@ -1,32 +1,47 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, TextInput } from 'react-native';
+import React, {useState} from 'react';
+import {View, Text, StyleSheet, Modal, TextInput} from 'react-native';
 import axios from 'axios';
 import PopupHeader from '../../Atoms/PopupHeader';
 import Searchbar from '../../Organisms/SearchBar';
 import Green from '../../Atoms/Button_Green';
-import ReplyMessage from './ReplyMessageModal';
 
-export default function ReadMessageModal({ visible, onClose, friendName, memberId, friendId }) {
+export default function ReadMessageModal({
+  visible,
+  onClose,
+  friendName,
+  memberId,
+  friendId,
+}) {
   const [text, setText] = useState('');
 
   const sendMessage = async () => {
     const Message = {
-      fromMemberId: memberId,
+      fromMemberId: 1,
       toMemberId: friendId,
       content: text,
     };
 
     try {
-      const response = await axios.post('http://i11b304.p.ssafy.io/api/messages', Message);
+      const response = await axios.post(
+        'https://i11b304.p.ssafy.io/api/messages',
+        Message,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        },
+      );
 
       if (response.status === 200) {
-        console.log("메세지 보내기 성공");
+        console.log('메세지 보내기 성공');
         onClose();
       } else {
-        console.log("메세지 보내기 실패");
+        console.log('메세지 보내기 실패');
       }
     } catch (error) {
-      console.error("요청 중 오류 발생:", error);
+      console.error('요청 중 오류 발생:', error);
     }
   };
 
@@ -39,8 +54,7 @@ export default function ReadMessageModal({ visible, onClose, friendName, memberI
       animationType="slide"
       transparent={true}
       visible={visible}
-      onRequestClose={onClose}
-    >
+      onRequestClose={onClose}>
       <View style={styles.modalContainer}>
         <View style={styles.modalView}>
           <PopupHeader Label="답장하기" onClose={onClose} />

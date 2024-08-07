@@ -15,20 +15,27 @@ export default function FriendScreen() {
     setEdit(!edit);
   };
 
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMjM0QG5hdmVyLmNvbSIsIm1lbWJlcklkIjoxLCJpYXQiOjE3MjI5MjI3MDYsImV4cCI6MTc1NDQ1ODcwNn0.8dh878bIU9LeTY9v0c0zynhcj9n7drFVfu96CJmeGze6JyhiVlUCHp9NmeyBzrjmK8xDYz5-xg2frAz2K-PAZQ';
+  const memberId = 1;
+
   const getFriends = async () => {
-    const url = 'http://i11b304.p.ssafy.io/api/friends'; // API URI
+
+    const url = 'http://i11b304.p.ssafy.io/api/friends';
     const headers = {
-        Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
     };
     try {
       const response = await axios.get(url, {
           headers: headers,
           params: {
-            memberId: memberId, //memberId 변경
+            memberId: 1, //memberId 변경
           },
       });
       setFriends(response.data);
-    } catch (error) {
+      console.log('성공')
+    } catch (error) {             
       console.error('친구 목록을 가져오는 데 실패했습니다:', error);
     }
   };

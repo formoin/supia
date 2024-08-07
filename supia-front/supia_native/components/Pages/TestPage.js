@@ -1,103 +1,83 @@
-import React, {useEffect, useRef, useState} from 'react';
+
+import React, {useRef} from 'react';
 import {
   View,
-  Text,
   Button,
-  StyleSheet,
-  Alert,
-  Platform,
   PermissionsAndroid,
+  Platform,
+  Alert,
+  Text,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import useMySocket from '../Pages/WebRTC/useSocket'; // WebSocket 커스텀 훅
+import ViewShot from 'react-native-view-shot';
 
-const TestWebRTCPage = () => {
-  const userId = 99; // 고정된 테스트 사용자 ID
-  const targetUserId = 100; // 상대방 사용자 ID
-  const navigation = useNavigation();
+const TestPage = () => {
+  const viewShotRef = useRef(null);
 
-  const {ws} = useMySocket(userId, null); // targetUserId는 null로 설정
-
-  useEffect(() => {
-    requestPermissions();
-  }, []);
-
-  const requestPermissions = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.requestMultiple(
-          [
-            PermissionsAndroid.PERMISSIONS.CAMERA,
-            PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-          ],
+  const requestStoragePermission = async () => {
+    try {
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
           {
-            title: 'Camera and Microphone Permission',
-            message:
-              'This app needs access to your camera and microphone for video calls.',
+            title: 'Storage Permission',
+            message: 'This app needs access to your storage to save photos.',
+
             buttonNeutral: 'Ask Me Later',
             buttonNegative: 'Cancel',
             buttonPositive: 'OK',
           },
         );
-
-        if (
-          granted['android.permission.CAMERA'] ===
-            PermissionsAndroid.RESULTS.GRANTED &&
-          granted['android.permission.RECORD_AUDIO'] ===
-            PermissionsAndroid.RESULTS.GRANTED
-        ) {
-          console.log('You can use the camera and microphone');
-        } else {
-          console.log('Camera or Microphone permission denied');
-          Alert.alert(
-            'Permission Denied',
-            'You need to grant camera and microphone permissions to use this feature.',
-          );
-        }
-      } catch (err) {
-        console.warn(err);
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } else {
+        return true;
       }
-    } else {
-      console.log('Permissions are not required for iOS or other platforms.');
+    } catch (err) {
+      console.warn(err);
+      return false;
     }
   };
 
-  useEffect(() => {
-    if (ws) {
-      // WebSocket 연결 후 등록 메시지 전송
-      const registerMessage = JSON.stringify({
-        type: 'register',
-        data: {userId},
-      });
-      ws.send(registerMessage);
-      console.log('User registered with ID:', userId);
+  const captureScreen = async () => {
+    const hasPermission = await requestStoragePermission();
+    if (hasPermission) {
+      viewShotRef.current
+        .capture()
+        .then(uri => {
+          console.log('Capture complete...', uri);
+        })
+        .catch(error => {
+          console.error(error);
+          Alert.alert('Error', 'Failed to capture screenshot');
+        });
+    } else {
+      Alert.alert(
+        'Permission Denied',
+        'Storage permission is required to save screenshots',
+      );
     }
-  }, [ws, userId]);
-
-  const enterRoom = () => {
-    // VideoChatScreen으로 이동
-    navigation.navigate('VideoChat', {userId, targetUserId});
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.userIdText}>회원 ID: {userId}</Text>
-      <Button title="방 입장" onPress={enterRoom} />
+    <View style={{flex: 1}}>
+      <ViewShot ref={viewShotRef} style={{flex: 1}}>
+        {/* 캡쳐할 화면 내용 */}
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <Text>Capture this screen!</Text>
+        </View>
+      </ViewShot>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 50,
+          left: 0,
+          right: 0,
+          alignItems: 'center',
+        }}>
+        <Button title="Capture Screen" onPress={captureScreen} />
+      </View>
+
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  userIdText: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-});
-
-export default TestWebRTCPage;
+export default TestPage;

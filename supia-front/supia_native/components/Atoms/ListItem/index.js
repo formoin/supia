@@ -9,7 +9,7 @@ import Popup from '../../Popup';
 import axios from 'axios';
 
 export default function Label({ pic, title, content, name, UserLevel, onOpenPopup,
-                                onClose, page, memberId, handleFriendChange}) {
+                                onClose, page, handleFriendChange}) {
   const [FriendModalVisible, setFriendModalVisible] = useState(false);
   const [SearchModalVisible, setSearchModalVisible] = useState(false);
   const [NoteModalVisible, setNoteModalVisible] = useState(false);
@@ -18,12 +18,16 @@ export default function Label({ pic, title, content, name, UserLevel, onOpenPopu
 
   const getUserDetail = async () => {
       try {
-          const response = await axios.get(
-            `http://i11b304.p.ssafy.io/api/friends/detail/${memberId}`,
+          const response = await axios.get("https://i11b304.p.ssafy.io/api/friends/detail",
             {
-              headers: {
+             headers: {
                 Authorization: `Bearer ${token}`,
+                Accept: 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
               },
+              params: {
+                memberId: memberId
+              }
             }
           );
 
@@ -35,13 +39,14 @@ export default function Label({ pic, title, content, name, UserLevel, onOpenPopu
                 console.log("친구 정보 로딩 실패");
            }
        } catch (error) {
-           console.error("요청 중 오류 발생:", error);
+           console.error("친구 정보 요청 중 오류 발생:", error);
        }
     };
 
   const handleOpenUserModal = () => {
     if (pic === 'user' && page === 'search') {
       setSearchModalVisible(true); // 검색 모달 열기
+      getUserDetail();
     }
     else if (pic === 'user') {
       setFriendModalVisible(true); // 친구 모달 열기

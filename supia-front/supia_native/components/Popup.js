@@ -39,9 +39,34 @@ export default function Popup({onClose, Label, content, friendName, imguri, date
     }
   }
   
+  const handleSave = async () => { // 숲 상태 저장
+    try {
+    //   const response = await axios.delete(`http://i11b304.p.ssafy.io/api/items/${itemId}`,
+    //     {
+    //     headers: {
+    //       Authorization: `Bearer ${token}`,
+    //     },
+    //   });
+       console.log('저장') 
+      onDeleteSuccess()
+    } catch (error) {
+      console.error('삭제 실패', error);
+    }
+  }
+
+  const setWhen = () => {
+    if (when === 'friend') {
+        handleFriendDelete('내이름넣기', friendName);
+    } else if (when === 'save') {
+        handleSave(); // save에 대한 처리 함수 호출
+    } else {
+        handleDelete(); // 나머지 경우에 대한 처리
+    }
+};
+
   return (
     <View style={imguri ? styles.containerWithImage : styles.container}>
-      <PopupHeader Label={Label} onClose={onClose} />
+      {Label ? <PopupHeader Label={Label} onClose={onClose} /> : <View style={{ paddingVertical: 8 }}></View>}
       {imguri ? ( 
         <Frame>
           <Text style={{ fontSize: 20 }}>{friendName}</Text>
@@ -56,7 +81,7 @@ export default function Popup({onClose, Label, content, friendName, imguri, date
 
       <View style={styles.buttonContainer}>
         <View style={styles.button}>
-          <Button_Green label="네" onPress={when === 'friend' ? handleFriendDelete('내이름넣기', friendName) : handleDelete}/>
+          <Button_Green label="네" onPress={setWhen}/>
         </View>
         <View style={styles.button}>
           <Button_Red label="아니오" onPress={onClose}/>

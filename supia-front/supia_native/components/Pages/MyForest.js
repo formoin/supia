@@ -1,4 +1,4 @@
-import React, { useState, useEffect, panRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { View, Image, StyleSheet, Pressable, Modal, Text, Button, ImageBackground } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
@@ -8,58 +8,89 @@ import DictionaryForest from '../Organisms/DictionaryForest'
 import axios from 'axios'
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import useStore from '../store/useStore';
+import Popup from '../Popup';
 
-export default function MyForestScreen({memberId}) {
+export default function MyForestScreen() {
   const navigation = useNavigation();
   const [forestData, setForestData] = useState(null);
   const [isModalVisible1, setIsModalVisible1] = useState(false); // setting modal
   const [isModalVisible2, setIsModalVisible2] = useState(false); // dict modal
   const [showSticker, setShowSticker] = useState(false);
   const { droppedImages, updateImagePosition } = useStore();
-  // const getForest = async () => {
-  //   try {
-  //       const response = await axios.get('http://i11b304.p.ssafy.io/api/forest');
-  //        if (response.status === 200) {
-  //             console.log(response.data)
-  //             setForestData(response.data);
-  //             console.log("숲 로딩 성공");
-  //        } else {
-  //             console.log("숲 로딩 실패");
-  //        }
-  //    } catch (error) {
-  //        console.error("요청 중 오류 발생:", error);
-  //    }
-  // };
-
-  // useEffect(() => {
-  //   getForest();
-  // }, []);
 
 
+//   const getForest = async () => {
+//     try {
+//         const response = await axios.get('https://i11b304.p.ssafy.io/api/forest',{
+//           headers: {
+//             Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
+//             Accept: 'application/json',
+//                 'Content-Type': 'application/json; charset=utf-8',
+//             },
+//           params: {
+//             memberId: 1,
+//             },
+//         });
+//          if (response.status === 200) {
+//               console.log(response.data)
+//               setForestData(response.data);
+//               console.log("숲 로딩 성공");
+//          } else {
+//               console.log("숲 로딩 실패");
+//          }
+//      } catch (error) {
+//          console.error("숲 요청 중 오류 발생:", error);
+//      }
+//   };
+//
+//   useEffect(() => {
+//     getForest();
+//   }, []);
+
+  // 저장 팝업
+  const [savePopupVisible, setSavePopupVisible] = useState(false);
+  const handleOpenSavePopup = () => {
+    setSavePopupVisible(true); // 팝업 열기
+  };
+  const handleCloseSavePopup = () => {
+    setSavePopupVisible(false); // 팝업 닫기
+    navigation.navigate("Home");
+  };
+
+  
   const goSetting = () => {
     setIsModalVisible1(!isModalVisible1);
   };
   
   const goHome = () => {
-    navigation.navigate("Home");
+    handleOpenSavePopup()
+    // navigation.navigate("Home");
   };
   
   const goDictionary = () => {
     setIsModalVisible2(!isModalVisible2);
   };
 
+
+  const [draggedPosition, setDraggedPosition] = useState(null);
+
   // 드래그 중인 이미지의 위치를 업데이트하는 핸들러
-  const onGestureEvent = (event, index) => {
+  const onGestureEvent = (itemId) => (event) => {
     const { translationX, translationY } = event.nativeEvent;
-    updateImagePosition(index, translationX, translationY);
+    const droppedImage = droppedImages.find(img => img.itemId === itemId)
+    setDraggedPosition({
+      itemId,
+      x: droppedImage.position.x + translationX,
+      y: droppedImage.position.y + translationY,
+    });
   };
 
   // 드래그가 끝났을 때의 핸들러
-  const onHandlerStateChange = (event) => {
-    if (event.nativeEvent.state === 5) { // 5는 END 상태
-      // 드래그가 끝난 후 위치를 store에 저장
+  const onHandlerStateChange = (itemId) => (event) => {
+    if (event.nativeEvent.state === 5) { // 'end' 상태
       const { translationX, translationY } = event.nativeEvent;
-      // `updateImagePosition` 함수로 store에 위치 업데이트
+      updateImagePosition(itemId, translationX, translationY);
+      setDraggedPosition(null);
     }
   };
 
@@ -72,23 +103,27 @@ export default function MyForestScreen({memberId}) {
       >
         {droppedImages.map((imageData, index) => (
           <PanGestureHandler
-            key={index}
-            onGestureEvent={(event) => onGestureEvent(event, index)}
-            onHandlerStateChange={onHandlerStateChange}
-            ref={panRef}
+          key={imageData.itemId}
+          onGestureEvent={onGestureEvent(imageData.itemId)}
+          onHandlerStateChange={onHandlerStateChange(imageData.itemId)}
+        >
+          <View
+            style={[
+              styles.imageWrapper,
+              {
+                transform: [
+                  { translateX: draggedPosition?.itemId === imageData.itemId ? draggedPosition.x : imageData.position.x },
+                  { translateY: draggedPosition?.itemId === imageData.itemId ? draggedPosition.y : imageData.position.y },
+                ],
+              },
+            ]}
           >
-            <View style={[styles.imageWrapper, {
-              transform: [
-                { translateX: imageData.position.x },
-                { translateY: imageData.position.y },
-              ],
-            }]}>
-              <Image
-                source={{ uri: imageData.imageUri }}
-                style={styles.sticker}
-              />
-            </View>
-          </PanGestureHandler>
+            <Image
+              source={{ uri: imageData.imageUrl }}
+              style={styles.sticker}
+            />
+          </View>
+        </PanGestureHandler>
         ))}
       </ImageBackground>
 
@@ -131,6 +166,20 @@ export default function MyForestScreen({memberId}) {
         </View>
       </Modal>
 
+      {/* 저장 */}
+      <Modal
+        transparent={true}
+        visible={savePopupVisible}
+        onRequestClose={handleCloseSavePopup}>
+        <View style={styles.modalBackground}>
+          <Popup
+            content="저장하시겠습니까?"
+            onClose={handleCloseSavePopup}
+            when='save'
+            onDeleteSuccess={handleCloseSavePopup}
+          />
+        </View>
+      </Modal>
     
     </View>
   );

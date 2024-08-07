@@ -7,6 +7,7 @@ import {
   Text,
   TouchableWithoutFeedback,
 } from 'react-native';
+import {launchCamera} from 'react-native-image-picker';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Feather';
@@ -27,9 +28,9 @@ const WalkPage_bottom = ({onOpenPopup, distance}) => {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [popupVisible, setPopupVisible] = useState(false);
+  const [imageUri, setImageUri] = useState(null);
 
   const onPressCamera = () => {
-    // 카메라를 만들어 보자
     navigation.navigate('Capture');
   };
 

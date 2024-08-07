@@ -5,37 +5,39 @@ import DicDivide from '../DicDivide';
 import Card from '../Atoms/Card';
 import useStore from '../store/useStore';
 import axios from "axios";
+import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
 
+const token =
+'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDAxNzU2LCJleHAiOjE3NTQ1Mzc3NTZ9.yQ_IgYEQzmf5O2_csfB095x3RcWrxdJynXGy6XqJT3Zc5-tQ-sSs4ycdMCxwKiWgj1_m8L83O3kKibIi7x0JJA'
 export default function DictionaryScreen() {
   const { activeDic, resetActiveDic } = useStore();
   const [speciesList, setSpeciesList] = useState([]);
 
   // api
-  const fetchSpeciesData = async (token, category) => {
-    const url = 'http://i11b304.p.ssafy.io/api/items'; // API URI
-    const headers = {
-        Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
-    };
+  const fetchSpeciesData = async (category) => {
     try {
-      const response = await axios.get(url, {
-          headers: headers,
+      const response = await axios.get(`${Server_IP}/items`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
+            Accept: 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+          },
           params: {
               category: category,
           },
       });
-
       // 성공적인 응답 처리
       if (response.status === 200) {
           // const speciesList = response.data;
           setSpeciesList(response.data)
-          console.log(speciesList); // 결과 확인
+          console.log(response.data)
           return speciesList;
       }
     } catch (error) {
         // 오류 처리
         if (error.response) {
           // 서버가 응답했지만 오류 코드가 있는 경우
-          console.error('Error:', error.response.data);
+          // console.error('Error:', error.response.data);
           if (error.response.status === 400) {
               console.error('도감 로딩 실패');
           }
@@ -44,7 +46,6 @@ export default function DictionaryScreen() {
         }
       }
    };
-  
   // useEffect를 사용하여 activeDic이 변경될 때마다 API 호출
   useEffect(() => {
     const categoryMap = {
@@ -54,11 +55,10 @@ export default function DictionaryScreen() {
       text4: 4,
     };
 
-    const token = ''; // 토큰 넣기
     const category = categoryMap[activeDic];
 
     if (category) {
-      fetchSpeciesData(token, category); // API 호출
+      fetchSpeciesData(category); // API 호출
     }
   }, [activeDic]); // activeDic이 변경될 때마다 호출
   

@@ -41,11 +41,32 @@ const useStore = create(set => ({
   currentLocation: null, // 현재 위치를 저장할 상태
   setCurrentLocation: location => set({currentLocation: location}), // 현재 위치 설정 함수
 
+  
   // 숲 스티커
+  // 초기 상태
   droppedImages: [],
-  addDroppedImage: (imageUri, position) => set((state) => ({
-    droppedImages: [...state.droppedImages, { imageUri, position }],
+  // 이미지를 추가, 삭제하는 함수
+  addDroppedImage: (itemId, imageUrl, position) => set((state) => ({
+    droppedImages: [...state.droppedImages, { itemId, imageUrl, position }],
   })),
+  removeDroppedImage: (itemId) => set((state) => ({
+    droppedImages: state.droppedImages.filter(img => img.itemId !== itemId),
+  })),
+
+  // 이미지 위치를 업데이트하는 함수
+  updateImagePosition : (itemId, translationX, translationY) => {
+    set((state) => {
+      const updatedImages = [...state.droppedImages];
+      const image = updatedImages.find(img => img.itemId === itemId);
+      
+      image.position.x += translationX;
+      image.position.y += translationY;
+  
+      return {
+        droppedImages: updatedImages,
+      };
+    });
+  },
   
 }));
 

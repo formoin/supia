@@ -30,38 +30,38 @@ const MyPageScreen = ({navigation}) => {
     point: '',
   });
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const token = await AsyncStorage.getItem('key');
-        if (token) {
-          // 토큰에서 유저 ID 추출
-          const decodedToken = jwt_decode(token);
-          console.log(decodedToken);
-          const memberId = decodedToken.memberId;
+  // useEffect(() => {
+  //   const fetchUserInfo = async () => {
+  //     try {
+  //       const token = await AsyncStorage.getItem('key');
+  //       if (token) {
+  //         // 토큰에서 유저 ID 추출
+  //         const decodedToken = jwt_decode(token);
+  //         console.log(decodedToken);
+  //         const memberId = decodedToken.memberId;
 
-          const response = await axios.get(
-            `http://10.0.2.2:8080/api/members/my-info/${memberId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-                'Content-Type': 'application/json; charset=utf-8',
-              },
-            },
-          );
+  //         const response = await axios.get(
+  //           `http://10.0.2.2:8080/api/members/my-info/${memberId}`,
+  //           {
+  //             headers: {
+  //               Authorization: `Bearer ${token}`,
+  //               Accept: 'application/json',
+  //               'Content-Type': 'application/json; charset=utf-8',
+  //             },
+  //           },
+  //         );
 
-          setLoginuser(response.data.member); // 서버 응답에 맞게 수정
-        } else {
-          setError('No token found');
-        }
-      } catch (err) {
-        setError('Failed to fetch user info');
-        console.error(err);
-      }
-    };
-    fetchUserInfo();
-  }, []);
+  //         setLoginuser(response.data.member); // 서버 응답에 맞게 수정
+  //       } else {
+  //         setError('No token found');
+  //       }
+  //     } catch (err) {
+  //       setError('Failed to fetch user info');
+  //       console.error(err);
+  //     }
+  //   };
+  //   fetchUserInfo();
+  // }, []);
 
   const minExp = 300;
   const maxExp = 500;

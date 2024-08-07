@@ -21,6 +21,7 @@ export default function StoreScreen() {
   );
 
   useEffect(() => {
+    getPoint();
     if (activeText === 'text1') {
       getBackground();
     } else if (activeText === 'text2') {
@@ -28,7 +29,9 @@ export default function StoreScreen() {
     }
   }, [activeText]);
 
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMjM0QG5hdmVyLmNvbSIsIm1lbWJlcklkIjoxLCJpYXQiOjE3MjI5MjI3MDYsImV4cCI6MTc1NDQ1ODcwNn0.8dh878bIU9LeTY9v0c0zynhcj9n7drFVfu96CJmeGze6JyhiVlUCHp9NmeyBzrjmK8xDYz5-xg2frAz2K-PAZQ'
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDAxNzU2LCJleHAiOjE3NTQ1Mzc3NTZ9.yQ_IgYEQzmf5O2_csfB095x3RcWrxdJynXGy6XqJT3Zc5-tQ-sSs4ycdMCxwKiWgj1_m8L83O3kKibIi7x0JJA';
+  const memberId = 1;
+
   const getBackground = async () => {
     try {
       const response = await axios.get('https://i11b304.p.ssafy.io/api/background/bgm', {
@@ -71,11 +74,10 @@ export default function StoreScreen() {
     }
   };
 
-  const memberId = 1
   const getPoint = async () => {
     try {
       const response = await axios.get(
-        `http://i11b304.p.ssafy.io/api/members/my-info/${memberId}`,
+        `https://i11b304.p.ssafy.io/api/members/my-info/${memberId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -85,8 +87,8 @@ export default function StoreScreen() {
         }
       );
       if (response.status === 200) {
-        console.log(response.data);
-        setPoint(response.data);
+//        console.log(response.data);
+//        setPoint(response.data.member.point);
         console.log("회원 정보 확인 성공");
       } else {
         console.log("회원 정보 확인 실패");
@@ -103,7 +105,9 @@ export default function StoreScreen() {
       </View>
       <View style={styles.divideContainer}>
         <Divide text1="배경사진" text2="배경음악" />
-        <Text style={{ marginRight: 90 }}>내 포인트 200 P</Text>
+        <Text style={{ marginRight: 90 }}>
+          내 포인트 {`${point} P`}
+        </Text>
       </View>
       {activeText === 'text1' && (
         <StoreBox name="희망의 숲" />
@@ -127,6 +131,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    marginLeft: 80,
+    marginLeft: 75,
   },
 });

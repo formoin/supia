@@ -19,7 +19,13 @@ export default function FriendRequestBox({messageId, friendName}) {
 
   const handleAccept = async ({messageId}) => { // 친구 요청 수락
       try {
-        const response = await axios.get("http://i11b304.p.ssafy.io/api/friends/accept");
+        const response = await axios.get("https://i11b304.p.ssafy.io/api/friends/accept", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        });
       } catch (error) {
         console.error("친구 수락 실패:", error);
       }
@@ -27,26 +33,15 @@ export default function FriendRequestBox({messageId, friendName}) {
 
   const handleDelete = async ({messageId}) => { // 친구 요청 거절
       try {
-        const response = await axios.delete("http://i11b304.p.ssafy.io/api/friends/refuse");
+        const response = await axios.delete("https://i11b304.p.ssafy.io/api/friends/refuse", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        });
       } catch (error) {
         console.error('친구 거절 실패', error);
-      }
-  };
-
-  const markMessageAsRead = async (messageId) => {
-      const url = "http://i11b304.p.ssafy.io/api/messages/detail";
-      const data = { is_check: true };
-
-      try {
-        const response = await axios.patch(url, data)
-
-        if (response.status === 200) {
-          console.log("메시지 읽음 처리 성공");
-        } else {
-          console.log("메시지 읽음 처리 실패");
-        }
-      } catch (error) {
-        console.error("요청 중 오류 발생:", error);
       }
   };
 
@@ -82,7 +77,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: '100%',
     height: 100,
-    backgroundColor: '#ECEADE',
   },
   messageHeader: {
     flexDirection: 'row',

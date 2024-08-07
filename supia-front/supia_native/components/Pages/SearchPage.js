@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {View, StyleSheet} from 'react-native';
-import {useIsFocused, useFocusEffect} from '@react-navigation/native'; // 네비게이션 훅 임포트
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { useIsFocused, useFocusEffect } from '@react-navigation/native';
 import Header from '../Atoms/Header';
 import Searchbar from '../Organisms/SearchBar';
 import Divide from '../Divide';
@@ -8,74 +8,45 @@ import ListItem from '../Atoms/ListItem';
 import useStore from '../store/useStore';
 import axios from 'axios';
 
-export default function SearchScreen({ memberId }) {
-  const {activeText, setActiveText, resetActiveText} = useStore();
-  const [searchData, setsearchData] = useState(null);
-  const [friendData, setFriendData] = useState(null);
+export default function SearchScreen() {
+  const { activeText, setActiveText, resetActiveText } = useStore();
+  const [friendData, setFriendData] = useState([]);
   const isFocused = useIsFocused();
 
-  useFocusEffect(
-    React.useCallback(() => {
-      resetActiveText();
-    }, [resetActiveText]),
-  );
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDAxNzU2LCJleHAiOjE3NTQ1Mzc3NTZ9.yQ_IgYEQzmf5O2_csfB095x3RcWrxdJynXGy6XqJT3Zc5-tQ-sSs4ycdMCxwKiWgj1_m8L83O3kKibIi7x0JJA';
+  const memberId = 1;
 
   const getFriend = async () => {
     try {
-        const response = await axios.get('http://i11b304.p.ssafy.io/api/friends');
+      const response = await axios.get('https://i11b304.p.ssafy.io/api/friends', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        params: {
+          memberId: memberId,
+        },
+      });
 
-         if (response.status === 200) {
-              console.log(response.data)
-              setFriendData(response.data);
-              console.log("친구 리스트 로딩 성공");
-         } else {
-              console.log("친구 리스트 로딩 실패");
-         }
-     } catch (error) {
-         console.error("요청 중 오류 발생:", error);
-     }
-  };
-
-  const getUserSearch = async () => {
-    try {
-        const response = await axios.get('http://i11b304.p.ssafy.io/api/search');
-
-         if (response.status === 200) {
-              console.log(response.data)
-              setsearchData(response.data);
-              console.log("user 검색 성공");
-         } else {
-              console.log("user 검색 실패");
-         }
-     } catch (error) {
-         console.error("요청 중 오류 발생:", error);
-     }
-  };
-
-  const getItemSearch = async () => {
-    try {
-        const response = await axios.get('http://i11b304.p.ssafy.io/api/search');
-
-         if (response.status === 200) {
-              console.log(response.data)
-              setsearchData(response.data);
-              console.log("item 검색 성공");
-         } else {
-              console.log("item 검색 실패");
-         }
-     } catch (error) {
-         console.error("요청 중 오류 발생:", error);
-     }
-  };
-
-  const handleSearch = () => {
-    if (activeText === 'text1') {
-      getFriend();
-      getUserSearch();
-    } else if (activeText === 'text2') {
-      getItemSearch();
+      if (response.status === 200) {
+        console.log(response.data);
+        setFriendData(response.data);
+        console.log('친구 리스트 로딩 성공');
+      } else {
+        console.log('친구 리스트 로딩 실패');
+      }
+    } catch (error) {
+      console.error('친구 리스트 요청 중 오류 발생:', error);
     }
   };
+
+  useEffect(() => {
+    if (isFocused) {
+      getFriend();
+      resetActiveText();
+    }
+  }, [isFocused]);
 
   return (
     <View style={styles.container}>
@@ -84,18 +55,21 @@ export default function SearchScreen({ memberId }) {
         <Divide text1="User" text2="Item" />
       </View>
       <View style={styles.searchbar}>
-        <Searchbar onSearch={handleSearch} active={true} />
+        <Searchbar active={true} />
       </View>
       <View style={styles.p_value}>
         {activeText === 'text1' ? (
-          <ListItem
-            pic="user"
-            title="yewone1"
-            content="김예원"
-            name="message-square"
-            UserLevel="새싹"
-            page="search"
-          />
+          friendData.map(friend => (
+            <ListItem
+              key={friend.friendId}
+              pic="user" // {friend.profileImg}
+              title={friend.nickname}
+              content={friend.name}
+              name="message-square"
+              UserLevel="새싹"
+              page="search"
+            />
+          ))
         ) : (
           <ListItem
             pic=""

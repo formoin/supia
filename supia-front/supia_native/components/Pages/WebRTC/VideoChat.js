@@ -1,10 +1,20 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Animated, Pressable, StyleSheet, Text, View, Image} from 'react-native';
-import {RTCView} from 'react-native-webrtc'; // WebRTC 비디오 뷰 컴포넌트
-import useMySocket from './useSocket'; // 커스텀 훅을 import
+import {
+  Alert,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+  Animated,
+  Image,
+} from 'react-native';
+import {RTCView} from 'react-native-webrtc';
+import useMySocket from './useSocket';
 import useDrag from './useDrag';
 import {useRoute} from '@react-navigation/native';
 import ViewShot from 'react-native-view-shot';
+import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import {
   btnCameraReverse,
   btnAudioOff,
@@ -13,13 +23,18 @@ import {
   btnVideoOff,
   icVideoOffHuman,
   icAudioOff,
-} from '../../../assets/Callimages'; // 버튼 및 아이콘 이미지
+} from '../../../assets/Callimages';
+import {Server_IP} from '@env';
+
+const token =
+  'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMjM0QG5hdmVyLmNvbSIsIm1lbWJlcklkIjoxLCJpYXQiOjE3MjI5MjI3MDYsImV4cCI6MTc1NDQ1ODcwNn0.8dh878bIU9LeTY9v0c0zynhcj9n7drFVfu96CJmeGze6JyhiVlUCHp9NmeyBzrjmK8xDYz5-xg2frAz2K-PAZQ';
 
 function VideoChat({navigation}) {
   const route = useRoute();
   const ref = useRef(null);
-  const {userId, targetUserId} = route.params;
-  const [capturedImage, setCapturedImage] = useState(null);
+  // const {userId, targetUserId} = route.params;
+  const userId = 1;
+  const targetUserId = 2;
 
   // WebRTC 및 드래그 훅에서 상태 및 함수 가져오기
   const {
@@ -38,22 +53,35 @@ function VideoChat({navigation}) {
   const {panResponder, style} = useDrag(); // 드래그 기능 훅 사용
 
   // 권한 요청 함수
-  const requestStoragePermission = async () => {
+  const requestPermissions = async () => {
     try {
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          {
-            title: '저장소 권한 요청 ',
-            message: '저장소 정보를 사용하기 위해 권한이 필요합니다.',
-            buttonNeutral: '나중에',
-            buttonNegative: '취소',
-            buttonPositive: '확인',
-          },
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      const cameraPermission =
+        Platform.OS === 'android'
+          ? PERMISSIONS.ANDROID.CAMERA
+          : PERMISSIONS.IOS.CAMERA;
+      const audioPermission =
+        Platform.OS === 'android'
+          ? PERMISSIONS.ANDROID.RECORD_AUDIO
+          : PERMISSIONS.IOS.MICROPHONE;
+      const storagePermission =
+        Platform.OS === 'android'
+          ? PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE
+          : PERMISSIONS.IOS.PHOTO_LIBRARY;
+
+      const cameraResult = await request(cameraPermission);
+      const audioResult = await request(audioPermission);
+      const storageResult = await request(storagePermission);
+
+      if (
+        cameraResult === RESULTS.GRANTED &&
+        audioResult === RESULTS.GRANTED &&
+        storageResult === RESULTS.GRANTED
+      ) {
+        return true;
+      } else {
+        Alert.alert('권한이 필요합니다', '모든 권한을 허용해주세요.');
+        return false;
       }
-      return true; // iOS or 다른 플랫폼
     } catch (err) {
       console.warn(err);
       return false;
@@ -66,7 +94,19 @@ function VideoChat({navigation}) {
   }, [isVideoFront, isVideo, isAudio]);
 
   useEffect(() => {
-    requestStoragePermission();
+    const initialize = async () => {
+      const permissionGranted = await requestPermissions();
+      if (permissionGranted) {
+        await getMedia();
+      } else {
+        Alert.alert('Permissions not granted');
+      }
+    };
+    initialize();
+
+    return () => {
+      endCall();
+    };
   }, []);
 
   //화면 전환 함수
@@ -74,62 +114,58 @@ function VideoChat({navigation}) {
     navigation.navigate(screen); // 화면 전환
   };
 
-  // 편집된 이미지를 저장하는 함수
-  const saveEditedImage = path => {
-    console.log('Edited image saved at:', path);
-    // AI에 보내는 함수 필요
-  };
-
   // 화면 촬영
   const onCaptureScreen = async () => {
     try {
       const uri = await ref.current.capture();
       console.log('Capture complete...', uri);
-      setCapturedImage(uri); // 캡처된 이미지를 상태로 저장
-      // 파일을 저장할 경로 설정
-      const filePath = `${RNFS.DocumentDirectoryPath}/capturedImage.png`;
-      await RNFS.moveFile(uri, filePath);
-      console.log('Image saved to', filePath);
-      sendImageToServer(filePath);
+      sendImageToServer(uri);
     } catch (error) {
       console.error('Capture failed:', error);
-      Alert.alert(
-        'Capture Failed',
-        'An error occurred while capturing the screen.',
-      );
+      Alert.alert('캡쳐 실패');
     }
   };
 
   // 서버로 PNG 이미지 전송
-  const sendImageToServer = async filePath => {
-    const now = new Date();
-    const date = now.toISOString().split('T')[0]; // YYYY-MM-DD 형식
-    const time = now.toTimeString().split(' ')[0]; // HH:MM:SS 형식
+  const sendImageToServer = async uri => {
+    const currentDate = new Date();
+    const year = currentDate.getFullYear().toString().slice(2); // 연도 YY
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // 월 MM
+    const day = currentDate.getDate().toString().padStart(2, '0'); // 일 DD
+    const date = year + month + day; // YYMMDD 형식
+
+    const hours = currentDate.getHours().toString().padStart(2, '0'); // 시 HH
+    const minutes = currentDate.getMinutes().toString().padStart(2, '0'); // 분 MM
+    const time = hours + minutes; // HHMM 형식
 
     const formData = new FormData();
-    formData.append('member_id', userId);
+    formData.append('member_id', memberId);
     formData.append('date', date);
     formData.append('time', time);
     formData.append('file', {
-      uri: `file://${filePath}`,
+      file: uri,
       type: 'image/png',
-      name: `${userId}_.png`,
+      name: `screenshot_.png`,
     });
 
     try {
-      const response = await axios.post('https://업로드 서버', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
+      const response = await axios.post(
+        `${Server_IP}/ai/process-image`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
         },
-      });
-
+      );
       // 받고 나면 다시 받아온 파일 저장
-
       console.log('Image uploaded successfully:', response.data);
     } catch (error) {
       console.error('Image upload failed:', error);
       Alert.alert(
-        'Upload Failed',
+        '업로드 실패',
         'An error occurred while uploading the image.',
       );
     }
@@ -141,7 +177,7 @@ function VideoChat({navigation}) {
         style={styles.captureArea}
         ref={ref}
         options={{
-          format: 'jpg',
+          format: 'png',
           quality: 0.9,
         }}>
         {/* 원격 비디오 스트림 표시 */}

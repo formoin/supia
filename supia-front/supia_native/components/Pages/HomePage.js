@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet, Image} from 'react-native';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import Feather from 'react-native-vector-icons/Feather';
+import MaterialIcons from 'react-native-vector-icons/Ionicons';
 import Octicons from 'react-native-vector-icons/Octicons';
 import {useNavigation} from '@react-navigation/native';
 import WeatherInfo from '../Atoms/HomeInfo/WeatherInfo';
@@ -23,6 +24,10 @@ export default function HomeScreen() {
     navigation.navigate('Message');
   };
 
+  const goAlarm = () => {
+    navigation.navigate('Alarm');
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.Headcontainer}>
@@ -31,11 +36,14 @@ export default function HomeScreen() {
           <Text style={styles.bagga}>반갑습니다 00님</Text>
         </View>
         <View style={styles.topRight}>
-          <Pressable style={{marginRight: 20}} onPress={goMessage}>
-            <Octicons name="mail" size={30} color="#8C8677" />
+          <Pressable style={{marginRight: 8}} onPress={() => navigation.navigate('Search')}>
+            <Feather name="search" size={25} color="#8C8677" />
           </Pressable>
-          <Pressable onPress={() => navigation.navigate('MyPage')}>
-            <FontAwesome6 name="user" size={30} color="#8C8677" />
+          <Pressable style={{marginRight: 10}} onPress={goAlarm}>
+            <MaterialIcons name="notifications-outline" size={30} color="#8C8677" />
+          </Pressable>
+          <Pressable style={{marginRight: 10}} onPress={goMessage}>
+            <Octicons name="mail" size={25} color="#8C8677" />
           </Pressable>
         </View>
       </View>

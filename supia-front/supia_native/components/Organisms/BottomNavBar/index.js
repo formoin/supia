@@ -13,6 +13,7 @@ import DictionaryScreen from '../../Pages/DictionaryPage';
 import MyForestScreen from '../../Pages/MyForest';
 import DictionaryDetailScreen from '../../Pages/DictionaryDetailPage';
 import MessageScreen from '../../Pages/MessagePage';
+import AlarmScreen from '../../Pages/AlarmPage';
 import CaptureScreen from '../../Pages/CapturePage';
 import EditPageScreen from '../../Pages/User/EditMyPage';
 import Feather from 'react-native-vector-icons/Feather';
@@ -71,12 +72,12 @@ function BottomNav() {
         }}
       />
       <BottomTab.Screen
-        name="Search"
-        component={SearchScreen}
+        name="Store"
+        component={StoreScreen}
         options={{
-          tabBarLabel: () => <Text style={styles.tabBarLabel}>검색</Text>,
-          tabBarIcon: ({size}) => (
-            <Feather name="search" size={size} color="#8C8677" />
+          tabBarLabel: () => <Text style={styles.tabBarLabel}>상점</Text>,
+          tabBarIcon: ({color, size}) => (
+            <FontAwesome5 name="shopping-bag" size={size} color={'#8C8677'} />
           ),
         }}
       />
@@ -104,18 +105,18 @@ function BottomNav() {
         }}
       />
       <BottomTab.Screen
-        name="Store"
-        component={StoreScreen}
+        name="MyPage"
+        component={MyPageScreen}
         options={{
-          tabBarLabel: () => <Text style={styles.tabBarLabel}>상점</Text>,
-          tabBarIcon: ({color, size}) => (
-            <FontAwesome5 name="shopping-bag" size={size} color={'#8C8677'} />
+          tabBarLabel: () => <Text style={styles.tabBarLabel}>마이페이지</Text>,
+          tabBarIcon: ({size}) => (
+            <Feather name="user" size={size} color="#8C8677" />
           ),
         }}
       />
       <BottomTab.Screen
-        name="MyPage"
-        component={MyPageScreen}
+        name="Search"
+        component={SearchScreen}
         options={{tabBarButton: () => null}}
       />
       <BottomTab.Screen
@@ -155,6 +156,11 @@ function BottomNav() {
       <BottomTab.Screen
         name="Message"
         component={MessageScreen}
+        options={{tabBarButton: () => null}}
+      />
+      <BottomTab.Screen
+        name="Alarm"
+        component={AlarmScreen}
         options={{tabBarButton: () => null}}
       />
       <BottomTab.Screen
