@@ -10,12 +10,12 @@ import java.util.List;
 @Getter
 public class Species {
 
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
 
     @OneToMany
     private List<Item> items = new ArrayList<>();
+
 
     private String name;
     private String category;
@@ -23,6 +23,16 @@ public class Species {
     private String description;
     private String representativeImg;
 
+    public static Species createSpecies(String name, String representativeImg) {
+        Species species = new Species();
+        species.name = name;
+        species.category ="";
+        species.sound = "";
+        species.description = "사용자가 등록한 아이템입니다.";
+        species.representativeImg = representativeImg;
+
+        return species;
+    }
 
 
 }

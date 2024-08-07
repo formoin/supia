@@ -7,9 +7,13 @@ import com.forest.supia.friend.repository.FriendRepository;
 import com.forest.supia.member.dto.MemberResponse;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
+import com.forest.supia.message.entity.Message;
+import com.forest.supia.message.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.stereotype.Service;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +22,7 @@ import java.util.List;
 public class FriendServiceImpl implements FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
+    private final MessageRepository messageRepository;
 
     @Override
     public List<FriendResponse> getFriendsList(long memberId) {
@@ -61,17 +66,9 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public MemberResponse getFriendProfile(long friendId, long memberId) {
-        Friend friend = friendRepository.findById(friendId).orElseThrow();
-        long findId =0;
-        if(friend.getToMember().getId() == memberId) {
-            findId = friend.getFromMember().getId();
-        }
-        else {
-            findId = friend.getToMember().getId();
-        }
+    public MemberResponse getFriendProfile(long memberId) {
 
-        Member member = memberRepository.findById(findId).orElseThrow(null);
+        Member member = memberRepository.findById(memberId).orElseThrow(null);
         if(member== null) return null;
 
         MemberResponse friendProfile = new MemberResponse();
@@ -89,12 +86,31 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     public long sendFriendRequest(FriendRequest friendRequest) {
-        Member fromMember = memberRepository.findById(friendRequest.getFromId()).orElseThrow();
-        Member toMember = memberRepository.findById(friendRequest.getToId()).orElseThrow();
+        Member fromMember = memberRepository.findById(friendRequest.getFromId()).orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
+        Member toMember = memberRepository.findById(friendRequest.getToId()).orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
+        Message message = Message.createMessage(fromMember, toMember, 3, fromMember.getName() + "님이 친구를 요청하셨습니다.");
 
+        Friend friend = Friend.createFriend(fromMember, toMember);
+        Friend check = friendRepository.findByFromMemberAndToMember(fromMember, toMember).orElse(null);
 
+        if(check == null) {
+            messageRepository.save(message);
+            Friend result = friendRepository.save(friend);
+            return result.getId();
+        }
+        else {
+            throw new InvalidParameterException("이미 보낸 친구 요청입니다.");
+        }
+
+    }
+
+    @Override
+    public long acceptFriendRequest(long messageId) {
+        Message message = messageRepository.findById(messageId).orElseThrow();
+        Friend friend = friendRepository.findByFromMemberAndToMember(message.getFromMember(), message.getToMember()).orElseThrow(() -> new IllegalArgumentException("해당하는 친구 요청이 없습니다."));
+
+        friend.beFriend(friend);
         try {
-            Friend friend = Friend.createFriend(fromMember, toMember);
             Friend result = friendRepository.save(friend);
             return result.getId();
         }
@@ -104,13 +120,14 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public long acceptFriendRequest(long friendId) {
-        Friend friend = friendRepository.findById(friendId).orElseThrow();
+    public long refuseFriendRequest(long messageId) {
+        Message message = messageRepository.findById(messageId).orElseThrow(() -> new IllegalArgumentException("Invalid message ID"));
+        Friend friend = friendRepository.findByFromMemberAndToMember(message.getFromMember(), message.getToMember()).orElseThrow(() -> new IllegalArgumentException("해당하는 친구 요청이 없습니다."));
 
-        friend.updateFriend(friend);
         try {
-            Friend result = friendRepository.save(friend);
-            return result.getId();
+            friendRepository.deleteById(friend.getId());
+            messageRepository.deleteById(messageId);
+            return 1;
         }
         catch (Exception e) {
             return 0;

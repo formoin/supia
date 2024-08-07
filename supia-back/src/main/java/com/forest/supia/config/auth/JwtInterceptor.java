@@ -34,6 +34,6 @@ public class JwtInterceptor implements HandlerInterceptor {
         }
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        return false;
+        return true;
     }
 }

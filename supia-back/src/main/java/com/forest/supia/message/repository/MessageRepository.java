@@ -9,5 +9,8 @@ import java.util.List;
 public interface MessageRepository extends JpaRepository<Message, Long> {
     Message save(Message message);
 
-    List<Message> findByToMember(Member member);
+    List<Message> findByToMemberAndCategoryAndToMemberDelete(Member member, int category, boolean toMemberDelete);
+    List<Message> findByFromMemberAndCategoryAndFromMemberDelete(Member member, int category, boolean fromMemberDelete);
+
+    List<Message> findByToMemberAndCategoryGreaterThan(Member member, int category);
 }

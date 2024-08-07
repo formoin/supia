@@ -1,5 +1,10 @@
 package com.forest.supia.config.websocket;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.forest.supia.config.auth.JwtUtil;
+import com.forest.supia.member.entity.Member;
+import com.forest.supia.member.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -7,13 +12,18 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@RequiredArgsConstructor
 public class WebSocketHandler extends TextWebSocketHandler {
 
     //clients라는 변수에 세션을 담아두기 위한 맵형식의 공간
     private static final ConcurrentHashMap<String, WebSocketSession> CLIENTS = new ConcurrentHashMap<String, WebSocketSession>();
+    private final JwtUtil jwtUtil;
+    private final MemberRepository memberRepository;
+
 
     //websocket handshake가 완료되어 연결이 수립될 때 호출
     @Override
@@ -31,19 +41,39 @@ public class WebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String id = session.getId();  //메시지를 보낸 아이디
-        System.out.println(id+" "+message.getPayload());
-        System.out.println("message : "+message);
 
-        //메세지가 보내면 자기자신을 제외한 전체에게 broadcasting
-        CLIENTS.entrySet().forEach( arg->{
-            if(!arg.getKey().equals(id)) {  //같은 아이디가 아니면 메시지를 전달합니다.
-                try {
-                    arg.getValue().sendMessage(message);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        String payload = message.getPayload();
+        Map<String, String> data = new ObjectMapper().readValue(payload, Map.class);
+
+        if ("authenticate".equals(data.get("type"))) {
+            String token = data.get("token");
+            token = token.substring(7);
+            Long memberId = jwtUtil.extractMemberId(token);
+
+            Member member = memberRepository.findById(memberId).orElse(null);
+
+            if (member != null && jwtUtil.validateToken(token, member)) {
+                CLIENTS.put(session.getId(), session);
+                session.sendMessage(new TextMessage("{\"type\": \"authenticated\"}"));
+            } else {
+                session.sendMessage(new TextMessage("{\"type\": \"error\", \"message\": \"Invalid token\"}"));
+                session.close();
             }
-        });
+        } else if ("message".equals(data.get("type"))) {
+            System.out.println("Message received: " + data.get("message"));
+
+            //메세지가 보내면 자기자신을 제외한 전체에게 broadcasting
+            CLIENTS.entrySet().forEach( arg->{
+                if(!arg.getKey().equals(id)) {  //같은 아이디가 아니면 메시지를 전달합니다.
+                    try {
+                        arg.getValue().sendMessage(message);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+
     }
 
 }

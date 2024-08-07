@@ -62,4 +62,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     List<Item> findAllByMember(Member member);
 
+    Item findByImgUrl(String url);
+
 }

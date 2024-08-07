@@ -5,6 +5,7 @@ import com.forest.supia.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FriendRepository extends JpaRepository<Friend, Long> {
     List<Friend> findByToMember(Member toMember);
@@ -15,4 +16,7 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
 
     void deleteById(long friendId);
 
+    Optional<Friend> findByFromMemberAndToMember(Member fromMember, Member toMember);
+
+    void deleteByFromMemberAndToMember(Member fromMember, Member toMember);
 }
