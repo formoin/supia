@@ -21,8 +21,6 @@ import java.util.List;
 public class MemberService {
     @Autowired
     private MemberRepository memberRepository;
-    @Autowired
-    private ForestRepository forestRepository;
 
     @Autowired
     private ForestRepository forestRepository;
