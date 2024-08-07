@@ -29,6 +29,8 @@ public class WebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         CLIENTS.put(session.getId(), session);
+        System.out.println("My Session : " + session.getId());
+        System.out.println("after connection established, Current Users : "+CLIENTS.keySet().toString());
     }
 
     //websocket 세션 연결이 종료되었을 때 호출
@@ -41,20 +43,22 @@ public class WebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String id = session.getId();  //메시지를 보낸 아이디
-
+        System.out.println("handle text Message : "+message);
         String payload = message.getPayload();
         Map<String, String> data = new ObjectMapper().readValue(payload, Map.class);
+        System.out.println("Message Type : " + data.get("type"));
 
         if ("authenticate".equals(data.get("type"))) {
+            System.out.println("authenticate check");
             String token = data.get("token");
             token = token.substring(7);
+
             Long memberId = jwtUtil.extractMemberId(token);
-
             Member member = memberRepository.findById(memberId).orElse(null);
-
             if (member != null && jwtUtil.validateToken(token, member)) {
                 CLIENTS.put(session.getId(), session);
                 session.sendMessage(new TextMessage("{\"type\": \"authenticated\"}"));
+
             } else {
                 session.sendMessage(new TextMessage("{\"type\": \"error\", \"message\": \"Invalid token\"}"));
                 session.close();

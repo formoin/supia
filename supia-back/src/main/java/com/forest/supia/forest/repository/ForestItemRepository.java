@@ -7,10 +7,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ForestItemRepository extends JpaRepository<ForestItem, Long> {
+
     Optional<List<ForestItem>> findByForestId(long forestId);
 
-    ForestItem findByItemId(long itemId);
 
-    void deleteByItemId(long itemId);
+    ForestItem findByItemId(Long itemId);
+
+    void deleteByItemId(Long itemId);
+
+    void deleteByForest_Id(Long forestId);
 
 }

@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface OwnBgmRepository extends JpaRepository<OwnBgm, Long> {
     List<OwnBgm> findByMember(Member member);
     Optional<OwnBgm> findByMemberAndBgmId(Member member, Long bgmId);
+    void deleteByMember_Id(Long memberId);
 }

@@ -13,4 +13,5 @@ import java.util.Optional;
 public interface OwnBgiRepository extends JpaRepository<OwnBgi, Long> {
     List<OwnBgi> findByMember(Member member);
     Optional<OwnBgi> findByMemberAndBgiId(Member member, Long bgiId);
+    void deleteByMember_Id(Long memberId);
 }
