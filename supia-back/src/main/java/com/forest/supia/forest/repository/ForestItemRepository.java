@@ -6,10 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ForestItemRepository extends JpaRepository<ForestItem, Long> {
-    List<ForestItem> findByForestId(long forestId);
+    List<ForestItem> findByForestId(Long forestId);
 
-    ForestItem findByItemId(long itemId);
+    ForestItem findByItemId(Long itemId);
 
-    void deleteByItemId(long itemId);
+    void deleteByItemId(Long itemId);
+
+    void deleteByForest_Id(Long forestId);
 
 }

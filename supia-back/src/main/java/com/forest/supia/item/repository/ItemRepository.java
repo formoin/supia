@@ -9,6 +9,7 @@ import com.forest.supia.item.entity.Species;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.search.dto.ItemSearchResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -63,5 +64,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findAllByMember(Member member);
 
     Item findByImgUrl(String url);
+
+    @Modifying
+    @Query("UPDATE Item i SET i.member = NULL WHERE i.member.id = :memberId")
+    void updateMemberIdToNull(Long memberId);
 
 }

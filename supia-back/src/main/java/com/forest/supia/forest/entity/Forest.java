@@ -14,7 +14,7 @@ public class Forest {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "forest", fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
     private String thumbnail;

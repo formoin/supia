@@ -18,7 +18,7 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinColumn(name = "forest_id")
     private Forest forest;
 
@@ -32,6 +32,9 @@ public class Member {
     private int point;
     private int visit;
     private String token;
+
+    @Column(name = "is_active", nullable = false, columnDefinition = "TINYINT(1) DEFAULT 1")
+    private boolean isActive = true;
 
     public void updateToken(String token) {
         this.token = token;
@@ -53,7 +56,7 @@ public class Member {
         member.name = name;
         member.nickname = nickname;
         member.password = password;
-
+        member.isActive = true;
         return member;
     }
 
@@ -88,4 +91,7 @@ public class Member {
         }
     }
 
+    public void setActive(boolean isActive) {
+        this.isActive = isActive;
+    }
 }

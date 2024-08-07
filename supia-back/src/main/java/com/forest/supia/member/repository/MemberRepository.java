@@ -26,4 +26,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     )
     List<MemberSearchResponse> findMemberByKeyword(@Param("keyword") String keyword);
 
+    Optional<Member> findByIdAndIsActiveTrue(Long id);
 }
