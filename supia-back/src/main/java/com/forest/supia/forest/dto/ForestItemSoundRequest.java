@@ -4,11 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class ForestItemRequest {
+public class ForestItemSoundRequest {
     private long id;
     private long forestId;
     private long itemId;
-    private double x;
-    private double y;
     private boolean soundOn;
 }

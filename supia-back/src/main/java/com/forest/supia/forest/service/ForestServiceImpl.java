@@ -1,8 +1,6 @@
 package com.forest.supia.forest.service;
 
-import com.forest.supia.forest.dto.ForestItemRequest;
-import com.forest.supia.forest.dto.ForestItemResponse;
-import com.forest.supia.forest.dto.ForestResponse;
+import com.forest.supia.forest.dto.*;
 import com.forest.supia.forest.entity.Forest;
 import com.forest.supia.forest.entity.ForestItem;
 import com.forest.supia.forest.repository.ForestItemRepository;
@@ -12,6 +10,8 @@ import com.forest.supia.item.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.rmi.NoSuchObjectException;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,21 +52,34 @@ public class ForestServiceImpl implements ForestService{
     }
 
     @Override
-    public ForestItem setItemForest(ForestItemRequest forestItemRequest) {
-        Item item = itemRepository.findById(forestItemRequest.getItemId());
-        Forest forest = forestRepository.findById(forestItemRequest.getForestId()).orElseThrow();
+    public long setItemForest(ForestSettingRequest forestSettingRequest) throws Exception {
 
-        ForestItem forestItem = ForestItem.createForestItem(item, forest, forestItemRequest.getX(), forestItemRequest.getY(), true);
 
-        return forestItemRepository.save(forestItem);
+
+        Forest forest = forestRepository.findById(forestSettingRequest.getForestId()).orElseThrow(() -> new InvalidParameterException("Cannot find forest"));
+
+
+        List<ForestItemSettingRequest> forestItemSettingRequestList = forestSettingRequest.getForestItemSettingRequestList();
+
+        for(ForestItemSettingRequest f : forestItemSettingRequestList) {
+
+            forestItemRepository.deleteByItemId(f.getItemId());
+            Item item = itemRepository.findById(f.getItemId());
+            if(item == null) throw new NoSuchObjectException("해당하는 아이템이 없습니다.");
+            ForestItem forestItem = ForestItem.createForestItem(item, forest, f.getX(), f.getY(), true);
+            forestItemRepository.save(forestItem);
+
+        }
+
+        return 1;
 
     }
 
     @Override
-    public ForestItem updateItemForest(ForestItemRequest forestItemRequest) {
-        ForestItem forestItem = forestItemRepository.findById(forestItemRequest.getId()).orElse(new ForestItem());
+    public ForestItem updateItemForest(ForestItemSoundRequest forestItemSoundRequest) {
+        ForestItem forestItem = forestItemRepository.findById(forestItemSoundRequest.getId()).orElse(new ForestItem());
 
-        forestItem.update(forestItemRequest);
+        forestItem.update(forestItemSoundRequest);
 
 
         return forestItemRepository.save(forestItem);
