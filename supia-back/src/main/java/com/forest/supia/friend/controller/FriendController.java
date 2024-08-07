@@ -71,7 +71,8 @@ public class FriendController {
     }
 
     @GetMapping("/detail")
-    public ResponseEntity<?> getFriendProfile (@RequestParam("memberId") long memberId) {
+    public ResponseEntity<?> getFriendProfile (@RequestHeader("Authorization") String token) {
+        long memberId = jwtUtil.extractMemberId(token);
         MemberResponse result = friendService.getFriendProfile(memberId);
 
         if(result ==null ) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("친구 정보 불러오기에 실패했습니다.");

@@ -1,7 +1,6 @@
 package com.forest.supia.member.controller;
 
 import com.forest.supia.config.auth.JwtUtil;
-import com.forest.supia.member.dto.InfoUpdateDto;
 import com.forest.supia.member.dto.LoginDto;
 import com.forest.supia.member.dto.SignUpDto;
 import com.forest.supia.member.entity.Member;
@@ -92,12 +91,13 @@ public class MemberController {
 
 
     @Transactional
-    @PutMapping("/my-info/{memberId}")
-    public ResponseEntity<Map<String, String>> modifyMember(@PathVariable("memberId") long memberId,
+    @PutMapping("/my-info")
+    public ResponseEntity<Map<String, String>> modifyMember(@RequestHeader("Authorization") String token,
                                                             @RequestParam("name") String name,
                                                             @RequestParam("nickname") String nickname,
                                                             @RequestParam(value = "profileImg", required = false) MultipartFile profileImg) {
         try {
+            long memberId = jwtUtil.extractMemberId(token);
             String fileUrl = memberService.updateMember(memberId, name, nickname, profileImg);
             Map<String, String> response = new HashMap<>();
             if (fileUrl != null) {
@@ -114,8 +114,9 @@ public class MemberController {
         }
     }
 
-    @GetMapping("/my-info/{memberId}")
-    public ResponseEntity<Map<String, Member>> getMemberInfo(@PathVariable("memberId") long memberId) {
+    @GetMapping("/my-info")
+    public ResponseEntity<Map<String, Member>> getMemberInfo(@RequestHeader("Authorization") String token) {
+        long memberId = jwtUtil.extractMemberId(token);
         Member member = memberRepository.findById(memberId).orElseThrow();
         Map<String, Member> response = new HashMap<>();
         if (member != null) {

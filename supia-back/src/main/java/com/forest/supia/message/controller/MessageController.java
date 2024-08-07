@@ -32,7 +32,8 @@ public class MessageController {
 
     // 메세지함
     @GetMapping("/to")
-    public ResponseEntity<?> messageBox(@RequestParam("memberId") long memberId) {
+    public ResponseEntity<?> messageBox(@RequestHeader("Authorization") String token) {
+        long memberId = jwtUtil.extractMemberId(token);
         List<MessageResponse> result = messageService.getMessageBox(memberId);
 
         if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("메세지함이 비었습니다.");
@@ -40,7 +41,8 @@ public class MessageController {
     }
 
     @GetMapping("/from")
-    public ResponseEntity<?> senderMessageBox(@RequestParam("memberId") long memberId) {
+    public ResponseEntity<?> senderMessageBox(@RequestHeader("Authorization") String token) {
+        long memberId = jwtUtil.extractMemberId(token);
         List<MessageResponse> result = messageService.getSenderMessageBox(memberId);
 
         if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("메세지함이 비었습니다.");
