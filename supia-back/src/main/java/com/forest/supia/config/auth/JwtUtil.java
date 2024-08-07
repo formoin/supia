@@ -34,6 +34,7 @@ public class JwtUtil {
                 .compact();
     }
 
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -44,11 +45,14 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token.trim()).getBody();
     }
 
     public Long extractMemberId(String token) {
-        return extractAllClaims(token).get("memberId", Integer.class).longValue();
+        if(token.startsWith("Bearer ")) {
+            token = token.substring(7).trim();
+        }
+        return extractAllClaims(token).get("memberId", Long.class);
     }
 
     public boolean validateToken(String token, Member member) {
