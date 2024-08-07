@@ -37,11 +37,21 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String jwtToken = null;
 
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
-            jwtToken = requestTokenHeader.substring(7);
+            jwtToken = requestTokenHeader.substring(7).trim();
             try {
                 username = jwtUtil.extractUsername(jwtToken);
+            } catch (io.jsonwebtoken.ExpiredJwtException e) {
+                logger.error("JWT Token has expired", e);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            } catch (io.jsonwebtoken.MalformedJwtException e) {
+                logger.error("Invalid JWT Token", e);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             } catch (Exception e) {
-                logger.error("Unable to get JWT Token or JWT Token has expired", e);
+                logger.error("Unable to get JWT Token", e);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             }
         } else {
             logger.warn("JWT Token does not begin with Bearer String");
@@ -62,4 +72,5 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
         chain.doFilter(request, response);
     }
+
 }
