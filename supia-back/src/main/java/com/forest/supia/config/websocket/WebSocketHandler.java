@@ -105,7 +105,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
             System.out.println("offer received: " + data.get("offer"));
             String targetUserId = data.get("targetUserId");
             String fromUserId = data.get("userId");
-            System.out.println(objectMapper.writeValueAsString(data));
+            System.out.println(data.keySet());
 
             for(String memberId : CLIENTS.keySet()){
                 if("offer".equals(data.get("type")) && memberId.equals(targetUserId)){
