@@ -110,8 +110,37 @@ public class WebSocketHandler extends TextWebSocketHandler {
             System.out.println("before data keyset print");
             System.out.println(data.keySet());
 
+//            for(String memberId : CLIENTS.keySet()){
+//                if("offer".equals(data.get("type")) && memberId.equals(targetUserId)){
+//                    try{
+//                        CLIENTS.get(memberId).sendMessage(
+//                                new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
+//                                        "\"offer\" : \""+data.getOrDefault("offer", "")+"\"" +
+//                                        "\"answer\" : \""+data.getOrDefault("answer", "")+"\"" +
+//                                        "\"ice-candidate\" : \""+data.getOrDefault("ice-candidate", "")+"\"" +
+//                                        "}")
+//                        );
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//                else if("answer".equals(data.get("type")) && memberId.equals(targetUserId)){
+//                    try{
+//                        CLIENTS.get(memberId).sendMessage(
+//                                new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
+//                                        "\"offer\" : \""+data.getOrDefault("offer", "")+"\"" +
+//                                        "\"answer\" : \""+data.getOrDefault("answer", "")+"\"" +
+//                                        "\"ice-candidate\" : \""+data.getOrDefault("ice-candidate", "")+"\"" +
+//                                        "}")
+//                        );
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+
             for(String memberId : CLIENTS.keySet()){
-                if("offer".equals(data.get("type")) && memberId.equals(targetUserId)){
+                if("offer".equals(data.get("type")) && !memberId.equals(id)){
                     try{
                         CLIENTS.get(memberId).sendMessage(
                                 new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
@@ -124,7 +153,8 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         e.printStackTrace();
                     }
                 }
-                else if("answer".equals(data.get("type")) && memberId.equals(targetUserId)){
+
+                else if("answer".equals(data.get("type")) && !memberId.equals(id)){
                     try{
                         CLIENTS.get(memberId).sendMessage(
                                 new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
