@@ -110,39 +110,10 @@ public class WebSocketHandler extends TextWebSocketHandler {
             System.out.println("before data keyset print");
             System.out.println(data.keySet());
 
-//            for(String memberId : CLIENTS.keySet()){
-//                if("offer".equals(data.get("type")) && memberId.equals(targetUserId)){
-//                    try{
-//                        CLIENTS.get(memberId).sendMessage(
-//                                new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
-//                                        "\"offer\" : \""+data.getOrDefault("offer", "")+"\"" +
-//                                        "\"answer\" : \""+data.getOrDefault("answer", "")+"\"" +
-//                                        "\"ice-candidate\" : \""+data.getOrDefault("ice-candidate", "")+"\"" +
-//                                        "}")
-//                        );
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//                else if("answer".equals(data.get("type")) && memberId.equals(targetUserId)){
-//                    try{
-//                        CLIENTS.get(memberId).sendMessage(
-//                                new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
-//                                        "\"offer\" : \""+data.getOrDefault("offer", "")+"\"" +
-//                                        "\"answer\" : \""+data.getOrDefault("answer", "")+"\"" +
-//                                        "\"ice-candidate\" : \""+data.getOrDefault("ice-candidate", "")+"\"" +
-//                                        "}")
-//                        );
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-
             for(String memberId : CLIENTS.keySet()){
-                if("offer".equals(data.get("type")) && !memberId.equals(id)){
+                if("offer".equals(data.get("type")) && memberId.equals(targetUserId)){
                     try{
-                        TextMessage ms = new TextMessage("{"
+                                TextMessage ms = new TextMessage("{"
                                 + "\"type\": \"" + data.get("type") + "\", "
                                 + "\"targetUserId\": \"" + targetUserId + "\", "
                                 + "\"offer\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("offer", "")) + "\", "
@@ -158,15 +129,13 @@ public class WebSocketHandler extends TextWebSocketHandler {
                                         + "\"ice-candidate\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("ice-candidate", "")) + "\""
                                         + "}")
                         );
-                        System.out.println("offer message : " + ms);
-
-                        System.out.println("offer success");
+                        System.out.println("Offer To User Id : "+data.get("targetUserId"));
+                        System.out.println("Offer Message : "+ms.getPayload());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-
-                else if("answer".equals(data.get("type")) && !memberId.equals(id)){
+                else if("answer".equals(data.get("type")) && memberId.equals(targetUserId)){
                     try{
                         CLIENTS.get(memberId).sendMessage(
                                 new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
@@ -180,6 +149,47 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     }
                 }
             }
+
+//            for(String memberId : CLIENTS.keySet()){
+//                if("offer".equals(data.get("type")) && !memberId.equals(id)){
+//                    try{
+//                        TextMessage ms = new TextMessage("{"
+//                                + "\"type\": \"" + data.get("type") + "\", "
+//                                + "\"targetUserId\": \"" + targetUserId + "\", "
+//                                + "\"offer\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("offer", "")) + "\", "
+//                                + "\"answer\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("answer", "")) + "\", "
+//                                + "\"ice-candidate\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("ice-candidate", "")) + "\""
+//                                + "}");
+//                        CLIENTS.get(memberId).sendMessage(
+//                                new TextMessage("{"
+//                                        + "\"type\": \"" + data.get("type") + "\", "
+//                                        + "\"targetUserId\": \"" + targetUserId + "\", "
+//                                        + "\"offer\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("offer", "")) + "\", "
+//                                        + "\"answer\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("answer", "")) + "\", "
+//                                        + "\"ice-candidate\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("ice-candidate", "")) + "\""
+//                                        + "}")
+//                        );
+//                        System.out.println("offer message : " + ms.getPayload());
+//                        System.out.println("offer success");
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//
+//                else if("answer".equals(data.get("type")) && !memberId.equals(id)){
+//                    try{
+//                        CLIENTS.get(memberId).sendMessage(
+//                                new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
+//                                        "\"offer\" : \""+data.getOrDefault("offer", "")+"\"" +
+//                                        "\"answer\" : \""+data.getOrDefault("answer", "")+"\"" +
+//                                        "\"ice-candidate\" : \""+data.getOrDefault("ice-candidate", "")+"\"" +
+//                                        "}")
+//                        );
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
 
         }
 //        else if ("answer".equals(data.get("type"))) {
