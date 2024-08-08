@@ -116,17 +116,17 @@ public class WebSocketHandler extends TextWebSocketHandler {
                                 TextMessage ms = new TextMessage("{"
                                 + "\"type\": \"" + data.get("type") + "\", "
                                 + "\"targetUserId\": \"" + targetUserId + "\", "
-                                + "\"offer\" : \"" + objectMapper.writeValueAsString(data.get("offer")) + "\", "
-                                + "\"answer\" : \"" + objectMapper.writeValueAsString(data.get("answer")) + "\", "
-                                + "\"ice-candidate\" : \"" + objectMapper.writeValueAsString(data.get("ice-candidate")) + "\""
+                                + "\"offer\" : " + objectMapper.writeValueAsString(data.get("offer"))
+                                + "\"answer\" : " + objectMapper.writeValueAsString(data.get("answer"))
+                                + "\"ice-candidate\" : " + objectMapper.writeValueAsString(data.get("ice-candidate"))
                                 + "}");
                         CLIENTS.get(memberId).sendMessage(
                                 new TextMessage("{"
                                         + "\"type\": \"" + data.get("type") + "\", "
                                         + "\"targetUserId\": \"" + targetUserId + "\", "
-                                        + "\"offer\" : \"" + objectMapper.writeValueAsString(data.get("offer")) + "\", "
-                                        + "\"answer\" : \"" + objectMapper.writeValueAsString(data.get("answer")) + "\", "
-                                        + "\"ice-candidate\" : \"" + objectMapper.writeValueAsString(data.get("ice-candidate")) + "\""
+                                        + "\"offer\" : " + objectMapper.writeValueAsString(data.get("offer"))
+                                        + "\"answer\" : " + objectMapper.writeValueAsString(data.get("answer"))
+                                        + "\"ice-candidate\" : " + objectMapper.writeValueAsString(data.get("ice-candidate"))
                                         + "}")
                         );
                         System.out.println("Offer To User Id : "+data.get("targetUserId"));
