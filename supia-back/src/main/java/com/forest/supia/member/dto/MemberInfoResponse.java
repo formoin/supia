@@ -12,6 +12,7 @@ public class MemberInfoResponse {
     private String name;
     private String nickname;
     private String profileImg;
+    private String thumbnail;
     private int level;
     private int exp;
     private int point;
