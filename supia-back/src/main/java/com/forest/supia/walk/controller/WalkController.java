@@ -30,7 +30,8 @@ public class WalkController {
 
 
     }
-
+    
+    //동 클릭시 해당 동에 수집된 자연물 종 불러오기
     @GetMapping
     public ResponseEntity<?> getSpeciesByDong(@RequestParam("address") String address) throws Exception {
 
