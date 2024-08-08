@@ -108,7 +108,7 @@ public class MemberService {
         Forest forest = Forest.createForest(member, defaultPropertiesConfig.getDefaultThumbnail(), defaultPropertiesConfig.getDefaultBgi());
         forestRepository.save(forest);
 
-        Forest result = forestRepository.save(forest);
+        memberRepository.save(member);
 
         return member;
     }
