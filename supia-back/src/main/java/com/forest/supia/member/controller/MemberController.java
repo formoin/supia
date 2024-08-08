@@ -37,12 +37,12 @@ public class MemberController {
 
 
     @GetMapping("/list")
-    public ResponseEntity<List<Member>> listMember(){
+    public ResponseEntity<List<Member>> listMember() {
         List<Member> memberList = memberService.listMember();
-        if(!memberList.isEmpty()) {
+        if (!memberList.isEmpty()) {
             System.out.println(memberList);
             return ResponseEntity.ok(memberList);
-        } else{
+        } else {
             return ResponseEntity.badRequest().body(null);
         }
     }
@@ -54,7 +54,7 @@ public class MemberController {
         if (check_exist == null) {
             Member new_member = memberService.createMember(signUpInfo);
 
-            if(new_member != null) {
+            if (new_member != null) {
                 response.put("message", "회원 등록이 완료되었습니다.");
                 return ResponseEntity.ok().body(response);
             } else {
@@ -149,7 +149,7 @@ public class MemberController {
     }
 
     @PutMapping("/change-password")
-    public ResponseEntity<Map<String, String>>  changePassword(@RequestHeader("Authorization") String token, @RequestParam("newPassword") String newPassword) {
+    public ResponseEntity<Map<String, String>> changePassword(@RequestHeader("Authorization") String token, @RequestParam("newPassword") String newPassword) {
         System.out.println(token + " " + newPassword);
         Long memberId = jwtUtil.extractMemberId(token);
         Map<String, String> response = new HashMap<>();
@@ -174,7 +174,7 @@ public class MemberController {
     }
 
     @GetMapping("/auth-test")
-    public Long getMemberId(@RequestHeader(value = "Authorization") String token){
+    public Long getMemberId(@RequestHeader(value = "Authorization") String token) {
 
         return jwtUtil.extractMemberId(token);
     }
