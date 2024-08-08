@@ -144,11 +144,12 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     try{
                         CLIENTS.get(memberId).sendMessage(
                                 new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
-                                        "\"offer\" : \""+data.getOrDefault("offer", "")+"\"" +
-                                        "\"answer\" : \""+data.getOrDefault("answer", "")+"\"" +
-                                        "\"ice-candidate\" : \""+data.getOrDefault("ice-candidate", "")+"\"" +
+                                        "\"offer\" : \""+ objectMapper.writeValueAsString(data.getOrDefault("offer", ""))+"\"" +
+                                        "\"answer\" : \""+ objectMapper.writeValueAsString(data.getOrDefault("answer", ""))+"\"" +
+                                        "\"ice-candidate\" : \""+ objectMapper.writeValueAsString(data.getOrDefault("ice-candidate", ""))+"\"" +
                                         "}")
                         );
+                        System.out.println("offer success");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
