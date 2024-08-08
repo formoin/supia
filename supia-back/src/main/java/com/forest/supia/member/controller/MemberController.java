@@ -66,7 +66,6 @@ public class MemberController {
             return ResponseEntity.badRequest().body(response);
         }
 
-
     }
 
     @Transactional
@@ -78,12 +77,6 @@ public class MemberController {
         Member member = memberService.findByEmail(loginInfo.getEmail());
         String token = memberService.loginAndGetToken(loginInfo);
         if (token != null) {
-            if (member.getVisit() == 0) {
-                memberService.updateExp(member.getId());
-                response.put("exp", "첫 방문 5 경험치 적립이 완료되었습니다.");
-            } else {
-                response.put("exp", "이미 방문한 회원입니다.");
-            }
             response.put("token", token);
             response.put("message", "로그인이 완료되었습니다.");
             return ResponseEntity.ok().body(response);
@@ -99,17 +92,23 @@ public class MemberController {
     }
 
     @GetMapping("/my-info")
-    public ResponseEntity<Map<String, MemberInfoResponse>> getMemberInfo(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Map<String, String>> getMemberInfo(@RequestHeader("Authorization") String token) {
         long memberId = jwtUtil.extractMemberId(token);
         Member member = memberService.findByMemberId(memberId);
         MemberInfoResponse memberInfo = new MemberInfoResponse();
-        Map<String, MemberInfoResponse> response = new HashMap<>();
+        Map<String, String> response = new HashMap<>();
         if (member != null) {
+            if (member.getVisit() == 0) {
+                memberService.updateExp(member.getId());
+                response.put("exp", "첫 방문 5 경험치 적립이 완료되었습니다.");
+            } else {
+                response.put("exp", "이미 방문한 회원입니다.");
+            }
             memberInfo = memberService.updateMemberInfoResponse(member);
-            response.put("member", memberInfo);
+            response.put("member", memberInfo.toString());
             return ResponseEntity.ok().body(response);
         } else {
-            response.put("error", memberInfo);
+            response.put("error", "회원 정보 조회에 실패하였습니다.");
             return ResponseEntity.badRequest().body(response);
         }
     }

@@ -218,15 +218,9 @@ public class MemberService {
         memberRepository.resetVisitCount();
     }
 
-
     public boolean verifyPassword(Long memberId, String password) {
         Member member = memberRepository.findById(memberId).orElseThrow();
-        if(passwordEncoder.matches(password, member.getPassword())) {
-            return true;
-        } else {
-            return false;
-        }
-
+        return passwordEncoder.matches(password, member.getPassword());
     }
 
     public void updatePassword(Long memberId, String newPassword) {
