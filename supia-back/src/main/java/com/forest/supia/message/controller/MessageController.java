@@ -5,12 +5,11 @@ import com.forest.supia.message.dto.GiftRequest;
 import com.forest.supia.message.dto.MessageRequest;
 import com.forest.supia.message.dto.MessageResponse;
 import com.forest.supia.message.service.MessageService;
-import com.forest.supia.message.service.NotificationService;
+import com.forest.supia.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -115,11 +114,5 @@ public class MessageController {
     }
 
     
-    @GetMapping(value = "/connect")
-    public ResponseEntity<?> connect(@RequestHeader("Authorization") String token) {
-        long memberId = jwtUtil.extractMemberId(token);
-        SseEmitter sseEmitter = notificationService.subscribe(memberId);
 
-        return ResponseEntity.ok(sseEmitter);
-    }
 }

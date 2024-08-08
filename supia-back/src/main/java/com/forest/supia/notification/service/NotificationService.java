@@ -1,4 +1,4 @@
-package com.forest.supia.message.service;
+package com.forest.supia.notification.service;
 
 
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -6,5 +6,5 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public interface NotificationService {
     SseEmitter subscribe(long memberId);
 
-    void notifyMessage(String receiver);
+    void notifyMessage(long memberId);
 }

@@ -46,6 +46,7 @@ public class Forest {
         forest.thumbnail = thumbnail;
         forest.bgi = bgi;
         forest.setMember(member);
+
         return forest;
     }
 

@@ -48,6 +48,8 @@ public class MessageServiceImpl implements MessageService{
             messageResponse.setCategory(message.getCategory());
             messageResponse.setFromMemberNickname(message.getFromMember().getNickname());
             messageResponse.setToMemberNickname(message.getToMember().getNickname());
+            messageResponse.setFromMemberImg(message.getFromMember().getProfileImg());
+            messageResponse.setToMemberImg(message.getToMember().getProfileImg());
             messageResponse.setCheck(message.isCheck());
             messageResponse.setContent(message.getContent());
             messageResponse.setSentTime(message.getSentTime());
@@ -69,6 +71,8 @@ public class MessageServiceImpl implements MessageService{
             messageResponse.setCategory(message.getCategory());
             messageResponse.setFromMemberNickname(message.getFromMember().getNickname());
             messageResponse.setToMemberNickname(message.getToMember().getNickname());
+            messageResponse.setFromMemberImg(message.getFromMember().getProfileImg());
+            messageResponse.setToMemberImg(message.getToMember().getProfileImg());
             messageResponse.setCheck(message.isCheck());
             messageResponse.setContent(message.getContent());
             messageResponse.setSentTime(message.getSentTime());
@@ -89,6 +93,8 @@ public class MessageServiceImpl implements MessageService{
         messageResponse.setContent(message.getContent());
         messageResponse.setFromMemberNickname(message.getFromMember().getNickname());
         messageResponse.setToMemberNickname(message.getToMember().getNickname());
+        messageResponse.setFromMemberImg(message.getFromMember().getProfileImg());
+        messageResponse.setToMemberImg(message.getToMember().getProfileImg());
         messageResponse.setSentTime(message.getSentTime());
         messageResponse.setCheck(message.isCheck());
 
@@ -124,6 +130,8 @@ public class MessageServiceImpl implements MessageService{
             messageResponse.setCategory(message.getCategory());
             messageResponse.setFromMemberNickname(message.getFromMember().getNickname());
             messageResponse.setToMemberNickname(message.getToMember().getNickname());
+            messageResponse.setFromMemberImg(message.getFromMember().getProfileImg());
+            messageResponse.setToMemberImg(message.getToMember().getProfileImg());
             messageResponse.setCheck(message.isCheck());
             messageResponse.setContent(message.getContent());
             messageResponse.setSentTime(message.getSentTime());
