@@ -3,9 +3,11 @@ package com.forest.supia.member.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 public class MemberInfoResponse {
     private Long id;
     private String email;

@@ -34,4 +34,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Transactional
     @Query("UPDATE Member m SET m.visit = 0")
     void resetVisitCount();
+
 }
