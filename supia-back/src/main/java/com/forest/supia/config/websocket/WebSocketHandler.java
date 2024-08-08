@@ -52,9 +52,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
     //websocket session 으로 메시지가 수신되었을 때 호출
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        System.out.println("handle text Message : "+message);
-        String payload = message.getPayload();
 
+        String payload = message.getPayload();
+        System.out.println("handle text Message : "+payload);
         System.out.println("WebSocketSession :" + session);
 
         Map<String, String> data = objectMapper.readValue(payload, Map.class);
@@ -73,6 +73,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 id = String.valueOf(memberId);
                 CLIENTS.put(id, session);
                 session.sendMessage(new TextMessage("{\"type\": \"authenticated\"}"));
+                System.out.println(objectMapper.writeValueAsString("Clients List : " + CLIENTS.keySet()));
 
             } else {
                 session.sendMessage(new TextMessage("{\"type\": \"error\", \"message\": \"Invalid token\"}"));
