@@ -105,7 +105,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
         } else if ("offer".equals(data.get("type")) || "answer".equals(data.get("type")) || "ice-candidate".equals(data.get("type"))) {
 
             String targetUserId = data.get("targetUserId");
-            String fromUserId = data.get("userId");
+            String fromUserId = data.get("fromuserId");
             System.out.println("before data keyset print");
             System.out.println(data.keySet());
 
@@ -115,19 +115,13 @@ public class WebSocketHandler extends TextWebSocketHandler {
                                 TextMessage ms = new TextMessage("{"
                                 + "\"type\": \"" + data.get("type") + "\", "
                                 + "\"targetUserId\": \"" + targetUserId + "\", "
+                                + "\"fromUserId\": \"" + fromUserId + "\", "
                                 + "\"offer\" : " + objectMapper.writeValueAsString(data.get("offer")) +","
                                 + "\"answer\" : " + objectMapper.writeValueAsString(data.get("answer")) +","
                                 + "\"ice-candidate\" : " + objectMapper.writeValueAsString(data.get("ice-candidate"))
                                 + "}");
                         CLIENTS.get(memberId).sendMessage(
-                                new TextMessage("{"
-                                        + "\"type\": \"" + data.get("type") + "\", "
-                                        + "\"targetUserId\": \"" + targetUserId + "\", "
-                                        + "\"offer\" : " + objectMapper.writeValueAsString(data.get("offer")) + ","
-                                        + "\"answer\" : " + objectMapper.writeValueAsString(data.get("answer")) + ","
-                                        + "\"ice-candidate\" : " + objectMapper.writeValueAsString(data.get("ice-candidate"))
-                                        + "}")
-                        );
+                                ms);
                         System.out.println("Offer To User Id : "+data.get("targetUserId"));
                         System.out.println("Offer Message : "+ms.getPayload());
                     } catch (IOException e) {
@@ -139,19 +133,13 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         TextMessage ms = new TextMessage("{"
                                 + "\"type\": \"" + data.get("type") + "\", "
                                 + "\"targetUserId\": \"" + targetUserId + "\", "
+                                + "\"fromUserId\": \"" + fromUserId + "\", "
                                 + "\"offer\" : " + objectMapper.writeValueAsString(data.get("offer")) +","
                                 + "\"answer\" : " + objectMapper.writeValueAsString(data.get("answer")) +","
                                 + "\"ice-candidate\" : " + objectMapper.writeValueAsString(data.get("ice-candidate"))
                                 + "}");
                         CLIENTS.get(memberId).sendMessage(
-                                new TextMessage("{"
-                                        + "\"type\": \"" + data.get("type") + "\", "
-                                        + "\"targetUserId\": \"" + targetUserId + "\", "
-                                        + "\"offer\" : " + objectMapper.writeValueAsString(data.get("offer")) + ","
-                                        + "\"answer\" : " + objectMapper.writeValueAsString(data.get("answer")) + ","
-                                        + "\"ice-candidate\" : " + objectMapper.writeValueAsString(data.get("ice-candidate"))
-                                        + "}")
-                        );
+                                ms);
                         System.out.println("Answer to UserId : " + fromUserId);
                         System.out.println("Answer Message : "+ms.getPayload());
                         System.out.println("answer보냄");
