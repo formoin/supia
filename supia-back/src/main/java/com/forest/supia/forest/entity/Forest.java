@@ -3,6 +3,7 @@ package com.forest.supia.forest.entity;
 import com.forest.supia.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +15,12 @@ public class Forest {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToOne(mappedBy = "forest", fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
-    private String thumbnail;
 
+    @Column(columnDefinition = "VARCHAR(500)")
+    private String thumbnail;
 
     @Column(columnDefinition = "VARCHAR(500)")
     private String bgm;
