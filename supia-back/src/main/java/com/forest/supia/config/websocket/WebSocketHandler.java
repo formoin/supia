@@ -105,7 +105,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
         } else if ("offer".equals(data.get("type")) || "answer".equals(data.get("type")) || "ice-candidate".equals(data.get("type"))) {
 
             String targetUserId = data.get("targetUserId");
-            String fromUserId = data.get("fromuserId");
+            String fromUserId = data.get("fromUserId");
             System.out.println("before data keyset print");
             System.out.println(data.keySet());
 
