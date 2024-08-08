@@ -26,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
+
 @Service
 public class MemberService {
     @Autowired
@@ -214,5 +216,22 @@ public class MemberService {
     @Transactional
     public void resetVisitCounts() {
         memberRepository.resetVisitCount();
+    }
+
+
+    public boolean verifyPassword(Long memberId, String password) {
+        Member member = memberRepository.findById(memberId).orElseThrow();
+        if(passwordEncoder.matches(password, member.getPassword())) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    public void updatePassword(Long memberId, String newPassword) {
+        Member member = memberRepository.findById(memberId).orElseThrow();
+        member.updatePassword(passwordEncoder.encode(newPassword));
+        memberRepository.save(member);
     }
 }

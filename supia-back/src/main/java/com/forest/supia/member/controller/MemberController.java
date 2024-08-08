@@ -98,6 +98,21 @@ public class MemberController {
         return "login";
     }
 
+    @GetMapping("/my-info")
+    public ResponseEntity<Map<String, MemberInfoResponse>> getMemberInfo(@RequestHeader("Authorization") String token) {
+        long memberId = jwtUtil.extractMemberId(token);
+        Member member = memberService.findByMemberId(memberId);
+        MemberInfoResponse memberInfo = new MemberInfoResponse();
+        Map<String, MemberInfoResponse> response = new HashMap<>();
+        if (member != null) {
+            memberInfo = memberService.updateMemberInfoResponse(member);
+            response.put("member", memberInfo);
+            return ResponseEntity.ok().body(response);
+        } else {
+            response.put("error", memberInfo);
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 
     @Transactional
     @PutMapping("/my-info")
@@ -123,20 +138,27 @@ public class MemberController {
         }
     }
 
-
-
-    @GetMapping("/my-info")
-    public ResponseEntity<Map<String, MemberInfoResponse>> getMemberInfo(@RequestHeader("Authorization") String token) {
-        long memberId = jwtUtil.extractMemberId(token);
-        Member member = memberService.findByMemberId(memberId);
-        MemberInfoResponse memberInfo = new MemberInfoResponse();
-        Map<String, MemberInfoResponse> response = new HashMap<>();
-        if (member != null) {
-            memberInfo = memberService.updateMemberInfoResponse(member);
-            response.put("member", memberInfo);
-            return ResponseEntity.ok().body(response);
+    @PostMapping("/verify-password")
+    public ResponseEntity<String> verifyPassword(@RequestHeader("Authorization") String token, @RequestParam("password") String password) {
+        Long memberId = jwtUtil.extractMemberId(token);
+        if (memberService.verifyPassword(memberId, password)) {
+            return ResponseEntity.ok("비밀번호 인증이 완료되었습니다.");
         } else {
-            response.put("error", memberInfo);
+            return ResponseEntity.badRequest().body("비밀번호 인증에 실패하였습니다.");
+        }
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<Map<String, String>>  changePassword(@RequestHeader("Authorization") String token, @RequestParam("newPassword") String newPassword) {
+        System.out.println(token + " " + newPassword);
+        Long memberId = jwtUtil.extractMemberId(token);
+        Map<String, String> response = new HashMap<>();
+        try {
+            memberService.updatePassword(memberId, newPassword);
+            response.put("message", "비밀번호 변경이 완료되었습니다.");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", "비밀번호 변경에 실패하였습니다.");
             return ResponseEntity.badRequest().body(response);
         }
     }

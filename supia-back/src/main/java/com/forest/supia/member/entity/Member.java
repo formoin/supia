@@ -50,6 +50,10 @@ public class Member {
         this.profileImg = profileImg;
     }
 
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
     public void setForest(Forest forest){
         this.forest = forest;
     }
