@@ -137,13 +137,23 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 }
                 else if("answer".equals(data.get("type")) && memberId.equals(targetUserId)){
                     try{
+                        TextMessage ms = new TextMessage("{"
+                                + "\"type\": \"" + data.get("type") + "\", "
+                                + "\"targetUserId\": \"" + targetUserId + "\", "
+                                + "\"offer\" : " + objectMapper.writeValueAsString(data.get("offer")) +","
+                                + "\"answer\" : " + objectMapper.writeValueAsString(data.get("answer")) +","
+                                + "\"ice-candidate\" : " + objectMapper.writeValueAsString(data.get("ice-candidate"))
+                                + "}");
                         CLIENTS.get(memberId).sendMessage(
-                                new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
-                                        "\"offer\" : \""+data.getOrDefault("offer", "")+"\"" +
-                                        "\"answer\" : \""+data.getOrDefault("answer", "")+"\"" +
-                                        "\"ice-candidate\" : \""+data.getOrDefault("ice-candidate", "")+"\"" +
-                                        "}")
+                                new TextMessage("{"
+                                        + "\"type\": \"" + data.get("type") + "\", "
+                                        + "\"targetUserId\": \"" + targetUserId + "\", "
+                                        + "\"offer\" : " + objectMapper.writeValueAsString(data.get("offer")) + ","
+                                        + "\"answer\" : " + objectMapper.writeValueAsString(data.get("answer")) + ","
+                                        + "\"ice-candidate\" : " + objectMapper.writeValueAsString(data.get("ice-candidate"))
+                                        + "}")
                         );
+                        System.out.println("answer보냄");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
