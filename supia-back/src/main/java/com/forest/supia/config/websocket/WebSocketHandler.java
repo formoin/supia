@@ -128,7 +128,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         e.printStackTrace();
                     }
                 }
-                else if("answer".equals(data.get("type")) && memberId.equals(fromUserId)){
+                else if("answer".equals(data.get("type")) && memberId.equals(targetUserId)){
                     try{
                         TextMessage ms = new TextMessage("{"
                                 + "\"type\": \"" + data.get("type") + "\", "
