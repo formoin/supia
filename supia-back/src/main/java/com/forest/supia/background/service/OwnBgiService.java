@@ -57,7 +57,7 @@ public class OwnBgiService {
         List<OwnBgi> ownBgis = ownBgiRepository.findByMember(member);
 
         return ownBgis.stream()
-                .map(ownBgi -> new OwnResponseDto(member.getId(), ownBgi.getBgi().getName(), ownBgi.getBgi().getPath()))
+                .map(ownBgi -> new OwnResponseDto(ownBgi.getBgi().getId(), member.getId(), ownBgi.getBgi().getName(), ownBgi.getBgi().getPath()))
                 .collect(Collectors.toList());
     }
 

@@ -12,4 +12,6 @@ public interface ForestService {
     ForestItem updateItemForest(ForestItemSoundRequest forestItemSoundRequest);
 
     boolean deleteItemForest(long forestItemId);
+
+    long updateForestTheme(long memberId, long itemId, int type);
 }

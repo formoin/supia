@@ -3,30 +3,22 @@ package com.forest.supia.forest.entity;
 import com.forest.supia.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
-@ToString
-@Table(name = "Forest")
 public class Forest {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
     @OneToOne(mappedBy = "forest", fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
-
-    @Column(nullable = false, columnDefinition = "VARCHAR(500)")
     private String thumbnail;
 
-    public void setDefaultThumbnail(String defaultThumbnail) {
-        this.thumbnail = defaultThumbnail;
-    }
 
     @Column(columnDefinition = "VARCHAR(500)")
     private String bgm;
@@ -42,11 +34,16 @@ public class Forest {
         member.setForest(this);
     }
 
+    public void setTheme(String bgm, String bgi) {
+        this.bgm = bgm;
+        this.bgi = bgi;
+    }
+
     public static Forest createForest(Member member, String thumbnail, String bgi) {
         Forest forest = new Forest();
         forest.thumbnail = thumbnail;
-        forest.member = member;
         forest.bgi = bgi;
+        forest.setMember(member);
         return forest;
     }
 

@@ -9,6 +9,7 @@ import com.forest.supia.background.service.BgmService;
 import com.forest.supia.background.service.OwnBgiService;
 import com.forest.supia.background.service.OwnBgmService;
 import com.forest.supia.config.auth.JwtUtil;
+import com.forest.supia.forest.service.ForestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,9 @@ public class BackgroundController {
 
     @Autowired
     private OwnBgiService ownBgiService;
+
+    @Autowired
+    private ForestService forestService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -87,6 +91,24 @@ public class BackgroundController {
         long memberId = jwtUtil.extractMemberId(token);
 
         return ownBgiService.getOwnBgis(memberId);
+    }
+
+    @GetMapping("/check/bgm")
+    public ResponseEntity<?> updateBgm(@RequestHeader("Authorization") String token, @RequestParam("bgmId") long bgmId) {
+        long memberId = jwtUtil.extractMemberId(token);
+
+        long result = forestService.updateForestTheme(memberId, bgmId, 0);
+
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/check/bgi")
+    public ResponseEntity<?> updateBgi(@RequestHeader("Authorization") String token, @RequestParam("bgmId") long bgiId) {
+        long memberId = jwtUtil.extractMemberId(token);
+
+        long result = forestService.updateForestTheme(memberId, bgiId, 1);
+
+        return ResponseEntity.ok(result);
     }
 
 
