@@ -14,8 +14,7 @@ public class Item {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String si;
-    private String dong;
+    private String dongCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "species_id")
@@ -38,14 +37,13 @@ public class Item {
         species.getItems().add(this);
     }
 
-    public static Item createItem(Member member, Species species, LocalDate acquireDate, String si, String dong, String imgUrl, String originUrl) {
+    public static Item createItem(Member member, Species species, LocalDate acquireDate, String dongCode, String imgUrl, String originUrl) {
         Item item = new Item();
 
         item.member = member;
         item.setSpecies(species);
         item.acquireDate = acquireDate;
-        item.si = si;
-        item.dong = dong;
+        item.dongCode = dongCode;
         item.imgUrl = imgUrl;
         item.originUrl = originUrl;
 

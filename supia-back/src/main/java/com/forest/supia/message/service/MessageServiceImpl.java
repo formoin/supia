@@ -9,6 +9,7 @@ import com.forest.supia.message.dto.MessageRequest;
 import com.forest.supia.message.dto.MessageResponse;
 import com.forest.supia.message.entity.Message;
 import com.forest.supia.message.repository.MessageRepository;
+import com.forest.supia.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,8 @@ public class MessageServiceImpl implements MessageService{
     private final MemberRepository memberRepository;
     private final MessageRepository messageRepository;
     private final ItemRepository itemRepository;
+    private final NotificationService notificationService;
+
 
     @Override
     public long sendMessage(MessageRequest messageRequest) {
@@ -32,7 +35,8 @@ public class MessageServiceImpl implements MessageService{
         Message message = Message.createMessage(fromMember, toMember, 1, messageRequest.getContent());
 
         messageRepository.save(message);
-
+        int body = messageRepository.findByToMemberAndCategoryAndIsCheck(toMember, 1, false).size();
+        notificationService.notifyMessage(toMember.getId(), body, "SSE", "message");
         return message.getId();
     }
 
@@ -138,6 +142,8 @@ public class MessageServiceImpl implements MessageService{
 
             messageResponses.add(messageResponse);
 
+            message.check(message, memberId);
+
         }
         return messageResponses;
 
@@ -156,7 +162,9 @@ public class MessageServiceImpl implements MessageService{
         Message message = Message.createMessage(fromMember, toMember, 2, item.getImgUrl());
 
         messageRepository.save(message);
+        int body = messageRepository.findByToMemberAndCategoryGreaterThanAndIsCheck(toMember, 1, false).size();
 
+        notificationService.notifyMessage(toMember.getId(), body, "SSE", "alarm");
         return message.getId();
     }
 
