@@ -92,23 +92,23 @@ public class MemberController {
     }
 
     @GetMapping("/my-info")
-    public ResponseEntity<Map<String, String>> getMemberInfo(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Map<String, MemberInfoResponse>> getMemberInfo(@RequestHeader("Authorization") String token) {
         long memberId = jwtUtil.extractMemberId(token);
         Member member = memberService.findByMemberId(memberId);
         MemberInfoResponse memberInfo = new MemberInfoResponse();
-        Map<String, String> response = new HashMap<>();
+        Map<String, MemberInfoResponse> response = new HashMap<>();
         if (member != null) {
             if (member.getVisit() == 0) {
                 memberService.updateExp(member.getId());
-                response.put("exp", "첫 방문 5 경험치 적립이 완료되었습니다.");
+                response.put("첫 방문 5 경험치 적립이 완료되었습니다.", null);
             } else {
-                response.put("exp", "이미 방문한 회원입니다.");
+                response.put("이미 방문한 회원입니다.", null);
             }
             memberInfo = memberService.updateMemberInfoResponse(member);
-            response.put("member", memberInfo.toString());
+            response.put("member", memberInfo);
             return ResponseEntity.ok().body(response);
         } else {
-            response.put("error", "회원 정보 조회에 실패하였습니다.");
+            response.put("회원 정보 조회에 실패하였습니다.", null);
             return ResponseEntity.badRequest().body(response);
         }
     }
