@@ -1,5 +1,7 @@
 package com.forest.supia.forest.entity;
 
+import com.forest.supia.background.entity.Bgi;
+import com.forest.supia.background.entity.Bgm;
 import com.forest.supia.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,8 +22,8 @@ public class Forest {
     private String thumbnail;
 
 
-//    private Music music;
-//    private Theme theme;
+    private String bgm;
+    private String bgi;
 
     @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "forest")
     private List<ForestItem> itemForestList = new ArrayList<>();
@@ -31,10 +33,15 @@ public class Forest {
         member.setForest(this);
     }
 
+    public void setTheme(String bgm, String bgi) {
+        this.bgm = bgm;
+        this.bgi = bgi;
+    }
+
     public static Forest createForest(Member member, String thumbnail){
         Forest forest = new Forest();
 
-
+        forest.bgi = "default";
         forest.thumbnail = thumbnail;
         forest.setMember(member);
 

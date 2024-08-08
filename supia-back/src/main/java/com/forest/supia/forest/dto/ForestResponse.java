@@ -10,8 +10,8 @@ import java.util.List;
 @Getter @Setter
 public class ForestResponse {
     private long forestId;
-    private String music;
-    private String theme;
+    private String bgm;
+    private String bgi;
     private List<ForestItemResponse> items;
 
 }

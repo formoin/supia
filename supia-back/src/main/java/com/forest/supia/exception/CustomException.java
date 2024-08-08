@@ -16,7 +16,7 @@ public enum CustomException {
     NOT_FOUND_SPECIES_EXCEPTION(400, "NotFoundSpeciesException", "해당 종이 존재하지 않습니다."),
     NOT_FOUND_FOREST_EXCEPTION(400, "NotFoundForestException", "숲이 존재하지 않습니다."),
     NOT_FOUND_FOREST_ITEM_EXCEPTION(400, "NotFoundForestItemException", "숲에 아이템이 없습니다."),
-
+    NOT_FOUND_BACKGROUND_ITEM_EXCEPTION(400, "NotFoundBackgroudItemException", "테마를 불러오지 못했습니다."),
     //인증 에러 401
     EXPIRED_JWT_EXCEPTION(401,"ExpiredJwtException","토큰이 만료했습니다."),
     NOT_VALID_JWT_EXCEPTION(401,"NotValidJwtException","토큰이 유효하지 않습니다."),

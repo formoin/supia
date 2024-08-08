@@ -1,5 +1,9 @@
 package com.forest.supia.forest.service;
 
+import com.forest.supia.background.entity.Bgi;
+import com.forest.supia.background.entity.Bgm;
+import com.forest.supia.background.repository.BgiRepository;
+import com.forest.supia.background.repository.BgmRepository;
 import com.forest.supia.exception.CustomException;
 import com.forest.supia.exception.ExceptionResponse;
 import com.forest.supia.forest.dto.*;
@@ -9,6 +13,7 @@ import com.forest.supia.forest.repository.ForestItemRepository;
 import com.forest.supia.forest.repository.ForestRepository;
 import com.forest.supia.item.entity.Item;
 import com.forest.supia.item.repository.ItemRepository;
+import com.forest.supia.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +29,10 @@ public class ForestServiceImpl implements ForestService{
     private final ForestRepository forestRepository;
     private final ForestItemRepository forestItemRepository;
     private final ItemRepository itemRepository;
+    private final MemberRepository memberRepository;
+    private final BgiRepository bgiRepository;
+    private final BgmRepository bgmRepository;
+
     @Override
     public ForestResponse getForest(long memberId) {
 
@@ -32,8 +41,8 @@ public class ForestServiceImpl implements ForestService{
 
         ForestResponse forestResponse = new ForestResponse();
         forestResponse.setForestId(forest.getId());
-//        forestResponse.setMusic(forest.getMusic().getPath());
-//        forestResponse.setTheme(forest.getTheme().getPath());
+        forestResponse.setBgm(forest.getBgm());
+        forestResponse.setBgi(forest.getBgi());
         List<ForestItem> forestItems = forestItemRepository.findByForestId(forest.getId()).orElse(null);
         List<ForestItemResponse> forestItemResponseList = new ArrayList<>();
 
@@ -100,4 +109,25 @@ public class ForestServiceImpl implements ForestService{
             return false;
         }
     }
+
+    @Override
+    public long updateForestTheme(long memberId, long itemId, int type) {
+        Forest forest = memberRepository.findById(memberId).orElseThrow(()->new ExceptionResponse(CustomException.NOT_FOUND_FOREST_EXCEPTION)).getForest();
+
+        Bgm bgm = bgmRepository.findById(itemId).orElseThrow(() -> new ExceptionResponse(CustomException.NOT_FOUND_BACKGROUND_ITEM_EXCEPTION));
+        Bgi bgi = bgiRepository.findById(itemId).orElseThrow(() -> new ExceptionResponse(CustomException.NOT_FOUND_BACKGROUND_ITEM_EXCEPTION));
+
+        if(type ==0) {
+            forest.setTheme( bgm.getPath(), forest.getBgi() );
+        }
+        else if(type ==1) {
+            forest.setTheme(forest.getBgm(), bgi.getPath());
+        }
+
+        forestRepository.save(forest);
+
+        return forest.getId();
+    }
+
+
 }

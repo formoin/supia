@@ -57,7 +57,7 @@ public class OwnBgmService {
         List<OwnBgm> ownBgms = ownBgmRepository.findByMember(member);
 
         return ownBgms.stream()
-                .map(ownBgm -> new OwnResponseDto(member.getId(), ownBgm.getBgm().getName(), ownBgm.getBgm().getPath()))
+                .map(ownBgm -> new OwnResponseDto(ownBgm.getBgm().getId(), member.getId(), ownBgm.getBgm().getName(), ownBgm.getBgm().getPath()))
                 .collect(Collectors.toList());
 
     }
