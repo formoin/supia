@@ -206,6 +206,7 @@ public class MemberService {
         memberInfo.setProfileImg(member.getProfileImg());
         memberInfo.setVisit(member.getVisit());
         memberInfo.setActive(member.isActive());
+        memberInfo.setThumbnail(member.getForest().getThumbnail());
         return memberInfo;
     }
 
