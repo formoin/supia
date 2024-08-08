@@ -36,7 +36,6 @@ public class WalkServiceImpl implements WalkService{
 
         Member member = memberRepository.findById(walkDto.getMemberId()).orElseThrow();
 
-
         LocalDateTime startDateTime = walkDto.getWalkStart();
         LocalDateTime endDateTime = walkDto.getWalkEnd();
 
@@ -63,10 +62,7 @@ public class WalkServiceImpl implements WalkService{
             items.add(item);
         }
 
-
-
         Walk walk = Walk.createWalk(member, walkDate, walkTime, walkDto.getDistance(), items);
-
 
         walkRepository.save(walk);
         return walk.getId();
@@ -82,6 +78,11 @@ public class WalkServiceImpl implements WalkService{
         String dong = addressSplit[2];
 
         return itemRepository.speciesResponseListByDong(si, dong);
+    }
+
+    @Override
+    public List<Walk> getAllWalk(Long memberId) {
+        return walkRepository.findAllByMember_Id(memberId);
     }
 
 }

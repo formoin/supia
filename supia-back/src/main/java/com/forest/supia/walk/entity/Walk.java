@@ -59,9 +59,4 @@ public class Walk {
 
     }
 
-//    public void setMember(Member member) {
-//        this.member = member;
-//
-//    }
-
 }
