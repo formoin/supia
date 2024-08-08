@@ -10,25 +10,35 @@ import axios from 'axios'
 export default function FriendModal({ UserName, UserLevel, onClose, page, memberId, toId }) {
   const [isFriendRequested, setIsFriendRequested] = useState(false);
 
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ';
+
     const sendFriendRequest = async () => {
+
       const friendRequest = {
         fromId: memberId,
         toId: toId,
       };
 
       const message = {
-      	from_user_id: memberId,
-      	to_user_id: toId,
-        title: "친구 신청",
-      	context: `${memberName}님이 친구를 요청했습니다.`,
-      	category: 2,
-      	is_check: 0,
-      }
+        from_user_id: memberId,
+        to_user_id: toId,
+        title: '친구 요청',
+        context: '?님이 친구 요청을 보내셨습니다.',
+        category: 2,
+        is_check: 'false',
+      };
+
+      const data = {
+        friendRequest,
+        message,
+      };
 
       try {
-        const response = await axios.post('http://i11b304.p.ssafy.io/api/friends', friendRequest, message, {
+        const response = await axios.post('https://i11b304.p.ssafy.io/api/friends', data, {
           headers: {
-             Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
           }
         });
 
@@ -43,8 +53,8 @@ export default function FriendModal({ UserName, UserLevel, onClose, page, member
     };
 
   const handleButtonClick = () => {
-    setIsFriendRequested(!isFriendRequested);
     sendFriendRequest();
+    setIsFriendRequested(!isFriendRequested);
   };
 
   return (

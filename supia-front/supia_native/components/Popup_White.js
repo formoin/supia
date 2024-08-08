@@ -6,7 +6,7 @@ import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
 
 
 const token =
-`eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDAxNzU2LCJleHAiOjE3NTQ1Mzc3NTZ9.yQ_IgYEQzmf5O2_csfB095x3RcWrxdJynXGy6XqJT3Zc5-tQ-sSs4ycdMCxwKiWgj1_m8L83O3kKibIi7x0JJA`
+'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzAzODYzMCwiZXhwIjoxNzU0NTc0NjMwfQ.2SlikAZj11iqc333a-II1MjPYCxLGynSLnQs4RLwAe-BVMavQzeKozWm77SZqFrzWbvVpczyUlPNt9MAnpWB4g'
 
 const Popup_White = ({ri, dong, code}) => {
   const [speciesData, setSpeciesData] = useState([]);
@@ -16,22 +16,19 @@ const Popup_White = ({ri, dong, code}) => {
     // api 받아오기
     const fetchSpeciesData = async () => {
       try {
-        const response = await axios.get(
-          `${Server_IP}/walk?address=${code}`,
-
-          {
-            headers: {
+        const response = await axios.get(`${Server_IP}/walk`, {
+          headers: {
               Authorization: `Bearer ${token}`,
               Accept: 'application/json',
               'Content-Type': 'application/json; charset=utf-8',
-            },
           },
-        );
+          params: {
+              address: code,
+          },
+      });
 
         console.log(response.data)
         const data = response.data
-
-
         // const data = await response.json();
 
         setSpeciesData(data);

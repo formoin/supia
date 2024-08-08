@@ -4,6 +4,13 @@ import PopupHeader from './Atoms/PopupHeader';
 import Button_Green from './Atoms/Button_Green';
 import Button_Red from './Atoms/Button_Red';
 import Frame from './Atoms/Frame';
+import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
+import axios from 'axios'
+import useStore from './store/useStore';
+
+
+const token =
+'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzA3NDgwMSwiZXhwIjoxNzU0NjEwODAxfQ.2bMm_t46dnLK6MlmQJHvQAfBLdPvPK7m38xpLsJwj55d-lb91ZEYaLb8aK8YwiYfG3Ip_ho05HMcWNFDgp2xmA'
 
 export default function Popup({onClose, Label, content, friendName, imguri, date, itemId, onDeleteSuccess, when }) {
   const handleDelete = async () => { // 아이템 삭제
@@ -12,8 +19,11 @@ export default function Popup({onClose, Label, content, friendName, imguri, date
         {
         headers: {
           Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
       });
+      console.log('삭제성공')
       onDeleteSuccess();
     } catch (error) {
       console.error('삭제 실패', error);
@@ -23,7 +33,9 @@ export default function Popup({onClose, Label, content, friendName, imguri, date
   const handleFriendDelete = async (fromUserId, toUserId) => { // 친구 삭제
     const url = `http://i11b304.p.ssafy.io/api/friends`; // API URI를 적절히 수정
     const headers = {
-      Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json; charset=utf-8',
     };
     try {
       const response = await axios.delete(url, {
@@ -33,24 +45,56 @@ export default function Popup({onClose, Label, content, friendName, imguri, date
           to_user_id: toUserId
         }
       });
+      console.log('삭제성공')
       onDeleteSuccess();
     } catch (error) {
       console.error('삭제 실패', error);
     }
   }
   
+  const { droppedImages, forestId } = useStore();
   const handleSave = async () => { // 숲 상태 저장
+    // const payload = droppedImages.map(({ itemId, position }) => ({
+    //   forestId,
+    //   itemId,
+    //   x: position.x,
+    //   y: position.y,
+    // }));
+    const payload = [
+      {
+          "forestId": 7,
+          "itemId": 1,
+          "x": 10, // x좌표
+          "y": 10  // y좌표
+      },
+      {
+          "forestId": 7,
+          "itemId": 2,
+          "x": 176.2890625, // x좌표
+          "y": 163.1556854248047  // y좌표
+      }
+  ];
     try {
-    //   const response = await axios.delete(`http://i11b304.p.ssafy.io/api/items/${itemId}`,
-    //     {
-    //     headers: {
-    //       Authorization: `Bearer ${token}`,
-    //     },
-    //   });
-       console.log('저장') 
-      onDeleteSuccess()
-    } catch (error) {
-      console.error('삭제 실패', error);
+      const response = await axios.post(`${Server_IP}/forest`, payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+          params: {
+            memberId: 3
+          }
+        },
+      )
+      if (response.status === 200) {
+        console.log("숲 상태 저장 성공");
+        onDeleteSuccess();
+      } else {
+        console.log("숲 상태 저장 실패");
+      }
+    }catch (error) {
+      console.error('숲 상태 요청 중 실패', error);
     }
   }
 

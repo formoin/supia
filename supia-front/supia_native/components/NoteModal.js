@@ -15,7 +15,7 @@ export default function NoteModal({onClose, friendName}) {
       </View>
 
       <View style={styles.frame}>
-        <TextFrame />
+        <TextFrame onClose={onClose} />
       </View>
     </View>
   );

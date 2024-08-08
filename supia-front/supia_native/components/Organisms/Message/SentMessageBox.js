@@ -4,16 +4,14 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import ReadMessageModal from './ReadMessageModal';
 
-export default function MessageBox({messageId, type}) {
+export default function sentMessage({messageId}) {
   const [modalVisible, setModalVisible] = useState(false);
+  const [msgDetail, setMsgDetail] = useState(null);
 
-  const handlePress = () => {
-    setModalVisible(true);
-    markMessageAsRead(messageId);
-  };
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ'
 
-
-  const markMessageAsRead = async (messageId) => {
+  // messageId, fromMemberNickname, toMemberNickname, content, category, sentTime, check
+  const messageDetail = async () => {
       const url = "https://i11b304.p.ssafy.io/api/messages/detail";
 
       try {
@@ -24,19 +22,25 @@ export default function MessageBox({messageId, type}) {
             'Content-Type': 'application/json; charset=utf-8',
           },
           params: {
-            messageId: messageId,
+            messageId: 1,
           }
         })
 
         if (response.status === 200) {
-          console.log("메시지 읽음 처리 성공");
+          setMsgDetail(response.data)
+          console.log("메시지 확인 성공");
         } else {
-          console.log("메시지 읽음 처리 실패");
+          console.log("메시지 확인 실패");
         }
       } catch (error) {
-        console.error("메세지 요청 중 오류 발생:", error);
+        console.error("메세지 확인 중 오류 발생:", error);
       }
     };
+
+     const handlePress = () => {
+       messageDetail();
+       setModalVisible(true);
+     };
 
   return (
     <View>

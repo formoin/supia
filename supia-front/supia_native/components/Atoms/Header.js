@@ -8,7 +8,7 @@ import {useNavigation} from '@react-navigation/native';
 
 const {width: windowWidth} = Dimensions.get('window');
 
-export default function Header({label, goto}) {
+export default function Header({label, goto, noback}) {
   const navigation = useNavigation();
 
   const onPressBackIcon = () => {
@@ -22,6 +22,7 @@ export default function Header({label, goto}) {
    return (
       <View style={styles.HeaderContainer}>
         <View style={{left: 10}}>
+        {!noback && (
           <Pressable onPress={onPressBackIcon}>
             <Entypo
               name="chevron-small-left"
@@ -29,6 +30,7 @@ export default function Header({label, goto}) {
               style={styles.BackIcon}
             />
           </Pressable>
+)}
 
         </View>
           

@@ -3,12 +3,12 @@ import React, {useState} from 'react';
 import axios from 'axios';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
-export default function Searchbar({active, searchName}) {
+export default function Searchbar({active, searchName, type}) {
   const [value, setValue] = useState('');
   const [searchData, setSearchData] = useState(null);
   const [friendData, setFriendData] = useState(null);
 
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDAxNzU2LCJleHAiOjE3NTQ1Mzc3NTZ9.yQ_IgYEQzmf5O2_csfB095x3RcWrxdJynXGy6XqJT3Zc5-tQ-sSs4ycdMCxwKiWgj1_m8L83O3kKibIi7x0JJA';
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ'
   const memberId = 1;
 
   const getUserSearch = async () => {
@@ -46,8 +46,8 @@ export default function Searchbar({active, searchName}) {
             'Content-Type': 'application/json; charset=utf-8',
           },
           params: {
-            type: 2,
-            search: 'item'
+            type: 1,
+            keyword: 'item'
           }
         });
 
@@ -77,7 +77,12 @@ export default function Searchbar({active, searchName}) {
   const onSubmitEditing = () => {
     // 엔터 키를 눌렀을 때 실행할 코드
     console.log('Submit pressed');
-    getUserSearch();
+    if (type === "text1") {
+        getUserSearch();
+    } else {
+        getItemSearch(); // 400: 검색 결과가 없습니다.
+    }
+
   };
 
   return (

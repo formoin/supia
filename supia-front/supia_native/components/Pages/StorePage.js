@@ -29,8 +29,7 @@ export default function StoreScreen() {
     }
   }, [activeText]);
 
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDAxNzU2LCJleHAiOjE3NTQ1Mzc3NTZ9.yQ_IgYEQzmf5O2_csfB095x3RcWrxdJynXGy6XqJT3Zc5-tQ-sSs4ycdMCxwKiWgj1_m8L83O3kKibIi7x0JJA';
-  const memberId = 1;
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ'
 
   const getBackground = async () => {
     try {
@@ -49,7 +48,7 @@ export default function StoreScreen() {
         console.log("배경 리스트 저장 실패");
       }
     } catch (error) {
-      console.error("요청 중 오류 발생:", error);
+      console.error("배경 리스트 요청 중 오류 발생:", error);
     }
   };
 
@@ -70,14 +69,14 @@ export default function StoreScreen() {
         console.log("음악 리스트 저장 실패");
       }
     } catch (error) {
-      console.error("요청 중 오류 발생:", error);
+      console.error("음악 리스트 요청 중 오류 발생:", error);
     }
   };
 
   const getPoint = async () => {
     try {
       const response = await axios.get(
-        `https://i11b304.p.ssafy.io/api/members/my-info/${memberId}`,
+        "https://i11b304.p.ssafy.io/api/members/my-info",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -94,7 +93,7 @@ export default function StoreScreen() {
         console.log("회원 정보 확인 실패");
       }
     } catch (error) {
-      console.error("요청 중 오류 발생:", error);
+      console.error("회원 정보 요청 중 오류 발생:", error);
     }
   };
 

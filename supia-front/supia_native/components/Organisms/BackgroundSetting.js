@@ -11,34 +11,6 @@ import axios from 'axios';
 export default function BackgroundSetting({goSetting, memberId}) {
   const {activeText, setActiveText, resetActiveText} = useStore();
   const isFocused = useIsFocused();
-  const [backgroundData, setBackgroundData] = useState(null);
-
-  const getOwnBackground = async () => {
-    try {
-      const response = await axios.get(`https://i11b304.p.ssafy.io/api/own/${memberId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-        },
-      );
-      if (response.status === 200) {
-        console.log(response.data);
-        setBackgroundData(response.data);
-        console.log('테마 리스트 로딩 성공');
-      } else {
-        console.log('테마 리스트 로딩 실패');
-      }
-    } catch (error) {
-      console.error('요청 중 오류 발생:', error);
-    }
-  };
-
-  useEffect(() => {
-    getOwnBackground();
-  }, [memberId]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -49,7 +21,7 @@ export default function BackgroundSetting({goSetting, memberId}) {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Header label="배경" />
+        <Header label="배경" noback='noback'/>
         <Pressable onPress={goSetting} style={styles.closeButton}>
           <Octicons name="x" size={30} style={styles.closeIcon} />
         </Pressable>

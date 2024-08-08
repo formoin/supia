@@ -6,7 +6,12 @@ import Feather from "react-native-vector-icons/Feather";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import SendGiftModal from "../SendGiftModal";
 import Popup from '../Popup'
+import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
 import axios from "axios";
+
+const token =
+'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzAxODY0NywiZXhwIjoxNzU0NTU0NjQ3fQ.pfSY7fLlBdcflPTvIG47Rs_c1ZWnuYXWdAc2bwkMYfDkyB4laNZ6I7qh4oBZ07-SraxYniZeuO8BeMWVH_dMCA'
+
 
 export default function DictionaryDetailScreen({ route }) {
   const { id, representativeImg, speciesName } = route.params;
@@ -32,20 +37,21 @@ export default function DictionaryDetailScreen({ route }) {
 
 
   // api
-  const fetchSpeciesDetail = async (token, speciesId) => {
-    const url = 'http://i11b304.p.ssafy.io/api/items/detail'; // API URI
-    const headers = {
-      Authorization: token, // Authorization 헤더에 토큰 추가
-    };
+  const fetchSpeciesDetail = async (speciesId) => {
     try {
-      const response = await axios.get(url, {
-        headers: headers,
+      const response = await axios.get(`${Server_IP}/items/detail`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
+          Accept: 'application/json',
+              'Content-Type': 'application/json; charset=utf-8',
+        },
         params: {
-          speciesId: id,
+          speciesId: speciesId,
         },
       });
       if (response.status === 200) {
-        setSpeciesDetail(response.data); 
+        setSpeciesDetail(response.data);
+        console.log(speciesDetail)
       }
     } catch (error) {
       if (error.response) {
@@ -59,8 +65,7 @@ export default function DictionaryDetailScreen({ route }) {
     }};
 
     useEffect(() => {
-      const token = ''; // 토큰 넣기
-      fetchSpeciesDetail(token, id); // speciesId로 API 호출
+      fetchSpeciesDetail(id); // speciesId로 API 호출
     }, [id]);
 
     useEffect(() => {

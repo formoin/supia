@@ -8,7 +8,8 @@ import axios from "axios";
 import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
 
 const token =
-'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDAxNzU2LCJleHAiOjE3NTQ1Mzc3NTZ9.yQ_IgYEQzmf5O2_csfB095x3RcWrxdJynXGy6XqJT3Zc5-tQ-sSs4ycdMCxwKiWgj1_m8L83O3kKibIi7x0JJA'
+'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzAxODY0NywiZXhwIjoxNzU0NTU0NjQ3fQ.pfSY7fLlBdcflPTvIG47Rs_c1ZWnuYXWdAc2bwkMYfDkyB4laNZ6I7qh4oBZ07-SraxYniZeuO8BeMWVH_dMCA'
+
 export default function DictionaryScreen() {
   const { activeDic, resetActiveDic } = useStore();
   const [speciesList, setSpeciesList] = useState([]);
@@ -25,6 +26,7 @@ export default function DictionaryScreen() {
           params: {
               category: category,
           },
+          timeout: 5000,
       });
       // 성공적인 응답 처리
       if (response.status === 200) {

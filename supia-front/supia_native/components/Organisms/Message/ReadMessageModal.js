@@ -5,7 +5,7 @@ import Searchbar from '../../Organisms/SearchBar';
 import Green from '../../Atoms/Button_Green';
 import ReplyMessage from './ReplyMessageModal';
 
-export default function ReadMessageModal({ visible, onClose, friendName, content, sentTime }) {
+export default function ReadMessageModal({ visible, onClose, friendName, content, sentTime, type }) {
   const [isReplyModalVisible, setReplyModalVisible] = useState(false);
 
   const handleReplyPress = () => {
@@ -33,7 +33,13 @@ export default function ReadMessageModal({ visible, onClose, friendName, content
             <View style={styles.rectangle}>
               <Text style={styles.text}>{content}</Text>
             </View>
-            <Green label="답장하기" onPress={handleReplyPress} />
+            {type === 'text1' ? (
+              <Green label="확인완료" onPress={onClose} />
+            ) : (
+              <>
+                <Green label="답장하기" onPress={handleReplyPress} />
+              </>
+            )}
           </View>
         </View>
       </Modal>

@@ -8,8 +8,6 @@ import {NavigationContainer} from '@react-navigation/native';
 import SignUpScreen from './components/Pages/User/SignUpPage';
 import CallScreen from './components/Pages/CallPage';
 import MyPageScreen from './components/Pages/User/MyPage';
-import CapturePage from './components/Pages/CapturePage';
-import VideoChat from './components/Pages/WebRTC/VideoChat';
 
 const Stack = createStackNavigator();
 
@@ -28,14 +26,13 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{headerShown: false}}>
-        <Stack.Screen name="Call" component={VideoChat} />
+        <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="Main" component={BottomNavBar} />
-        <Stack.Screen name="Capture" component={CapturePage} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Regist" component={SignUpScreen} />
         {/* <Stack.Screen name="WalkRecord" component={StoreScreen} /> */}
         {/* <Stack.Screen name="Walking" component={Walking} /> */}
+        <Stack.Screen name="Call" component={CallScreen} />
         <Stack.Screen name="MyPage" component={MyPageScreen} />
       </Stack.Navigator>
     </NavigationContainer>

@@ -9,43 +9,115 @@ import axios from 'axios'
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import useStore from '../store/useStore';
 import Popup from '../Popup';
+import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
+
+const token =
+'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzA3NDgwMSwiZXhwIjoxNzU0NjEwODAxfQ.2bMm_t46dnLK6MlmQJHvQAfBLdPvPK7m38xpLsJwj55d-lb91ZEYaLb8aK8YwiYfG3Ip_ho05HMcWNFDgp2xmA'
 
 export default function MyForestScreen() {
   const navigation = useNavigation();
-  const [forestData, setForestData] = useState(null);
   const [isModalVisible1, setIsModalVisible1] = useState(false); // setting modal
   const [isModalVisible2, setIsModalVisible2] = useState(false); // dict modal
   const [showSticker, setShowSticker] = useState(false);
-  const { droppedImages, updateImagePosition } = useStore();
 
+  const { droppedImages, updateImagePosition, setDroppedImages, setForestId } = useStore();
+  const [bgiData, setBgiData] = useState(null);
+  const [bgmData, setBgmData] = useState(null);
 
-//   const getForest = async () => {
-//     try {
-//         const response = await axios.get('https://i11b304.p.ssafy.io/api/forest',{
-//           headers: {
-//             Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
-//             Accept: 'application/json',
-//                 'Content-Type': 'application/json; charset=utf-8',
-//             },
-//           params: {
-//             memberId: 1,
-//             },
-//         });
-//          if (response.status === 200) {
-//               console.log(response.data)
-//               setForestData(response.data);
-//               console.log("숲 로딩 성공");
-//          } else {
-//               console.log("숲 로딩 실패");
-//          }
-//      } catch (error) {
-//          console.error("숲 요청 중 오류 발생:", error);
-//      }
-//   };
-//
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzMwNzUsImV4cCI6MTc1NDU2OTA3NX0.g8jpiTc7tLMNf_QvYq5SLLsIA1REIKPyl37c1w0OYXAGDJ6JOuDjDxh0zO8zORd0EZNgl2ADyEXaw6KmZ3lWwQ'
+
+   const getForest = async () => {
+     try {
+         const response = await axios.get('https://i11b304.p.ssafy.io/api/forest',{
+           headers: {
+             Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
+             Accept: 'application/json',
+                 'Content-Type': 'application/json; charset=utf-8',
+             },
+         });
+          if (response.status === 200) {
+               console.log(response.data)
+               setForestId(data.forestId)
+              console.log("숲 로딩 성공");
+              console.log(data)
+              const images = data.items.map(item => ({
+                itemId: item.itemId,
+                imageUrl: item.imgUrl,
+                position: {
+                  x: item.x,
+                  y: item.y,
+                },
+              }));
+            setDroppedImages(images);
+          } else {
+               console.log("숲 로딩 실패");
+          }
+      } catch (error) {
+          console.error("숲 요청 중 오류 발생:", error);
+      }
+   };
+
+  const getOwnBGI= async () => {
+    try {
+      const response = await axios.get("https://i11b304.p.ssafy.io/api/background/own-bgi",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        },
+      );
+      if (response.status === 200) {
+        console.log(response.data);
+        setBgiData(response.data);
+        console.log('내 테마 리스트 로딩 성공');
+      } else {
+        console.log('내 테마 리스트 로딩 실패');
+      }
+    } catch (error) {
+      console.error('내 테마 리스트 요청 중 오류 발생:', error);
+    }
+  };
+
+  const getOwnBGM= async () => {
+    try {
+      const response = await axios.get("https://i11b304.p.ssafy.io/api/background/own-bgm",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        },
+      );
+      if (response.status === 200) {
+        console.log(response.data);
+        setBgiData(response.data);
+        console.log('내 음악 리스트 로딩 성공');
+      } else {
+        console.log('내 음악 리스트 로딩 실패');
+      }
+    } catch (error) {
+      console.error('내 음악 리스트 요청 중 오류 발생:', error);
+    }
+  }
+
+   useEffect(() => {
+     getForest();
+     getOwnBGI();
+     getOwnBGM();
+   }, []);
+
 //   useEffect(() => {
-//     getForest();
-//   }, []);
+//     const unsubscribe = navigation.addListener('focus', () => {
+//         getForest();
+//     });
+
+//     // 컴포넌트 언마운트 시 리스너 제거
+//     return unsubscribe;
+// }, [navigation]);
+
 
   // 저장 팝업
   const [savePopupVisible, setSavePopupVisible] = useState(false);
@@ -94,7 +166,7 @@ export default function MyForestScreen() {
     }
   };
 
-  console.log('droppedImages:', droppedImages);
+  // console.log('droppedImages:', droppedImages);
   return (
     <View style={styles.container}>
       <ImageBackground 

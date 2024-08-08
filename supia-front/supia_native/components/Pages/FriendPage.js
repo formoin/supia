@@ -6,6 +6,11 @@ import Octicons from 'react-native-vector-icons/Octicons';
 import SelectOptions from '../Atoms/SelectOptions';
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
+import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
+
+const token =
+'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzAxODY0NywiZXhwIjoxNzU0NTU0NjQ3fQ.pfSY7fLlBdcflPTvIG47Rs_c1ZWnuYXWdAc2bwkMYfDkyB4laNZ6I7qh4oBZ07-SraxYniZeuO8BeMWVH_dMCA'
+
 
 export default function FriendScreen() {
   const [edit, setEdit] = useState(false);
@@ -15,20 +20,14 @@ export default function FriendScreen() {
     setEdit(!edit);
   };
 
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMjM0QG5hdmVyLmNvbSIsIm1lbWJlcklkIjoxLCJpYXQiOjE3MjI5MjI3MDYsImV4cCI6MTc1NDQ1ODcwNn0.8dh878bIU9LeTY9v0c0zynhcj9n7drFVfu96CJmeGze6JyhiVlUCHp9NmeyBzrjmK8xDYz5-xg2frAz2K-PAZQ';
-  const memberId = 1;
-
   const getFriends = async () => {
-
-    const url = 'http://i11b304.p.ssafy.io/api/friends';
-    const headers = {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json; charset=utf-8',
-    };
     try {
-      const response = await axios.get(url, {
-          headers: headers,
+      const response = await axios.get(`${Server_IP}/friends`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+        },
           params: {
             memberId: 1, //memberId 변경
           },

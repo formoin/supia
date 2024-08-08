@@ -15,25 +15,50 @@ export default function Label({ pic, title, content, name, UserLevel, onOpenPopu
   const [NoteModalVisible, setNoteModalVisible] = useState(false);
   const [DeletePopupVisible, setDeletePopupVisible] = useState(false);
   const [userDetail, setUserDetail] = useState(null);
+  const [friendDetail, setFriendDetail] = useState(null);
+
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ'
+  const memberId = 1;
 
   const getUserDetail = async () => {
       try {
-          const response = await axios.get("https://i11b304.p.ssafy.io/api/friends/detail",
+          const response = await axios.get("https://i11b304.p.ssafy.io/api/search/member",
             {
              headers: {
                 Authorization: `Bearer ${token}`,
                 Accept: 'application/json',
                 'Content-Type': 'application/json; charset=utf-8',
               },
-              params: {
-                memberId: memberId
-              }
             }
           );
 
            if (response.status === 200) {
                 console.log(response.data)
                 setUserDetail(response.data);
+                console.log("유저 정보 로딩 성공");
+           } else {
+                console.log("유저 정보 로딩 실패");
+           }
+       } catch (error) {
+           console.error("유저 정보 요청 중 오류 발생:", error);
+       }
+    };
+
+  const getFriendDetail = async () => {
+      try {
+          const response = await axios.get("https://i11b304.p.ssafy.io/api/friend/detail",
+            {
+             headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+              },
+            }
+          );
+
+           if (response.status === 200) {
+                console.log(response.data)
+                setFriendDetail(response.data);
                 console.log("친구 정보 로딩 성공");
            } else {
                 console.log("친구 정보 로딩 실패");
@@ -45,10 +70,11 @@ export default function Label({ pic, title, content, name, UserLevel, onOpenPopu
 
   const handleOpenUserModal = () => {
     if (pic === 'user' && page === 'search') {
-      setSearchModalVisible(true); // 검색 모달 열기
       getUserDetail();
+      setSearchModalVisible(true); // 검색 모달 열기
     }
     else if (pic === 'user') {
+      getFriendDetail();
       setFriendModalVisible(true); // 친구 모달 열기
     }
   };

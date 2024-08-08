@@ -67,6 +67,12 @@ const useStore = create(set => ({
       };
     });
   },
+  forestId: null,
+  setForestId: (id) => set(() => ({ forestId: id })),
+  // api로 받아온 데이터를 저장하는 함수
+  setDroppedImages: (images) => set(() => ({
+    droppedImages: images,
+  })),
   
 }));
 

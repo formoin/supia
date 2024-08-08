@@ -10,15 +10,14 @@ const Popup_Buy = ({ goBuy, itemId, price, remainingPoints, type }) => {
   const { activeText, setActiveText } = useStore();
   const [PopupVisible, setPopupVisible] = useState(false);
 
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDAxNzU2LCJleHAiOjE3NTQ1Mzc3NTZ9.yQ_IgYEQzmf5O2_csfB095x3RcWrxdJynXGy6XqJT3Zc5-tQ-sSs4ycdMCxwKiWgj1_m8L83O3kKibIi7x0JJA';
-  const memberId = 1;
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ'
 
   const sendThemeData = async () => {
     const BGI = {
-        memberId: memberId,
-        itemId: itemId,
-        price: price,
-        remainingPoints: remainingPoints,
+        memberId: 1,
+        itemId: 1,
+        price: 1,
+        remainingPoints: 1,
         type: "bgi"
     };
 
@@ -29,6 +28,9 @@ const Popup_Buy = ({ goBuy, itemId, price, remainingPoints, type }) => {
           Accept: 'application/json',
           'Content-Type': 'application/json; charset=utf-8',
       },
+      params: {
+        bgiId: 1
+      }
     });
 
         if (response.status === 200) {
@@ -37,16 +39,16 @@ const Popup_Buy = ({ goBuy, itemId, price, remainingPoints, type }) => {
           console.log("테마 구매 정보 저장 실패");
         }
       } catch (error) {
-        console.error("테마 요청 중 오류 발생:", error);
+        console.error("테마 구매 정보 저장 중 오류 발생:", error);
       }
   };
 
   const sendMusicData = async () => {
     const BGM = {
-      memberId: memberId,
-      itemId: itemId,
-      price: price,
-      remainingPoints: remainingPoints,
+      memberId: 1,
+      itemId: 1,
+      price: 1,
+      remainingPoints: 1,
       type: "bgm"
     };
 
@@ -57,6 +59,9 @@ const Popup_Buy = ({ goBuy, itemId, price, remainingPoints, type }) => {
             Accept: 'application/json',
             'Content-Type': 'application/json; charset=utf-8',
         },
+        params: {
+            bgmId: 1
+        }
       });
 
       if (response.status === 200) {
@@ -65,7 +70,7 @@ const Popup_Buy = ({ goBuy, itemId, price, remainingPoints, type }) => {
         console.log("음악 구매 정보 저장 실패");
       }
     } catch (error) {
-      console.error("음악 요청 중 오류 발생:", error);
+      console.error("음악 구매 정보 저장 중 오류 발생:", error);
     }
   };
 

@@ -13,8 +13,7 @@ export default function SearchScreen() {
   const [friendData, setFriendData] = useState([]);
   const isFocused = useIsFocused();
 
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDAxNzU2LCJleHAiOjE3NTQ1Mzc3NTZ9.yQ_IgYEQzmf5O2_csfB095x3RcWrxdJynXGy6XqJT3Zc5-tQ-sSs4ycdMCxwKiWgj1_m8L83O3kKibIi7x0JJA';
-  const memberId = 1;
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ'
 
   const getFriend = async () => {
     try {
@@ -23,9 +22,6 @@ export default function SearchScreen() {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
           'Content-Type': 'application/json; charset=utf-8',
-        },
-        params: {
-          memberId: memberId,
         },
       });
 
@@ -55,21 +51,18 @@ export default function SearchScreen() {
         <Divide text1="User" text2="Item" />
       </View>
       <View style={styles.searchbar}>
-        <Searchbar active={true} />
+        <Searchbar active={true} type={activeText} />
       </View>
       <View style={styles.p_value}>
         {activeText === 'text1' ? (
-          friendData.map(friend => (
-            <ListItem
-              key={friend.friendId}
-              pic="user" // {friend.profileImg}
-              title={friend.nickname}
-              content={friend.name}
-              name="message-square"
-              UserLevel="새싹"
-              page="search"
-            />
-          ))
+          <ListItem
+            pic="user"
+            title="formoin" // {friend.nickname}
+            content="김예원" // {friend.name}
+            name="message-square"
+            UserLevel="새싹"
+            page="search"
+          />
         ) : (
           <ListItem
             pic=""

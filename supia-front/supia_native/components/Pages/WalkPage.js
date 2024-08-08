@@ -10,7 +10,7 @@ import haversine from 'haversine';
 import {useFocusEffect} from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import axios from 'axios';
-import {KAKAO_API_KEY} from '@env';
+import { KAKAO_API_KEY } from '@env';
 
 export default function WalkingScreen() {
   const time = useStore(state => state.time);

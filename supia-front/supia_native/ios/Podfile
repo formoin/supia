@@ -23,8 +23,6 @@ target 'supia_native' do
 
   pod 'react-native-safe-area-context', :path => '../node_modules/react-native-safe-area-context'
 
-  pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
-
   target 'supia_nativeTests' do
     inherit! :complete
     # Pods for testing
