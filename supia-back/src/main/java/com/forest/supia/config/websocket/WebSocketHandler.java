@@ -118,7 +118,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                                 + "\"fromUserId\": \"" + fromUserId + "\", "
                                 + "\"offer\" : " + objectMapper.writeValueAsString(data.get("offer")) +","
                                 + "\"answer\" : " + objectMapper.writeValueAsString(data.get("answer")) +","
-                                + "\"ice-candidate\" : " + objectMapper.writeValueAsString(data.get("ice-candidate"))
+                                + "\"candidate\" : " + objectMapper.writeValueAsString(data.get("candidate"))
                                 + "}");
                         CLIENTS.get(memberId).sendMessage(
                                 ms);
@@ -136,7 +136,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                                 + "\"fromUserId\": \"" + fromUserId + "\", "
                                 + "\"offer\" : " + objectMapper.writeValueAsString(data.get("offer")) +","
                                 + "\"answer\" : " + objectMapper.writeValueAsString(data.get("answer")) +","
-                                + "\"ice-candidate\" : " + objectMapper.writeValueAsString(data.get("ice-candidate"))
+                                + "\"candidate\" : " + objectMapper.writeValueAsString(data.get("candidate"))
                                 + "}");
                         CLIENTS.get(memberId).sendMessage(
                                 ms);
