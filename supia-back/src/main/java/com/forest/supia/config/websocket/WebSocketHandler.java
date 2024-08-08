@@ -142,17 +142,21 @@ public class WebSocketHandler extends TextWebSocketHandler {
             for(String memberId : CLIENTS.keySet()){
                 if("offer".equals(data.get("type")) && !memberId.equals(id)){
                     try{
-                        TextMessage ms = new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
-                                "\"offer\" : \""+ objectMapper.writeValueAsString(data.getOrDefault("offer", ""))+"\"" +
-                                "\"answer\" : \""+ objectMapper.writeValueAsString(data.getOrDefault("answer", ""))+"\"" +
-                                "\"ice-candidate\" : \""+ objectMapper.writeValueAsString(data.getOrDefault("ice-candidate", ""))+"\"" +
-                                "}");
+                        TextMessage ms = new TextMessage("{"
+                                + "\"type\": \"" + data.get("type") + "\", "
+                                + "\"targetUserId\": \"" + targetUserId + "\", "
+                                + "\"offer\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("offer", "")) + "\", "
+                                + "\"answer\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("answer", "")) + "\", "
+                                + "\"ice-candidate\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("ice-candidate", "")) + "\""
+                                + "}");
                         CLIENTS.get(memberId).sendMessage(
-                                new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
-                                        "\"offer\" : \""+ objectMapper.writeValueAsString(data.getOrDefault("offer", ""))+"\"" +
-                                        "\"answer\" : \""+ objectMapper.writeValueAsString(data.getOrDefault("answer", ""))+"\"" +
-                                        "\"ice-candidate\" : \""+ objectMapper.writeValueAsString(data.getOrDefault("ice-candidate", ""))+"\"" +
-                                        "}")
+                                new TextMessage("{"
+                                        + "\"type\": \"" + data.get("type") + "\", "
+                                        + "\"targetUserId\": \"" + targetUserId + "\", "
+                                        + "\"offer\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("offer", "")) + "\", "
+                                        + "\"answer\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("answer", "")) + "\", "
+                                        + "\"ice-candidate\" : \"" + objectMapper.writeValueAsString(data.getOrDefault("ice-candidate", "")) + "\""
+                                        + "}")
                         );
                         System.out.println("offer message : " + ms);
 
