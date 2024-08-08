@@ -12,6 +12,8 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,14 +23,17 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
     //clients라는 변수에 세션을 담아두기 위한 맵형식의 공간
     private static final ConcurrentHashMap<String, WebSocketSession> CLIENTS = new ConcurrentHashMap<String, WebSocketSession>();
+
+    private List<WebSocketSession> sessions = new LinkedList<WebSocketSession>();
+
     private final JwtUtil jwtUtil;
     private final MemberRepository memberRepository;
-
+    private final ObjectMapper objectMapper;
 
     //websocket handshake가 완료되어 연결이 수립될 때 호출
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        CLIENTS.put(session.getId(), session);
+        sessions.add(session);
         System.out.println("My Session : " + session.getId());
         System.out.println("after connection established, Current Users : "+CLIENTS.keySet().toString());
     }
@@ -36,17 +41,26 @@ public class WebSocketHandler extends TextWebSocketHandler {
     //websocket 세션 연결이 종료되었을 때 호출
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        CLIENTS.remove(session.getId());
+        sessions.remove(session);
+
+        //만약 세션에 접속한 인원이 0명이라면 클라이언트 해시맵 비워주기
+        if(sessions.size()==0){
+            CLIENTS.clear();
+        }
     }
 
     //websocket session 으로 메시지가 수신되었을 때 호출
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        String id = session.getId();  //메시지를 보낸 아이디
         System.out.println("handle text Message : "+message);
         String payload = message.getPayload();
-        Map<String, String> data = new ObjectMapper().readValue(payload, Map.class);
+
+        System.out.println("WebSocketSession :" + session);
+
+        Map<String, String> data = objectMapper.readValue(payload, Map.class);
         System.out.println("Message Type : " + data.get("type"));
+
+        String id = "";
 
         if ("authenticate".equals(data.get("type"))) {
             System.out.println("authenticate check");
@@ -56,7 +70,8 @@ public class WebSocketHandler extends TextWebSocketHandler {
             Long memberId = jwtUtil.extractMemberId(token);
             Member member = memberRepository.findById(memberId).orElse(null);
             if (member != null && jwtUtil.validateToken(token, member)) {
-                CLIENTS.put(session.getId(), session);
+                id = String.valueOf(memberId);
+                CLIENTS.put(id, session);
                 session.sendMessage(new TextMessage("{\"type\": \"authenticated\"}"));
 
             } else {
@@ -67,16 +82,50 @@ public class WebSocketHandler extends TextWebSocketHandler {
             System.out.println("Message received: " + data.get("message"));
 
             //메세지가 보내면 자기자신을 제외한 전체에게 broadcasting
-            CLIENTS.entrySet().forEach( arg->{
-                if(!arg.getKey().equals(id)) {  //같은 아이디가 아니면 메시지를 전달합니다.
-                    try {
-                        arg.getValue().sendMessage(message);
+//            CLIENTS.entrySet().forEach( arg->{
+//                if(!arg.getKey().equals(id)) {  //같은 아이디가 아니면 메시지를 전달합니다.
+//                    try {
+//                        arg.getValue().sendMessage(message);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            });
+
+            for(String memberId : CLIENTS.keySet()){
+                if(memberId.equals(id)){
+                    try{
+                        CLIENTS.get(memberId).sendMessage(message);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-            });
+            }
+        } else if ("offer".equals(data.get("type")) || "answer".equals(data.get("type")) || "ice-candidate".equals(data.get("type"))) {
+            System.out.println("offer received: " + data.get("offer"));
+            String targetUserId = data.get("targetUserId");
+            System.out.println(data);
+            
+            for(String memberId : CLIENTS.keySet()){
+                if(memberId.equals(targetUserId)){
+                    try{
+                        CLIENTS.get(memberId).sendMessage(
+                                new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
+                                        "\"offer\" : \""+data.getOrDefault("offer", "")+"\"" +
+                                        "\"answer\" : \""+data.getOrDefault("answer", "")+"\"" +
+                                        "\"ice-candidate\" : \""+data.getOrDefault("ice-candidate", "")+"\"" +
+                                        "}")
+                        );
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
         }
+//        else if ("answer".equals(data.get("type"))) {
+//            System.out.println("Answer received: " + data.get("answer"));
+//        }
 
     }
 
