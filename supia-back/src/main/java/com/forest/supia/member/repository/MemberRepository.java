@@ -3,7 +3,9 @@ package com.forest.supia.member.repository;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.search.dto.ItemSearchResponse;
 import com.forest.supia.search.dto.MemberSearchResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -27,4 +29,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<MemberSearchResponse> findMemberByKeyword(@Param("keyword") String keyword);
 
     Optional<Member> findByIdAndIsActiveTrue(Long id);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Member m SET m.visit = 0")
+    void resetVisitCount();
 }

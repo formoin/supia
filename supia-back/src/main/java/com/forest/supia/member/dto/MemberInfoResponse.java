@@ -1,2 +1,20 @@
-package com.forest.supia.member.dto;public class MemberInfoResponse {
+package com.forest.supia.member.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class MemberInfoResponse {
+    private Long id;
+    private String email;
+    private String name;
+    private String nickname;
+    private String profileImg;
+    private int level;
+    private int exp;
+    private int point;
+    private int visit;
+    private boolean isActive;
 }

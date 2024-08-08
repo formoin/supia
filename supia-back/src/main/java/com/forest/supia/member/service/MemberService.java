@@ -5,12 +5,14 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.forest.supia.background.repository.OwnBgiRepository;
 import com.forest.supia.background.repository.OwnBgmRepository;
 import com.forest.supia.config.auth.JwtUtil;
+import com.forest.supia.config.s3.DefaultPropertiesConfig;
 import com.forest.supia.forest.entity.Forest;
 import com.forest.supia.forest.repository.ForestItemRepository;
 import com.forest.supia.forest.repository.ForestRepository;
 import com.forest.supia.friend.repository.FriendRepository;
 import com.forest.supia.item.repository.ItemRepository;
 import com.forest.supia.member.dto.LoginDto;
+import com.forest.supia.member.dto.MemberInfoResponse;
 import com.forest.supia.member.dto.SignUpDto;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
@@ -57,6 +59,9 @@ public class MemberService {
     private final AmazonS3Client amazonS3Client;
 
     @Autowired
+    private DefaultPropertiesConfig defaultPropertiesConfig;
+
+    @Autowired
     private JwtUtil jwtUtil;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -94,11 +99,13 @@ public class MemberService {
                 .name(signUpInfo.getName())
                 .nickname(signUpInfo.getNickname())
                 .password(encoded_password)
+                .profileImg(defaultPropertiesConfig.getDefaultProfileImg())
                 .isActive(true)
                 .build();
 
         Member member = memberRepository.save(new_member);
-        Forest forest = Forest.createForest(member, "Default thumbnail");
+
+        Forest forest = Forest.createForest(member, defaultPropertiesConfig.getDefaultThumbnail(), defaultPropertiesConfig.getDefaultBgi());
         forestRepository.save(forest);
 
         Forest result = forestRepository.save(forest);
@@ -186,5 +193,25 @@ public class MemberService {
         // member 테이블 memberId에 해당하는 데이터 탈퇴 상태로 수정 (isActive = false)
         member.setActive(false);
         memberRepository.save(member); //를 호출하지 않음, 트랜잭션 종료 시점에 자동으로 반영됨
+    }
+
+    public MemberInfoResponse updateMemberInfoResponse(Member member) {
+        MemberInfoResponse memberInfo = new MemberInfoResponse();
+        memberInfo.setEmail(member.getEmail());
+        memberInfo.setId(member.getId());
+        memberInfo.setLevel(member.getLevel());
+        memberInfo.setExp(member.getExp());
+        memberInfo.setName(member.getName());
+        memberInfo.setPoint(member.getPoint());
+        memberInfo.setNickname(member.getNickname());
+        memberInfo.setProfileImg(member.getProfileImg());
+        memberInfo.setVisit(member.getVisit());
+        memberInfo.setActive(member.isActive());
+        return memberInfo;
+    }
+
+    @Transactional
+    public void resetVisitCounts() {
+        memberRepository.resetVisitCount();
     }
 }

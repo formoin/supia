@@ -10,6 +10,7 @@ import lombok.*;
 @Getter
 @Builder
 @Entity
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "Member")
@@ -26,7 +27,10 @@ public class Member {
     private String name;
     private String nickname;
     private String password;
+
+    @Column(columnDefinition = "VARCHAR(500)")
     private String profileImg;
+
     private int level;
     private int exp;
     private int point;
