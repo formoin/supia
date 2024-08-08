@@ -103,6 +103,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
             }
         } else if ("offer".equals(data.get("type")) || "answer".equals(data.get("type")) || "ice-candidate".equals(data.get("type"))) {
 //            System.out.println("offer received: " + data.get("offer"));
+            System.out.println(objectMapper.writeValueAsString("Clients List : " + CLIENTS.keySet()));
             String targetUserId = data.get("targetUserId");
             String fromUserId = data.get("userId");
             System.out.println(data.keySet());
