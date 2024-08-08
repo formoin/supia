@@ -51,15 +51,14 @@ public class WalkServiceImpl implements WalkService{
             String address = itemDto.getPosition();
 
             //TODO: 주소 요청 데이터 형태 확인 및 시, 동 string 변환
-            String[] addressSplit = address.split(" ");
-            //TODO: 찾는 종 데이터 없을 시, 예외 처리. 이름 저장하게 하기
+
             Species species = speciesRepository.findByNameContaining(itemDto.getSpecies()).orElse(null);
             if(species==null) {
                 species = Species.createSpecies(itemDto.getSpecies(), itemDto.getImageUrl());
                 speciesRepository.save(species);
                 System.out.println(species.getId());
             }
-            Item item = Item.createItem(member, species, walkDate, addressSplit[0], addressSplit[2], itemDto.getImageUrl(), itemDto.getOriginalUrl());
+            Item item = Item.createItem(member, species, walkDate, address, itemDto.getImageUrl(), itemDto.getOriginalUrl());
             items.add(item);
         }
 
@@ -73,15 +72,10 @@ public class WalkServiceImpl implements WalkService{
     }
 
     @Override
-    public List<SpeciesResponse> getSpeciesByDong(String address) {
-        //TODO: 주소에서 시, 동 변환 하는 로직
+    public List<SpeciesResponse> getSpeciesByDong(String dongCode) {
 
-        String[] addressSplit = address.split(" ");
 
-        String si = addressSplit[0];
-        String dong = addressSplit[2];
-
-        return itemRepository.speciesResponseListByDong(si, dong);
+        return itemRepository.speciesResponseListByDong(dongCode);
     }
 
 }
