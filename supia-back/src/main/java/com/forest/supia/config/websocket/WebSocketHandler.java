@@ -103,9 +103,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 }
             }
         } else if ("offer".equals(data.get("type")) || "answer".equals(data.get("type")) || "ice-candidate".equals(data.get("type"))) {
-//            System.out.println("offer received: " + data.get("offer"));
-            System.out.println("before object mapper clients keyset print");
-            System.out.println(objectMapper.writeValueAsString("Clients List : " + CLIENTS.keySet()));
+
             String targetUserId = data.get("targetUserId");
             String fromUserId = data.get("userId");
             System.out.println("before data keyset print");
@@ -136,7 +134,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                         e.printStackTrace();
                     }
                 }
-                else if("answer".equals(data.get("type")) && memberId.equals(targetUserId)){
+                else if("answer".equals(data.get("type")) && memberId.equals(fromUserId)){
                     try{
                         TextMessage ms = new TextMessage("{"
                                 + "\"type\": \"" + data.get("type") + "\", "
@@ -154,6 +152,8 @@ public class WebSocketHandler extends TextWebSocketHandler {
                                         + "\"ice-candidate\" : " + objectMapper.writeValueAsString(data.get("ice-candidate"))
                                         + "}")
                         );
+                        System.out.println("Answer to UserId : " + fromUserId);
+                        System.out.println("Answer Message : "+ms.getPayload());
                         System.out.println("answer보냄");
                     } catch (IOException e) {
                         e.printStackTrace();
