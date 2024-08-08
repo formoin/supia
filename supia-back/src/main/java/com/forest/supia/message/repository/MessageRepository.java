@@ -13,4 +13,8 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findByFromMemberAndCategoryAndFromMemberDelete(Member member, int category, boolean fromMemberDelete);
 
     List<Message> findByToMemberAndCategoryGreaterThan(Member member, int category);
+
+    List<Message> findByToMemberAndCategoryAndIsCheck(Member member, int category, boolean isCheck);
+
+    List<Message> findByToMemberAndCategoryGreaterThanAndIsCheck(Member member, int category, boolean isCheck);
 }

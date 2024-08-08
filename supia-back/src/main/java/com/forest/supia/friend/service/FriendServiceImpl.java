@@ -1,5 +1,7 @@
 package com.forest.supia.friend.service;
 
+import com.forest.supia.exception.CustomException;
+import com.forest.supia.exception.ExceptionResponse;
 import com.forest.supia.friend.dto.FriendRequest;
 import com.forest.supia.friend.dto.FriendResponse;
 import com.forest.supia.friend.entity.Friend;
@@ -9,6 +11,7 @@ import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
 import com.forest.supia.message.entity.Message;
 import com.forest.supia.message.repository.MessageRepository;
+import com.forest.supia.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,7 @@ public class FriendServiceImpl implements FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
     private final MessageRepository messageRepository;
+    private final NotificationService notificationService;
 
     @Override
     public List<FriendResponse> getFriendsList(long memberId) {
@@ -93,6 +97,10 @@ public class FriendServiceImpl implements FriendService {
         Friend friend = Friend.createFriend(fromMember, toMember);
         Friend check = friendRepository.findByFromMemberAndToMember(fromMember, toMember).orElse(null);
 
+        int body = messageRepository.findByToMemberAndCategoryGreaterThanAndIsCheck(toMember, 1, false).size();
+
+        notificationService.notifyMessage(toMember.getId(), body, "SSE", "alarm");
+
         if(check == null) {
             messageRepository.save(message);
             Friend result = friendRepository.save(friend);
@@ -110,12 +118,18 @@ public class FriendServiceImpl implements FriendService {
         Friend friend = friendRepository.findByFromMemberAndToMember(message.getFromMember(), message.getToMember()).orElseThrow(() -> new IllegalArgumentException("해당하는 친구 요청이 없습니다."));
 
         friend.beFriend(friend);
+        //toMember: 친구 신청 받은 사람
+        //fromMember: 친구 신청 보낸 사람. 지금 친구 수락 알람 받을 사람.
+        Message reply = Message.createMessage(message.getToMember(), message.getFromMember(), 3, message.getToMember().getName()+"님이 친구 요청을 수락하셨습니다.");
+        messageRepository.save(reply);
+        int body = messageRepository.findByToMemberAndCategoryGreaterThanAndIsCheck(message.getFromMember(), 1, false).size();
+        notificationService.notifyMessage(message.getFromMember().getId(), body, "SSE", "alarm");
         try {
             Friend result = friendRepository.save(friend);
             return result.getId();
         }
         catch (Exception e) {
-            return 0;
+            throw new ExceptionResponse(CustomException.FAIL_SAVE_FRIEND_EXCEPTION);
         }
     }
 

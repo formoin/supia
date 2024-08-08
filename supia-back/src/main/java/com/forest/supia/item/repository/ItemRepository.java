@@ -42,11 +42,11 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
                     "s.id as id, s.name as speciesName, s.representative_img as representativeImg " +
                     "FROM item i " +
                     "INNER JOIN species s ON s.id = i.species_id " +
-                    "WHERE i.si = :si AND i.dong = :dong " +
+                    "WHERE i.dong_code = :dongCode " +
                     "GROUP BY s.id",
             nativeQuery = true
     )
-    List<SpeciesResponse> speciesResponseListByDong(@Param("si") String si, @Param("dong") String dong);
+    List<SpeciesResponse> speciesResponseListByDong(@Param("dongCode") String dongCode);
 
     Item findById(long itemId);
     void deleteById(long itemId);
