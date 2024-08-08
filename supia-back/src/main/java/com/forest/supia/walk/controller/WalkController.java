@@ -4,16 +4,16 @@ package com.forest.supia.walk.controller;
 import com.forest.supia.config.auth.JwtUtil;
 import com.forest.supia.item.dto.SpeciesResponse;
 import com.forest.supia.walk.dto.WalkDto;
-import com.forest.supia.walk.dto.WalkHistoryDto;
+import com.forest.supia.walk.dto.WalkHistoryResponseDto;
 import com.forest.supia.walk.entity.Walk;
 import com.forest.supia.walk.service.WalkService;
-import io.jsonwebtoken.Jwt;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import java.time.Year;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 
@@ -46,11 +46,9 @@ public class WalkController {
     }
 
     @PostMapping("/history")
-    public ResponseEntity<Map<String, List<Walk>>> getWalkHistoryByMemberId(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Map<String, List<WalkHistoryResponseDto>>> getWalkHistoryByMemberId(@RequestHeader("Authorization") String token) {
         Long memberId = jwtUtil.extractMemberId(token);
-        List<Walk> walkHistory = walkService.getAllWalk(memberId);
-        Map<String, List<Walk>> response = new HashMap<>();
-        response.put("message", walkHistory);
-        return ResponseEntity.ok(response);
+        Map<String, List<WalkHistoryResponseDto>> combinedHistory = walkService.getCombinedWalkHistory(memberId);
+        return ResponseEntity.ok(combinedHistory);
     }
 }

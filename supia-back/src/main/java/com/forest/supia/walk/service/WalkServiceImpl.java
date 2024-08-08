@@ -8,6 +8,7 @@ import com.forest.supia.item.repository.ItemRepository;
 import com.forest.supia.item.repository.SpeciesRepository;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
+import com.forest.supia.walk.dto.WalkHistoryResponseDto;
 import com.forest.supia.walk.repository.WalkRepository;
 import com.forest.supia.walk.dto.WalkDto;
 import com.forest.supia.walk.entity.Walk;
@@ -15,11 +16,12 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,49 +36,64 @@ public class WalkServiceImpl implements WalkService{
     @Transactional
     public Long walk(WalkDto walkDto) {
 
-        Member member = memberRepository.findById(walkDto.getMemberId()).orElseThrow();
+        Member member = memberRepository.findById(walkDto.getMemberId())
+                .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + walkDto.getMemberId()));
 
         LocalDateTime startDateTime = walkDto.getWalkStart();
         LocalDateTime endDateTime = walkDto.getWalkEnd();
 
         Duration duration = Duration.between(startDateTime, endDateTime);
-
-        long walkTime =  duration.toSeconds();
+        long walkTime = duration.toSeconds();
         LocalDate walkDate = LocalDate.from(endDateTime);
 
         List<Item> items = new ArrayList<>();
 
-        for(ItemDto itemDto : walkDto.getItems()) {
+        for (ItemDto itemDto : walkDto.getItems()) {
             String address = itemDto.getPosition();
 
-            //TODO: 주소 요청 데이터 형태 확인 및 시, 동 string 변환
-
             Species species = speciesRepository.findByNameContaining(itemDto.getSpecies()).orElse(null);
-            if(species==null) {
+            if (species == null) {
                 species = Species.createSpecies(itemDto.getSpecies(), itemDto.getImageUrl());
                 speciesRepository.save(species);
-                System.out.println(species.getId());
             }
             Item item = Item.createItem(member, species, walkDate, address, itemDto.getImageUrl(), itemDto.getOriginalUrl());
             items.add(item);
         }
 
         Walk walk = Walk.createWalk(member, walkDate, walkTime, walkDto.getDistance(), items);
-
         walkRepository.save(walk);
         return walk.getId();
     }
 
     @Override
     public List<SpeciesResponse> getSpeciesByDong(String dongCode) {
-
-
         return itemRepository.speciesResponseListByDong(dongCode);
     }
 
     @Override
-    public List<Walk> getAllWalk(Long memberId) {
-        return walkRepository.findAllByMember_Id(memberId);
+    public List<WalkHistoryResponseDto> getMonthlyWalkHistory(Long memberId, YearMonth yearMonth) {
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+        return walkRepository.findMonthlyWalks(memberId, startDate, endDate);
     }
 
+    @Override
+    public List<WalkHistoryResponseDto> getYearlyWalkHistory(Long memberId, Year year) {
+        return walkRepository.findYearlyWalks(memberId, year.getValue());
+    }
+
+    @Override
+    public Map<String, List<WalkHistoryResponseDto>> getCombinedWalkHistory(Long memberId) {
+        YearMonth thisMonth = YearMonth.now();
+        Year thisYear = Year.now();
+
+        List<WalkHistoryResponseDto> monthlyHistory = getMonthlyWalkHistory(memberId, thisMonth);
+        List<WalkHistoryResponseDto> yearlyHistory = getYearlyWalkHistory(memberId, thisYear);
+
+        Map<String, List<WalkHistoryResponseDto>> combinedHistory = new HashMap<>();
+        combinedHistory.put("monthly", monthlyHistory);
+        combinedHistory.put("yearly", yearlyHistory);
+
+        return combinedHistory;
+    }
 }
