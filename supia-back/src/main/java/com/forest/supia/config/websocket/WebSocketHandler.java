@@ -104,10 +104,24 @@ public class WebSocketHandler extends TextWebSocketHandler {
         } else if ("offer".equals(data.get("type")) || "answer".equals(data.get("type")) || "ice-candidate".equals(data.get("type"))) {
             System.out.println("offer received: " + data.get("offer"));
             String targetUserId = data.get("targetUserId");
-            System.out.println(data);
-            
+            String fromUserId = data.get("userId");
+            System.out.println(objectMapper.writeValueAsString(data));
+
             for(String memberId : CLIENTS.keySet()){
-                if(memberId.equals(targetUserId)){
+                if("offer".equals(data.get("type")) && memberId.equals(targetUserId)){
+                    try{
+                        CLIENTS.get(memberId).sendMessage(
+                                new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
+                                        "\"offer\" : \""+data.getOrDefault("offer", "")+"\"" +
+                                        "\"answer\" : \""+data.getOrDefault("answer", "")+"\"" +
+                                        "\"ice-candidate\" : \""+data.getOrDefault("ice-candidate", "")+"\"" +
+                                        "}")
+                        );
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else if("answer".equals(data.get("type")) && memberId.equals(targetUserId)){
                     try{
                         CLIENTS.get(memberId).sendMessage(
                                 new TextMessage("{\"type\": \""+ data.get("type") +"\", \"targetUserId\": \"" + targetUserId + "\"" +
