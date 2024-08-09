@@ -44,7 +44,7 @@ const LoginScreen = ({navigation}) => {
         alert('로그인 되었습니다.');
         // 로그인 처리 및 Home으로 이동
         useLoginStore.setState({isLoggedIn: true});
-        navigation.navigate('Call', {userId: 1, targetUserId: 2});
+        navigation.navigate('Home');
       }
     } catch (error) {
       console.log('Error during login:', error.message);

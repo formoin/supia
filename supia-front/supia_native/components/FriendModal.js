@@ -1,56 +1,48 @@
-import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, {useState} from 'react';
+import {StyleSheet, View} from 'react-native';
 import ModalHeader from './Atoms/ModalHeader';
 import ModalImage from './Atoms/ModalImage';
 import ModalLevel from './Atoms/ModalLevel';
 import Green from './Atoms/Button_Green';
 import Red from './Atoms/Button_Red';
-import axios from 'axios'
+import axios from 'axios';
+import {Server_IP} from '@env';
 
-export default function FriendModal({ UserName, UserLevel, onClose, page, memberId, toId }) {
+export default function FriendModal({
+  UserName,
+  UserLevel,
+  onClose,
+  page,
+  memberId,
+  toId,
+}) {
   const [isFriendRequested, setIsFriendRequested] = useState(false);
 
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ';
-
-    const sendFriendRequest = async () => {
-
-      const friendRequest = {
-        fromId: memberId,
-        toId: toId,
-      };
-
-      const message = {
-        from_user_id: memberId,
-        to_user_id: toId,
-        title: '친구 요청',
-        context: '?님이 친구 요청을 보내셨습니다.',
-        category: 2,
-        is_check: 'false',
-      };
-
-      const data = {
-        friendRequest,
-        message,
-      };
-
-      try {
-        const response = await axios.post('https://i11b304.p.ssafy.io/api/friends', data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          }
-        });
-
-        if (response.status === 200) {
-          console.log("친구 요청 성공");
-        } else {
-          console.log("친구 요청 실패");
-        }
-      } catch (error) {
-        console.error("친구 요청 중 오류 발생:", error);
-      }
+  const token =
+    'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJydGNUZXN0M0BuYXZlci5jb20iLCJtZW1iZXJJZCI6NSwiaWF0IjoxNzIzMTkwMTY1LCJleHAiOjE3NTQ3MjYxNjV9.i8j2uViosHqkRg-VYbhmMGpFY0RqbvJr1XRfab_EZjvjT_Vnmjq6rrVe_nP-qM8Om6r23AVmemtHWqXzg7V70w';
+  const sendFriendRequest = async () => {
+    const friendRequest = {
+      fromId: memberId,
+      toId: toId,
     };
+    try {
+      const response = await axios.post(`${Server_IP}/friends`, friendRequest, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+      });
+
+      if (response.status === 200) {
+        console.log('친구 요청 성공');
+      } else {
+        console.log('친구 요청 실패');
+      }
+    } catch (error) {
+      console.error('친구 요청 중 오류 발생:', error);
+    }
+  };
 
   const handleButtonClick = () => {
     sendFriendRequest();
@@ -87,7 +79,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.10)',
     backgroundColor: '#ECEADE',
     shadowColor: 'rgba(0, 0, 0, 0.25)',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 4,

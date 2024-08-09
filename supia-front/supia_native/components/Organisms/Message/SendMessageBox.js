@@ -1,68 +1,128 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import Label from '../../Atoms/ListItem';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 import ReadMessageModal from './ReadMessageModal';
+import moment from 'moment';
 
-export default function sendMessage({messageId}) {
+export default function SendMessage({ edit, fromMessage, onDelete }) {
   const [modalVisible, setModalVisible] = useState(false);
-  const [msgDetail, setMsgDetail] = useState(null);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState(fromMessage);
 
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ'
+  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMxMTIyMTAsImV4cCI6MTc1NDY0ODIxMH0.X3flqfSBEKkZH_-xKQNxXZH5aRpBQtMJYeDOGgAdwdIuU5VBmuIwL4HVoNrAi_Ak9Jh8gPe2K2g3Y_ivMf2ZQg';
 
-  // messageId, fromMemberNickname, toMemberNickname, content, category, sentTime, check
-  const messageDetail = async () => {
-      const url = "https://i11b304.p.ssafy.io/api/messages/detail";
+  const messageDetail = useCallback(async (messageId) => {
+    setLoading(true);
+    const url = 'https://i11b304.p.ssafy.io/api/messages/detail';
 
-      try {
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          params: {
-            messageId: 1,
-          }
-        })
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        params: {
+          messageId: messageId,
+        },
+      });
 
-        if (response.status === 200) {
-          setMsgDetail(response.data)
-          console.log("메시지 확인 성공");
-        } else {
-          console.log("메시지 확인 실패");
-        }
-      } catch (error) {
-        console.error("메세지 확인 중 오류 발생:", error);
+      if (response.status === 200) {
+        console.log('메시지 확인 성공');
+      } else {
+        console.log('메시지 확인 실패');
       }
-    };
+    } catch (error) {
+      console.error('메세지 확인 중 오류 발생:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
-  const handlePress = () => {
-    messageDetail()
-    setModalVisible(true);
+  const messageDelete = useCallback(async (messageId) => {
+    setLoading(true);
+    const url = 'https://i11b304.p.ssafy.io/api/messages';
+
+    try {
+      const response = await axios.delete(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        params: {
+          messageId: messageId,
+        },
+      });
+
+      if (response.status === 200) {
+        console.log('메시지 삭제 성공');
+        setMessages(prevMessages => prevMessages.filter(message => message.messageId !== messageId)); // 삭제 후 상태 업데이트
+        onDelete(); // 부모 컴포넌트에 메시지 삭제를 알림
+        setModalVisible(false);
+      } else {
+        console.log('메시지 삭제 실패');
+      }
+    } catch (error) {
+      console.error('메세지 삭제 중 오류 발생:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [token, onDelete]);
+
+  const handlePress = (message) => {
+    if (edit) {
+      messageDelete(message.messageId);
+    } else {
+      messageDetail(message.messageId);
+      setSelectedMessage(message);
+      setModalVisible(true);
+    }
+  };
+
+  const formatSentTime = (dateString) => {
+    return dateString ? moment(dateString).format('YYYY/MM/DD HH:mm') : '시간 정보 없음';
   };
 
   return (
     <View>
-      <View style={styles.container}>
-        <View style={styles.messageHeader}>
-          <Text style={styles.messageText}>쪽지</Text>
-          <Text style={styles.timeText}>Today 10:30PM</Text>
-        </View>
-        <View style={styles.messageContent}>
-          <Label pic="smileo" title="formoin" content="뭐하니?" />
-          <Pressable style={styles.button} onPress={handlePress}>
-            <Text style={styles.buttonText}>확인</Text>
-          </Pressable>
-        </View>
-      </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#A2AA7B" />
+      ) : messages && messages.length > 0 ? (
+        messages.map((message) => (
+          <View key={message.messageId} style={styles.container}>
+            <View style={styles.messageHeader}>
+              <Text style={styles.messageText}>쪽지</Text>
+              <Text style={styles.timeText}>{formatSentTime(message.sentTime)}</Text>
+            </View>
+            <View style={styles.messageContent}>
+              <Label url={message.toMemberImg} title={message.toMemberNickname} content={message.content} />
+              <Pressable
+                style={[styles.button, edit ? styles.deleteButton : styles.confirmButton]}
+                onPress={() => handlePress(message)}
+              >
+                <Text style={styles.buttonText}>{edit ? '삭제' : '확인'}</Text>
+              </Pressable>
+            </View>
+          </View>
+        ))
+      ) : (
+        <Text>메시지가 없습니다.</Text>
+      )}
 
-      <ReadMessageModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        friendName="formoin"
-        type="text1"
-      />
+      {selectedMessage && (
+        <ReadMessageModal
+          visible={modalVisible}
+          onClose={() => {
+            setModalVisible(false);
+            setSelectedMessage(null);
+          }}
+          type="text1"
+          fromMessage={selectedMessage ? [selectedMessage] : []}
+        />
+      )}
     </View>
   );
 }
@@ -95,11 +155,16 @@ const styles = StyleSheet.create({
   button: {
     width: 45,
     height: 35,
-    backgroundColor: '#A2AA7B',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 10,
+  },
+  deleteButton: {
+    backgroundColor: '#C28C7E',
+  },
+  confirmButton: {
+    backgroundColor: '#A2AA7B',
   },
   buttonText: {
     color: '#FFFFFF',

@@ -6,18 +6,16 @@ import Card from '../Atoms/Card';
 import useStore from '../store/useStore';
 import axios from "axios";
 import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
-
-const token =
-'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzAxODY0NywiZXhwIjoxNzU0NTU0NjQ3fQ.pfSY7fLlBdcflPTvIG47Rs_c1ZWnuYXWdAc2bwkMYfDkyB4laNZ6I7qh4oBZ07-SraxYniZeuO8BeMWVH_dMCA'
+import loginStore from "../store/useLoginStore";
 
 export default function DictionaryScreen() {
   const { activeDic, resetActiveDic } = useStore();
   const [speciesList, setSpeciesList] = useState([]);
-
+  const { token } = loginStore.getState() 
   // api
   const fetchSpeciesData = async (category) => {
     try {
-      const response = await axios.get(`${Server_IP}/items`, {
+      const response = await axios.get(`https://i11b304.p.ssafy.io/api/items`, {
           headers: {
             Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
             Accept: 'application/json',
@@ -33,6 +31,7 @@ export default function DictionaryScreen() {
           // const speciesList = response.data;
           setSpeciesList(response.data)
           console.log(response.data)
+          console.log('도감 로딩을 성공했습니다.')
           return speciesList;
       }
     } catch (error) {
@@ -51,10 +50,10 @@ export default function DictionaryScreen() {
   // useEffect를 사용하여 activeDic이 변경될 때마다 API 호출
   useEffect(() => {
     const categoryMap = {
-      text1: 1,
-      text2: 2,
-      text3: 3,
-      text4: 4,
+      text1: "식물",
+      text2: "동물",
+      text3: "곤충",
+      text4: "기타",
     };
 
     const category = categoryMap[activeDic];

@@ -6,58 +6,80 @@ import {
   PermissionsAndroid,
   Platform,
   Text,
+  Pressable
 } from 'react-native';
+import Entypo from 'react-native-vector-icons/Entypo';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import UploadModal from '../UploadModal';
+import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
 import {Server_AI_IP} from '@env';
+import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
+import loginStore from '../store/useLoginStore';
+import useStore from '../store/useStore';
 
-const token =
-  'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDAxNzU2LCJleHAiOjE3NTQ1Mzc3NTZ9.yQ_IgYEQzmf5O2_csfB095x3RcWrxdJynXGy6XqJT3Zc5-tQ-sSs4ycdMCxwKiWgj1_m8L83O3kKibIi7x0JJA';
 const CapturePage = () => {
   const [hasPermission, setHasPermission] = useState(false);
   const [memberId, setMemberId] = useState(null);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [drawingImg, setDrawingImg] = useState(null);
+  const [probsName, setProbsName] = useState(null);
+  const [orgUrl, setOrgUrl] = useState(null);
+  const [code, setCode] = useState(null);
   const cameraRef = useRef(null);
   const devices = useCameraDevices();
   const device = devices ? devices.back : null;
+  const { token } = loginStore.getState()
+  const navigation = useNavigation();
+  const [cameraKey, setCameraKey] = useState(0);
+  const {fetchLocationData} = useStore();
 
-  useEffect(() => {
-    const getCameraPermission = async () => {
-      if (Platform.OS === 'android') {
-        try {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.CAMERA,
-            {
-              title: 'Camera Permission',
-              message: 'App needs camera permission to take pictures',
-              buttonNeutral: 'Ask Me Later',
-              buttonNegative: 'Cancel',
-              buttonPositive: 'OK',
-            },
-          );
-          setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
-        } catch (err) {
-          console.warn(err);
-        }
-      } else {
-        setHasPermission(true); // iOS의 경우는 별도 권한 요청이 필요 없음
+  const getCameraPermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Camera Permission',
+            message: 'App needs camera permission to take pictures',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
+      } catch (err) {
+        console.warn(err);
       }
-    };
+    } else {
+      setHasPermission(true); // iOS의 경우는 별도 권한 요청이 필요 없음
+    }
+  };
 
-    // const loadMemberId = async () => {
-    //   try {
-    //     const storedMemberId = await AsyncStorage.getItem('memberId');
-    //     if (storedMemberId !== null) {
-    //       setUserId(storedMemberId);
-    //     }
-    //   } catch (error) {
-    //     console.error('Failed to load userId:', error);
-    //   }
-    // };
+  // const loadMemberId = async () => {
+  //   try {
+  //     const storedMemberId = await AsyncStorage.getItem('memberId');
+  //     if (storedMemberId !== null) {
+  //       setUserId(storedMemberId);
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to load userId:', error);
+  //   }
+  // };
+  // useEffect(() => {
+  //   getCameraPermission();
+  //   // loadMemberId();
+  // }, []);
 
-    getCameraPermission();
-    // loadMemberId();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('카메라!!');
+      getCameraPermission();
+    }, [])
+  );
+
 
   const takePictureAndUpload = async () => {
     if (cameraRef.current) {
@@ -67,7 +89,8 @@ const CapturePage = () => {
         format: 'png',
       });
       console.log(photo.path);
-      console.log(Server_AI_IP);
+      setOrgUrl(photo.path)
+      // console.log(Server_AI_IP);
       const newImageUri = 'file://' + photo.path;
       console.log(newImageUri);
 
@@ -107,11 +130,39 @@ const CapturePage = () => {
           },
         );
         console.log('Upload success', response.data);
-        // data 가지고 팝업 띄우기
+        setDrawingImg(response.data.hand_drawing_img_url)
+        setProbsName(response.data.probs_name)
+        setModalVisible(true) // data 가지고 팝업 띄우기
+        getLocation()
       } catch (error) {
         console.error('Upload error', error);
       }
     }
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false); // 모달 닫기
+  };
+  
+  const backtoWalk = () => {
+    // setCameraKey(prevKey => prevKey + 1);
+    navigation.navigate('Walk')
+  }
+
+  const getLocation = async () => {
+    Geolocation.getCurrentPosition(
+        async (position) => {
+            const { latitude, longitude } = position.coords;
+            const { code } = await fetchLocationData(longitude, latitude);
+            if (code) {
+                setCode(code);
+            } else {
+                console.log('사진 위치 호출 실패');
+            }
+        },
+        error => console.log('위치 정보 가져오기 실패:', error),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    );
   };
 
   return (
@@ -139,12 +190,26 @@ const CapturePage = () => {
       ) : (
         <Text>No camera permission</Text>
       )}
+      <View style={{left: 10, top: 10}}>
+        <Pressable onPress={backtoWalk}>
+          <Entypo
+            name="chevron-small-left"
+            size={30}
+          />
+        </Pressable>
+      </View>
+
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.capture}
           onPress={takePictureAndUpload}
         />
       </View>
+      
+        {isModalVisible && 
+        <View style={styles.modalBackground}>
+          <UploadModal onClose={handleCloseModal} drawingImg={drawingImg} probsName={probsName} originalUrl={orgUrl} code={code}/>
+        </View>}
     </View>
   );
 };
@@ -213,6 +278,12 @@ const styles = StyleSheet.create({
     borderRightWidth: 2,
     bottom: 0,
     right: 0,
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });
 

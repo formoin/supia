@@ -14,7 +14,7 @@ import ActivityChart from '../../Organisms/BarChart/profileChart';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import jwt_decode from 'jwt-decode';
+import {Server_IP} from '@env';
 
 const MyPageScreen = ({navigation}) => {
   const today = new Date();
@@ -22,6 +22,7 @@ const MyPageScreen = ({navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [error, setError] = useState(null);
   const [loginuser, setLoginuser] = useState({
+    id: '',
     name: '',
     nickname: '',
     profile_img: '',
@@ -30,38 +31,44 @@ const MyPageScreen = ({navigation}) => {
     point: '',
   });
 
-  // useEffect(() => {
-  //   const fetchUserInfo = async () => {
-  //     try {
-  //       const token = await AsyncStorage.getItem('key');
-  //       if (token) {
-  //         // 토큰에서 유저 ID 추출
-  //         const decodedToken = jwt_decode(token);
-  //         console.log(decodedToken);
-  //         const memberId = decodedToken.memberId;
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = await AsyncStorage.getItem('key');
+        if (token) {
+          const response = await axios.get(
+            //ContextPath
+            `${Server_IP}/members/my-info/`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+              },
+            },
+          );
+          const {id, name, nickname, profileImg, level, exp, point} =
+            response.data;
+          setLoginuser({
+            id,
+            name,
+            nickname,
+            profileImg,
+            level,
+            exp,
+            point,
+          });
+        } else {
+          setError('No token found');
+        }
+      } catch (err) {
+        setError('Failed to fetch user info');
+        console.error(err);
+      }
+    };
 
-  //         const response = await axios.get(
-  //           `http://10.0.2.2:8080/api/members/my-info/${memberId}`,
-  //           {
-  //             headers: {
-  //               Authorization: `Bearer ${token}`,
-  //               Accept: 'application/json',
-  //               'Content-Type': 'application/json; charset=utf-8',
-  //             },
-  //           },
-  //         );
-
-  //         setLoginuser(response.data.member); // 서버 응답에 맞게 수정
-  //       } else {
-  //         setError('No token found');
-  //       }
-  //     } catch (err) {
-  //       setError('Failed to fetch user info');
-  //       console.error(err);
-  //     }
-  //   };
-  //   fetchUserInfo();
-  // }, []);
+    fetchUserInfo();
+  }, []);
 
   const minExp = 300;
   const maxExp = 500;

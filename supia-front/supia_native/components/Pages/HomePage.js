@@ -1,5 +1,5 @@
-import React from 'react';
-import {View, Text, Pressable, StyleSheet, Image} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Text, Pressable, StyleSheet, Image, ActivityIndicator} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/Ionicons';
 import Octicons from 'react-native-vector-icons/Octicons';
@@ -8,9 +8,16 @@ import WeatherInfo from '../Atoms/HomeInfo/WeatherInfo';
 import MyInfo from '../Atoms/HomeInfo/MyInfo';
 import SlidePanel from '../Organisms/SlidePanel'; // 슬라이드 패널 컴포넌트 추가
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import axios from 'axios';
+import loginStore from '../store/useLoginStore'
+import useStore from '../store/useStore';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
+  const [memberInfo, setMemberInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { token } = loginStore.getState()
+  const { getS3Url } = useStore()
 
   const goDictionary = () => {
     navigation.navigate('Dictionary');
@@ -28,12 +35,79 @@ export default function HomeScreen() {
     navigation.navigate('Alarm');
   };
 
+  const getInfo = async () => {
+    try {
+      const response = await axios.get('https://i11b304.p.ssafy.io/api/members/my-info', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+      });
+      if (response.status === 200) {
+        console.log(response.data);
+        {/*setMemberInfo(response.data.member)*/}
+        setMemberInfo({
+            "id": 6,
+            "email": "rtcTest3@naver.com",
+            "name": "1234",
+            "nickname": "1234",
+            "profileImg": "https://supia.s3.ap-northeast-2.amazonaws.com/profile/5.png",
+            "thumbnail": "s3://supia/background/image/forest_1.png",
+            "level": 3,
+            "exp": 155,
+            "point": 0,
+            "visit": 1,
+            "active": true
+        })
+        console.log('홈페이지 로딩 성공');
+      } else {
+        console.log('홈페이지 로딩 실패');
+      }
+    } catch (error) {
+      console.error('홈페이지 요청 중 오류 발생:', error);
+      setMemberInfo({
+        "id": 6,
+        "email": "rtcTest3@naver.com",
+        "name": "111",
+        "nickname": "nope",
+        "profileImg": "https://supia.s3.ap-northeast-2.amazonaws.com/profile/5.png",
+        "thumbnail": "s3://supia/background/image/forest_1.png",
+        "level": 3,
+        "exp": 155,
+        "point": 0,
+        "visit": 1,
+        "active": true
+    })
+    } finally {
+        setLoading(false); // 로딩 완료
+      }
+  };
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      setLoading(true)
+      getInfo();
+    });
+
+    // 컴포넌트 언마운트 시 리스너 제거
+    return unsubscribe;
+  }, [navigation]);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>로딩 . . .</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.Headcontainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.hello}>Hello Varun</Text>
-          <Text style={styles.bagga}>반갑습니다 00님</Text>
+          <Text style={styles.hello}>Hello {memberInfo.nickname}</Text>
+          <Text style={styles.bagga}>반갑습니다 {memberInfo.name}님</Text>
         </View>
         <View style={styles.topRight}>
           <Pressable style={{marginRight: 8}} onPress={() => navigation.navigate('Search')}>
@@ -51,7 +125,7 @@ export default function HomeScreen() {
       <View>
         <Pressable onPress={goMyForest}>
           <Image
-            source={require('../../assets/basic/forest_1.png')} // 이미지 경로
+            source={{uri: getS3Url(memberInfo.thumbnail)}} // 이미지 경로
             style={styles.thumbnail}
           />
         </Pressable>
@@ -63,7 +137,7 @@ export default function HomeScreen() {
 
       <View style={styles.info}>
         <WeatherInfo />
-        <MyInfo />
+        <MyInfo level={memberInfo.level} point={memberInfo.point}/>
       </View>
 
       <Pressable style={styles.slideHandleContainer} onPress={goDictionary}>
@@ -111,6 +185,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '5%',
     marginBottom: 5,
+    marginLeft: 10
   },
   thumbnail: {
     width: '90%',

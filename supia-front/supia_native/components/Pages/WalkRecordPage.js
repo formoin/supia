@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, Text, StyleSheet, Image, ScrollView} from 'react-native';
 import {useRoute} from '@react-navigation/native'; // import useRoute
 import Header from '../Atoms/Header';
 import Line from '../Atoms/Line';
@@ -8,17 +8,11 @@ import useStore from '../store/useStore';
 export default function WalkRecordScreen() {
   const route = useRoute();
   const {distance} = route.params || {}; // get distance from route params
-
-  const images = {
-    씨앗: require('../../assets/level/씨앗.png'),
-    새싹: require('../../assets/level/새싹.png'),
-    잎새: require('../../assets/level/잎새.png'),
-    꽃: require('../../assets/level/꽃.png'),
-    열매: require('../../assets/level/열매.png'),
-  };
+  const capturedImageUri = useStore((state) => state.capturedImageUri);
 
   const walkStartTime = useStore(state => state.walkStartTime);
   const walkEndTime = useStore(state => state.walkEndTime);
+  const {items, getS3Url} = useStore();
 
   const formatTime = isoString => {
     if (!isoString) return '00:00';
@@ -28,34 +22,58 @@ export default function WalkRecordScreen() {
     return `${hours}:${minutes}`;
   };
 
+  const calculatePoints = () => {
+    const pointsFromDistance = Math.floor((distance * 1000) / 100) * 10;  // 100m당 10포인트
+    const pointsFromItems = items.length * 100; // 아이템 등록당 100 포인트
+    return pointsFromDistance + pointsFromItems; // 총 포인트 계산
+  };
   return (
     <View style={styles.container}>
       <Header label="산책 기록 확인" />
-      <View style={styles.middleContainer}>
-        <Line style={styles.lineTopSpacing} />
-        <View style={styles.textContainer}>
-          <Text style={styles.text}>Start {formatTime(walkStartTime)}</Text>
-          <Text style={styles.text}>End {formatTime(walkEndTime)}</Text>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.middleContainer}>
+          <Line style={styles.lineTopSpacing} />
+          <View style={styles.textContainer}>
+            <Text style={styles.text}>Start {formatTime(walkStartTime)}</Text>
+            <Text style={styles.text}>End {formatTime(walkEndTime)}</Text>
+          </View>
+          <Text style={styles.mapText}>코스 지도</Text>
+          <Image source={{ uri: capturedImageUri }} style={styles.rectangle} />
+          <View style={styles.rectangleContainer}>
+            {distance !== undefined && (
+              <Text>{distance.toFixed(2)}km</Text>
+            )}
+          </View>
+          <View style={styles.lineSpacing}>
+            <Line />
+          </View>
+          <Text style={styles.itemHeader}>획득한 아이템</Text>
+          <View style={styles.itemContainer}>
+            {items.length === 0 ? (
+                <Text>획득한 아이템이 없습니다</Text>
+            ) : (
+              <ScrollView horizontal style={{ maxHeight: 100 }}>
+                {items.map((item, index) => (
+                  <View key={index} style={styles.item}>
+                    <Image source={{ uri: getS3Url(item.imageUrl) }} style={styles.image} />
+                    <Text>{item.species}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+
+          <View style={styles.lineSpacing}>
+            <Line />
+          </View>
+          <Text style={styles.points}>적립된 Point {calculatePoints()}P</Text>
         </View>
-        <Text style={styles.mapText}>코스 지도</Text>
-        <View style={styles.rectangleContainer}>
-          <View style={styles.rectangle} />
-          {distance !== undefined && (
-            <Text>{distance.toFixed(2)}km</Text> // Display distance
-          )}
-        </View>
-        <Line style={styles.lineSpacing} />
-        <Text style={styles.itemHeader}>획득한 아이템</Text>
-        <View style={styles.itemContainer}>
-          <Image source={images['씨앗']} style={styles.image} />
-          <Text style={styles.itemText}>씨앗</Text>
-        </View>
-        <Line style={styles.lineSpacing} />
-        <Text style={styles.points}>적립된 Point 550P</Text>
-      </View>
+      </ScrollView>
     </View>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -102,7 +120,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   lineSpacing: {
-    marginVertical: 20,
+    marginTop: 10,
   },
   itemHeader: {
     fontSize: 18,
@@ -114,19 +132,22 @@ const styles = StyleSheet.create({
   itemContainer: {
     alignSelf: 'flex-start',
     marginLeft: 50,
-    alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   image: {
     width: 50,
     height: 50,
-    marginBottom: 10,
+    marginBottom:10,
   },
   itemText: {
     fontSize: 15,
   },
   points: {
     fontSize: 18,
-    marginTop: 40,
+    marginTop: 20,
+  },
+  item: { // 새로운 스타일 추가
+    marginRight: 20, // 아이템 간격 조정
+    alignItems: 'center',
   },
 });

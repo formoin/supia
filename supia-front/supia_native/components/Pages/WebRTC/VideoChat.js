@@ -26,15 +26,12 @@ import {
 } from '../../../assets/Callimages';
 import {Server_IP} from '@env';
 
-const token =
-  'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMjM0QG5hdmVyLmNvbSIsIm1lbWJlcklkIjoxLCJpYXQiOjE3MjI5MjI3MDYsImV4cCI6MTc1NDQ1ODcwNn0.8dh878bIU9LeTY9v0c0zynhcj9n7drFVfu96CJmeGze6JyhiVlUCHp9NmeyBzrjmK8xDYz5-xg2frAz2K-PAZQ';
-
 function VideoChat({navigation}) {
   const route = useRoute();
   const ref = useRef(null);
   // const {userId, targetUserId} = route.params;
-  const userId = 1;
-  const targetUserId = 2;
+  const userId = 2;
+  const targetUserId = 1;
 
   // WebRTC 및 드래그 훅에서 상태 및 함수 가져오기
   const {

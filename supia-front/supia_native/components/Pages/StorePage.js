@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text, FlatList } from "react-native";
 import Header from "../Atoms/Header";
 import StoreBox from "../Organisms/StoreBox";
 import Divide from "../Divide";
 import useStore from '../store/useStore';
 import axios from 'axios';
 import { useIsFocused, useFocusEffect } from '@react-navigation/native';
+import loginStore from '../store/useLoginStore';
 
 export default function StoreScreen() {
-  const { activeText, setActiveText, resetActiveText } = useStore();
-  const [background, setBackground] = useState(null);
-  const [music, setMusic] = useState(null);
+  const { activeText, resetActiveText } = useStore();
+  const [background, setBackground] = useState([]);
+  const [music, setMusic] = useState([]);
   const [point, setPoint] = useState(null);
+  const [id, setId] = useState(null);
+  const [level, setLevel] = useState(null);
   const isFocused = useIsFocused();
+  const { token } = loginStore.getState();
+  const [ownedBGI, setOwnedBGI] = useState([]); // 소유한 배경 ID 저장
+  const [ownedBGM, setOwnedBGM] = useState([]); // 소유한 음악 ID 저장
 
   useFocusEffect(
     React.useCallback(() => {
@@ -23,17 +29,17 @@ export default function StoreScreen() {
   useEffect(() => {
     getPoint();
     if (activeText === 'text1') {
+      getOwnBGI();
       getBackground();
     } else if (activeText === 'text2') {
+      getOwnBGM();
       getMusic();
     }
   }, [activeText]);
 
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ'
-
   const getBackground = async () => {
     try {
-      const response = await axios.get('https://i11b304.p.ssafy.io/api/background/bgm', {
+      const response = await axios.get('https://i11b304.p.ssafy.io/api/background/bgi', {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
@@ -41,7 +47,6 @@ export default function StoreScreen() {
         },
       });
       if (response.status === 200) {
-        console.log(response.data);
         setBackground(response.data);
         console.log("배경 리스트 저장");
       } else {
@@ -54,7 +59,7 @@ export default function StoreScreen() {
 
   const getMusic = async () => {
     try {
-      const response = await axios.get('https://i11b304.p.ssafy.io/api/background/bgi', {
+      const response = await axios.get('https://i11b304.p.ssafy.io/api/background/bgm', {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
@@ -62,7 +67,6 @@ export default function StoreScreen() {
         },
       });
       if (response.status === 200) {
-        console.log(response.data);
         setMusic(response.data);
         console.log("음악 리스트 저장");
       } else {
@@ -86,8 +90,9 @@ export default function StoreScreen() {
         }
       );
       if (response.status === 200) {
-//        console.log(response.data);
-//        setPoint(response.data.member.point);
+        setPoint(response.data.member.point);
+        setId(response.data.member.id);
+        setLevel(response.data.member.level);
         console.log("회원 정보 확인 성공");
       } else {
         console.log("회원 정보 확인 실패");
@@ -95,6 +100,67 @@ export default function StoreScreen() {
     } catch (error) {
       console.error("회원 정보 요청 중 오류 발생:", error);
     }
+  };
+
+  const getOwnBGI = async () => {
+    try {
+      const response = await axios.get("https://i11b304.p.ssafy.io/api/background/own-bgi",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        },
+      );
+      if (response.status === 200) {
+        setOwnedBGI(response.data.map(item => item.id)); // 소유한 배경 ID 목록 저장
+        console.log('내 테마 리스트 로딩 성공');
+      } else {
+        console.log('내 테마 리스트 로딩 실패');
+      }
+    } catch (error) {
+      console.error('내 테마 리스트 요청 중 오류 발생:', error);
+    }
+  };
+
+  const getOwnBGM = async () => {
+    try {
+      const response = await axios.get("https://i11b304.p.ssafy.io/api/background/own-bgm",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        },
+      );
+      if (response.status === 200) {
+        setOwnedBGM(response.data.map(item => item.id)); // 소유한 음악 ID 목록 저장
+        console.log('내 음악 리스트 로딩 성공');
+      } else {
+        console.log('내 음악 리스트 로딩 실패');
+      }
+    } catch (error) {
+      console.error('내 음악 리스트 요청 중 오류 발생:', error);
+    }
+  };
+
+  const renderItem = ({ item }) => {
+    const isOwned = activeText === 'text1'
+      ? ownedBGI.includes(item.id)
+      : ownedBGM.includes(item.id);
+
+    return (
+      <StoreBox
+        name={item.name}
+        {...(activeText === 'text1' ? { background: item } : { music: item })}
+        point={point}
+        id={id}
+        level={level}
+        isOwned={isOwned} // 소유 여부 전달
+      />
+    );
   };
 
   return (
@@ -108,12 +174,11 @@ export default function StoreScreen() {
           내 포인트 {`${point} P`}
         </Text>
       </View>
-      {activeText === 'text1' && (
-        <StoreBox name="희망의 숲" />
-      )}
-      {activeText === 'text2' && (
-        <StoreBox name="모닥불 타는 소리" />
-      )}
+      <FlatList
+        data={activeText === 'text1' ? background : music}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+      />
     </View>
   );
 }

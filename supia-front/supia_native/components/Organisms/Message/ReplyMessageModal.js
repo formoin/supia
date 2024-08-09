@@ -1,23 +1,26 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, Modal, TextInput} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Modal, TextInput } from 'react-native';
 import axios from 'axios';
 import PopupHeader from '../../Atoms/PopupHeader';
 import Searchbar from '../../Organisms/SearchBar';
 import Green from '../../Atoms/Button_Green';
+import loginStore from '../../store/useLoginStore'
 
-export default function ReadMessageModal({
-  visible,
-  onClose,
-  friendName,
-  memberId,
-  friendId,
-}) {
+export default function ReplyMessageModal({ visible, onClose, toMessage }) {
   const [text, setText] = useState('');
+  const [friendName, setFriendName] = useState('');
+  const { token } = loginStore.getState()
+
+  useEffect(() => {
+    if (toMessage && toMessage.length > 0) {
+      setFriendName(toMessage[0].fromMemberNickname || '정보 없음');
+    }
+  }, [toMessage]);
 
   const sendMessage = async () => {
     const Message = {
-      fromMemberId: 1,
-      toMemberId: friendId,
+      fromMemberId: 6,
+      toMemberId: 8,
       content: text,
     };
 
@@ -36,7 +39,6 @@ export default function ReadMessageModal({
 
       if (response.status === 200) {
         console.log('메세지 보내기 성공');
-        onClose();
       } else {
         console.log('메세지 보내기 실패');
       }
@@ -47,6 +49,8 @@ export default function ReadMessageModal({
 
   const handleSend = () => {
     sendMessage();
+    onClose();
+    alert('메세지가 성공적으로 전송되었습니다.')
   };
 
   return (

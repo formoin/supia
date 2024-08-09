@@ -40,6 +40,7 @@
     "react-native-view-shot": "^3.8.0",
     "react-native-vision-camera": "^2.15.4",
     "react-native-webrtc": "^111.0.6",
+    "react-native-webview": "^13.10.5",
     "ws": "^8.18.0",
     "zustand": "^4.5.4"
   },

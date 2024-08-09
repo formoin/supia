@@ -6,6 +6,7 @@ import {
   Modal,
   Text,
   TouchableWithoutFeedback,
+  ActivityIndicator
 } from 'react-native';
 import {launchCamera} from 'react-native-image-picker';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -17,18 +18,25 @@ import Button_Red from './Button_Red';
 import {useNavigation} from '@react-navigation/native';
 import Popup_Call from '../Popup_Call';
 import axios from 'axios';
+import { captureRef } from 'react-native-view-shot';
+import RNFS from 'react-native-fs';
+import loginStore from '../store/useLoginStore';
 
-const WalkPage_bottom = ({onOpenPopup, distance}) => {
+const WalkPage_bottom = ({onOpenPopup, distance, mapRef}) => {
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
   const {resetStopwatch, pauseStopwatch, setWalkEndTime} = useStore();
   const setRouteWidth = useStore(state => state.setRouteWidth);
   const finalDistance = useStore(state => state.finalDistance);
   const walkStartTime = useStore(state => state.walkStartTime);
   const walkEndTime = useStore(state => state.walkEndTime);
+  const {items} = useStore();
 
+  const { token } = loginStore.getState()
   const [modalVisible, setModalVisible] = useState(false);
   const [popupVisible, setPopupVisible] = useState(false);
   const [imageUri, setImageUri] = useState(null);
+  const setCapturedImageUri = useStore(state => state.setCapturedImageUri);
 
   const onPressCamera = () => {
     navigation.navigate('Capture');
@@ -37,23 +45,37 @@ const WalkPage_bottom = ({onOpenPopup, distance}) => {
   const formatTime = isoString => {
     if (!isoString) return '00:00';
     const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // 월은 0부터 시작하므로 +1
+    const day = date.getDate().toString().padStart(2, '0');
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-  };
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
 
   const sendWalkData = async () => {
     const currentTime = new Date().toISOString();
     const walkData = {
+      memberId : 8, // 수정
       walkStart: formatTime(walkStartTime),
       walkEnd: formatTime(currentTime),
-      distance: distance.toFixed(2),
+      distance: parseFloat(distance.toFixed(2)),
+      items: items,
     };
 
     try {
       const response = await axios.post(
-        'http://i11b304.p.ssafy.io/api/walk',
+        'https://i11b304.p.ssafy.io/api/walk',
         walkData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+              'Content-Type': 'application/json; charset=utf-8',
+          }
+        },
       );
 
       if (response.status === 200) {
@@ -65,23 +87,39 @@ const WalkPage_bottom = ({onOpenPopup, distance}) => {
       }
     } catch (error) {
       console.log(walkData);
-      // console.error('요청 중 오류 발생:', error);
+      console.error('산책 끝 요청 중 오류 발생:', error);
     }
   };
 
-  const onPressPause = useCallback(() => {
-    resetStopwatch(); // 스톱워치 리셋
-    pauseStopwatch(); // 스톱워치 일시 정지
 
-    const currentTime = new Date().toISOString();
-    setWalkEndTime(currentTime);
-    sendWalkData(); // 산책 정보를 서버로 전송
-    setRouteWidth(4); // 경로 너비 설정
-    console.log('Final Distance:', distance.toFixed(2));
+const onPressPause = useCallback(async () => {
+  resetStopwatch(); // 스톱워치 리셋
+  pauseStopwatch(); // 스톱워치 일시 정지
+  sendWalkData();
+  const currentTime = new Date().toISOString();
+  setWalkEndTime(currentTime);
+  setRouteWidth(4); // 경로 너비 설정
+  console.log('Final Distance:', distance.toFixed(2));
 
-    // 모달 팝업 시 산책 경로 표시
-    setModalVisible(true);
-  }, [resetStopwatch, pauseStopwatch, setWalkEndTime, setRouteWidth, distance]);
+
+    setLoading(true); // 로딩 시작
+
+    setTimeout(async () => {
+      try {
+        const uri = await captureRef(mapRef, {
+          format: 'png',
+          quality: 0.8,
+        });
+        console.log('Captured map image:', uri);
+        setCapturedImageUri(uri);
+      } catch (error) {
+        console.error('Failed to capture map image:', error);
+      } finally {
+        setLoading(false); // 로딩 끝
+        setModalVisible(true); // 모달 표시
+      }
+    }, 1000); // 1초 대기
+  }, [resetStopwatch, pauseStopwatch, setWalkEndTime, setRouteWidth, distance, mapRef, setCapturedImageUri]);
 
   const onPressUser = () => {
     setPopupVisible(true);

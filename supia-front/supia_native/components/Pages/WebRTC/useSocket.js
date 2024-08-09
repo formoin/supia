@@ -1,16 +1,16 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {Alert, PermissionsAndroid} from 'react-native';
+import React, { useEffect, useRef, useState } from "react";
+import { Alert, PermissionsAndroid } from "react-native";
 import {
   RTCPeerConnection,
   mediaDevices,
   RTCSessionDescription,
   RTCIceCandidate,
-} from 'react-native-webrtc';
-import {WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
+} from "react-native-webrtc";
+import { WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL } from "@env";
 
-const token =
-  'Bearer ' +
-  'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMTk1NDcsImV4cCI6MTc1NDU1NTU0N30.BCY96_1eT9tjB2R3BDj9PHNv5deWPT2IaWod4l7D2HzqrqCeuCmJP45Zz1AhKIolUMrukOw6rZjpoS-FsG09uw';
+
+const token = " ";
+
 const configuration = {
   iceServers: [
     {
@@ -40,17 +40,17 @@ const useMySocket = (userId, targetUserId) => {
           PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
         ],
         {
-          title: '카메라 및 마이크 권한 요청',
-          message: '통화를 위해 카메라 및 마이크에 대한 권한이 필요합니다.',
-          buttonNeutral: '나중에',
-          buttonNegative: '취소',
-          buttonPositive: '수락',
-        },
+          title: "카메라 및 마이크 권한 요청",
+          message: "통화를 위해 카메라 및 마이크에 대한 권한이 필요합니다.",
+          buttonNeutral: "나중에",
+          buttonNegative: "취소",
+          buttonPositive: "수락",
+        }
       );
       return (
-        granted['android.permission.CAMERA'] ===
+        granted["android.permission.CAMERA"] ===
           PermissionsAndroid.RESULTS.GRANTED &&
-        granted['android.permission.RECORD_AUDIO'] ===
+        granted["android.permission.RECORD_AUDIO"] ===
           PermissionsAndroid.RESULTS.GRANTED
       );
     } catch (err) {
@@ -65,11 +65,11 @@ const useMySocket = (userId, targetUserId) => {
       const stream = await mediaDevices.getUserMedia({
         audio: isAudio,
         video: isVideo
-          ? {frameRate: 30, facingMode: isVideoFront ? 'user' : 'environment'}
+          ? { frameRate: 30, facingMode: isVideoFront ? "user" : "environment" }
           : false,
       });
       setLocalStream(stream);
-      stream.getTracks().forEach(track => {
+      stream.getTracks().forEach((track) => {
         pc.current.addTrack(track, stream); // 각 트랙을 RTCPeerConnection에 추가
       });
     } catch (error) {
@@ -79,59 +79,61 @@ const useMySocket = (userId, targetUserId) => {
 
   // WebSocket 메시지를 만드는 함수
   const makeMessage = (type, data) => {
-    const event = {type, data};
+    const event = { type, data };
     return JSON.stringify(event);
   };
 
   // WebRTC 연결 설정 함수
   const makeConnection = () => {
-    console.log('메이크 커넥션 시작');
-    pc.current.onicecandidate = event => {
-      const {candidate} = event;
+    console.log("메이크 커넥션 시작");
+    pc.current.onicecandidate = (event) => {
+      const { candidate } = event;
       if (candidate && ws.current) {
         ws.current.send(
-          makeMessage('ice', {candidate, targetId: targetUserId}),
+          makeMessage("ice", { candidate, targetId: targetUserId })
         );
       }
     };
 
-    pc.current.ontrack = event => {
+    pc.current.ontrack = (event) => {
       setRemoteStream(event.streams[0]); // 원격 스트림을 상태로 설정
     };
 
-    ws.current.onmessage = event => {
-      const {type, data} = JSON.parse(event.data);
+    ws.current.onmessage = (event) => {
+      const { type, data } = JSON.parse(event.data);
 
-      if (type === 'authenticated') {
-        console.log('Authenticated successfully');
-        const registerMessage = makeMessage('register', {userId});
+      if (type === "authenticated") {
+        console.log("Authenticated successfully");
+        const registerMessage = makeMessage("register", { userId });
         ws.current.send(registerMessage);
         console.log(registerMessage);
-      } else if (type === 'register') {
-        console.log('register 메세지 수신');
+      } else if (type === "register") {
+        console.log("register 메세지 수신");
+
         // 등록 메시지를 받으면 offer 메시지 전송
         if (data.userId === targetUserId) {
           sendOffer();
         }
+
       } else if (type === 'offer') {
         console.log('offer 메세지 수신')(async function (offer) {
           await pc.current.setRemoteDescription(
-            new RTCSessionDescription(offer),
+            new RTCSessionDescription(offer)
           );
           const answer = await pc.current.createAnswer();
           await pc.current.setLocalDescription(answer);
           ws.current.send(
-            makeMessage('answer', {answer, targetId: data.senderId}),
+            makeMessage("answer", { answer, targetId: data.senderId })
           );
         })(data);
-      } else if (type === 'answer') {
-        console.log('answer 메세지 수신')(async function (answer) {
+      } else if (type === "answer") {
+        console.log("answer 메세지 수신")(async function (answer) {
           await pc.current.setRemoteDescription(
-            new RTCSessionDescription(answer),
+            new RTCSessionDescription(answer)
           );
         })(data);
-      } else if (type === 'ice') {
-        console.log('ice 메세지 수신')(async function (ice) {
+      } else if (type === "ice") {
+        console.log("ice 메세지 수신")(async function (ice) {
           await pc.current.addIceCandidate(new RTCIceCandidate(ice.candidate));
         })(data);
       }
@@ -139,26 +141,30 @@ const useMySocket = (userId, targetUserId) => {
 
     ws.current.onclose = () => {
       endCall();
-      console.log('종료');
-      Alert.alert('WebSocket connection closed.');
+      console.log("종료");
+      Alert.alert("WebSocket connection closed.");
     };
 
-    ws.current.onerror = error => {
-      console.error('WebSocket error: ', error);
+    ws.current.onerror = (error) => {
+      console.error("WebSocket error: ", error);
       Alert.alert(error instanceof Error ? error.message : String(error));
     };
   };
 
   // 오퍼 생성 및 전송 함수
   const sendOffer = async () => {
-    console.log('send offer 시작');
+    console.log("send offer 시작");
     try {
       const offer = await pc.current.createOffer();
       await pc.current.setLocalDescription(offer);
       ws.current.send(
-        makeMessage('offer', {offer, targetId: targetUserId, senderId: userId}),
+        makeMessage("offer", {
+          offer,
+          targetId: targetUserId,
+          senderId: userId,
+        })
       );
-      console.log('보내기 성공');
+      console.log("보내기 성공");
     } catch (error) {
       Alert.alert(error instanceof Error ? error.message : String(error));
     }
@@ -167,26 +173,26 @@ const useMySocket = (userId, targetUserId) => {
   // 초기 WebSocket 연결 설정 함수
   const initCall = async () => {
     try {
-      ws.current = new WebSocket('wss://i11b304.p.ssafy.io/api/ws');
+      ws.current = new WebSocket("wss://i11b304.p.ssafy.io/api/ws");
 
       ws.current.onopen = () => {
         // WebSocket 연결이 열릴 때 JWT 토큰을 사용하여 인증 메시지 전송
-        console.log('WebSocket connection opened');
-        ws.current.send(JSON.stringify({type: 'authenticate', token}));
+        console.log("WebSocket connection opened");
+        ws.current.send(JSON.stringify({ type: "authenticate", token }));
 
         makeConnection(); // WebSocket 연결 후 연결 설정
       };
     } catch (error) {
       Alert.alert(
-        'Error',
-        error instanceof Error ? error.message : String(error),
+        "Error",
+        error instanceof Error ? error.message : String(error)
       );
     }
   };
 
   // 통화 종료 함수
   const endCall = () => {
-    console.log('endcall 실행');
+    console.log("endcall 실행");
     pc.current.close();
     ws.current && ws.current.close();
     setRemoteStream(null); // 원격 스트림을 null로 설정하여 스트림 종료
@@ -200,7 +206,7 @@ const useMySocket = (userId, targetUserId) => {
         await getMedia(); // 권한이 허가되면 미디어 스트림 가져오기
         initCall(); // WebSocket 연결 초기화
       } else {
-        Alert.alert('Permissions not granted');
+        Alert.alert("Permissions not granted");
       }
     };
     initialize();

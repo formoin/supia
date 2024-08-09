@@ -1,20 +1,18 @@
 import {StyleSheet, View, Text, Pressable, Modal} from 'react-native';
 import Header from '../Atoms/Header';
 import Searchbar from '../Organisms/SearchBar';
-import ListItem from '../Atoms/ListItem';
+import Label from '../Atoms/ListItem';
 import Octicons from 'react-native-vector-icons/Octicons';
 import SelectOptions from '../Atoms/SelectOptions';
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
-
-const token =
-'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzAxODY0NywiZXhwIjoxNzU0NTU0NjQ3fQ.pfSY7fLlBdcflPTvIG47Rs_c1ZWnuYXWdAc2bwkMYfDkyB4laNZ6I7qh4oBZ07-SraxYniZeuO8BeMWVH_dMCA'
-
+import loginStore from '../store/useLoginStore';
 
 export default function FriendScreen() {
   const [edit, setEdit] = useState(false);
-  const [friends, setFriends] = useState([])
+  const [friends, setFriends] = useState([]);
+  const {token} = loginStore.getState();
 
   const onPressPencil = () => {
     setEdit(!edit);
@@ -22,19 +20,21 @@ export default function FriendScreen() {
 
   const getFriends = async () => {
     try {
-      const response = await axios.get(`${Server_IP}/friends`, {
+      const response = await axios.get(
+        `https://i11b304.p.ssafy.io:8080/api/friends`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
             'Content-Type': 'application/json; charset=utf-8',
-        },
-          params: {
-            memberId: 1, //memberId 변경
+
           },
-      });
+        },
+      );
+
       setFriends(response.data);
-      console.log('성공')
-    } catch (error) {             
+      console.log('성공');
+    } catch (error) {
       console.error('친구 목록을 가져오는 데 실패했습니다:', error);
     }
   };
@@ -46,7 +46,7 @@ export default function FriendScreen() {
   const handleFriendChange = () => {
     getFriends(); // 친구 추가/삭제 후 목록 갱신
   };
-  
+
   return (
     <View style={styles.screen}>
       <Header label="친구 목록" />
@@ -67,16 +67,17 @@ export default function FriendScreen() {
             <SelectOptions />
           </View>
         </View>
-
-        {friends.map((friend) => (
+        {friends.map(friend => (
           <ListItem
+
             key={friend.friendId}
-            pic={friend.profileImg || "user"} 
+            pic={friend.profileImg || 'user'}
             title={friend.nickname}
             content={friend.name}
             name={edit ? 'x' : 'message-square'}
             // UserLevel="새싹"
             handleFriendChange={handleFriendChange}
+            url={friend.profileImg}
           />
         ))}
       </View>

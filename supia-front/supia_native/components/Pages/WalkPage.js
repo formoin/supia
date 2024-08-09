@@ -36,7 +36,7 @@ export default function WalkingScreen() {
   const [code, setCode] = useState();
   const [dong, setDong] = useState();
   const [ri, setRi] = useState();
-
+  const {fetchLocationData} = useStore();
 
   const getLocation = () => {
     let isMounted = true;
@@ -58,7 +58,7 @@ export default function WalkingScreen() {
         setTotalDistance(0);
         setRouteWidth(0);
 
-        fetchLocationData(longitude, latitude);
+        getLocationData(longitude, latitude);
         let currentLocation = initialLocation;
 
         const intervalId = setInterval(() => {
@@ -147,31 +147,19 @@ export default function WalkingScreen() {
 
   const handleMapPress = async event => {
     const {latitude, longitude} = event.nativeEvent.coordinate;
-    console.log('이동', latitude, longitude);
-    fetchLocationData(longitude, latitude);
-    console.log('------------');
+    console.log('꾹', latitude, longitude);
+    getLocationData(longitude, latitude);
   };
 
-  const fetchLocationData = async (lon, lat) => {
-    try {
-      const url = `https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=${lon}&y=${lat}`;
-      const response = await axios.get(url, {
-        headers: {
-
-          Authorization: `KakaoAK ${KAKAO_API_KEY}`
-        }
-      });
-      
-      // 동 정보 설정
-      setDong(response.data.documents[0].region_3depth_name);
-      setRi(response.data.documents[0].region_4depth_name);
-      setCode(response.data.documents[0].code);
-      console.log(response.data.documents);
-
-    } catch (error) {
-      console.log('실패:', error);
-    }
-  };
+  const getLocationData = async (lon, lat) => {
+    const { dong, ri, code } = await fetchLocationData(lon, lat);
+    if (code) {
+      setDong(dong);
+      setRi(ri);
+      setCode(code);
+    } else {
+        console.log('kakao 실패');
+    }}
 
   return (
     <View style={styles.container}>
@@ -202,6 +190,7 @@ export default function WalkingScreen() {
           <WalkPage_bottom
             onOpenPopup={handlePopupOpen}
             distance={totalDistance}
+            mapRef={mapRef}
           />
         </View>
         <Pressable onPress={handleCurrentLocation} style={styles.locIcon}>

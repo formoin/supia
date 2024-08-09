@@ -3,14 +3,12 @@ import { StyleSheet, View, Text, Image, ActivityIndicator } from 'react-native';
 import { useEffect, useState } from 'react';
 import axios from 'axios'
 import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
-
-
-const token =
-'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzAzODYzMCwiZXhwIjoxNzU0NTc0NjMwfQ.2SlikAZj11iqc333a-II1MjPYCxLGynSLnQs4RLwAe-BVMavQzeKozWm77SZqFrzWbvVpczyUlPNt9MAnpWB4g'
+import loginStore from './store/useLoginStore';
 
 const Popup_White = ({ri, dong, code}) => {
   const [speciesData, setSpeciesData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { token } = loginStore.getState()
 
   useEffect(() => {
     // api 받아오기
@@ -27,18 +25,17 @@ const Popup_White = ({ri, dong, code}) => {
           },
       });
 
-        console.log(response.data)
+        console.log(code, response.data)
         const data = response.data
         // const data = await response.json();
 
         setSpeciesData(data);
       } catch (error) {
-        console.error('err', error);
+        console.error('popup err', error);
       } finally {
         setLoading(false);
       }
     };
-    console.log(dong, code)
     fetchSpeciesData();
   }, [dong, code]);
 

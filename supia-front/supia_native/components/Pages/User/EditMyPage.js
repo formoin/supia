@@ -1,4 +1,3 @@
-
 import React, {useEffect, useState} from 'react';
 import {
   View,
@@ -10,7 +9,7 @@ import {
   Dimensions,
   Alert,
   Modal,
-  Button,
+  TouchableOpacity,
 } from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
 import axios from 'axios';
@@ -20,20 +19,22 @@ import Button_Red from '../../Atoms/Button_Red';
 import Header from '../../Atoms/Header';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import {Server_IP} from '@env';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const {height: windowHeight} = Dimensions.get('window');
 
-const EditPageScreen = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
+const EditPageScreen = ({navigation}) => {
+  const [isPWModalVisible, setIsPWModalVisible] = useState(false);
+  const [isImgModalVisible, setImgModalVisible] = useState(false);
   const [loginuser, setLoginuser] = useState({
     member_id: '',
-    name: '이름',
-    nickname: '닉네임',
-    profile_img: 'https://picsum.photos/100/100',
-    level: '130',
-    exp: '410',
-    point: 'point',
+    name: '확인용이에용',
+    nickname: '저두 확인용이에용',
+    profile_img: 'https://picsum.photos/200/300',
+    level: '',
+    exp: '',
+    point: '',
   });
 
   const [name, setName] = useState(loginuser.name);
@@ -41,48 +42,46 @@ const EditPageScreen = () => {
   const [newPassword, setNewPassword] = useState('');
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
   const [currentPasswordInput, setCurrentPasswordInput] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  // useEffect(() => {
-  //   const fetchUserInfo = async () => {
-  //     try {
-  //       const token = await AsyncStorage.getItem('key');
-  //       if (token) {
-  //         // 토큰에서 유저 ID 추출
-  //         const decodedToken = jwtDecode(token);
-  //         const userId = decodedToken.userId;
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = await AsyncStorage.getItem('key');
+        if (token) {
+          const response = await axios.get(
+            //ContextPath
+            `${Server_IP}/members/my-info/`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+              },
+            },
+          );
+          const {id, name, nickname, profileImg, level, exp, point} =
+            response.data;
+          setLoginuser({
+            id,
+            name,
+            nickname,
+            profileImg,
+            level,
+            exp,
+            point,
+          });
+          setName(name);
+          setNickname(nickname);
+        }
+      } catch (err) {
+        setError('Failed to fetch user info');
+        console.error(err);
+      }
+    };
 
-  //         const response = await axios.get(
-  //           //ContextPath
-  //           `http://localhost:8080/members/my-info/${userId}`,
-  //           {
-  //             headers: {
-  //               Authorization: `Bearer ${token}`,
-  //             },
-  //           },
-  //         );
-  //         const {member_id, name, nickname, profile_img, level, exp, point} =
-  //           response.data;
-  //         setLoginuser({
-  //           member_id,
-  //           name,
-  //           nickname,
-  //           profile_img,
-  //           level,
-  //           exp,
-  //           point,
-  //         });
-  //         setName(name);
-  //         setNickname(nickname);
-  //       } else {
-  //         setError('No token found');
-  //       }
-  //     } catch (err) {
-  //       setError('Failed to fetch user info');
-  //       console.error(err);
-  //     }
-  //   };
-  //   fetchUserInfo();
-  // }, []);
+    fetchUserInfo();
+  }, []);
 
   const selectImage = () => {
     launchImageLibrary({mediaType: 'photo', quality: 1}, response => {
@@ -100,13 +99,12 @@ const EditPageScreen = () => {
   // 현재 비밀번호 검증
   const verifyCurrentPassword = () => {
     axios
-      .post('http://localhost:8080/members/password', {
+      .post(`${Server_IP}/members/password`, {
         currentPassword: currentPasswordInput,
       })
       .then(response => {
         if (response.data.success) {
           setIsPasswordVerified(true);
-          setIsModalVisible(false);
           Alert.alert('확인 완료', '현재 비밀번호가 확인되었습니다.');
         } else {
           Alert.alert('오류', '현재 비밀번호가 맞지 않습니다.');
@@ -118,19 +116,78 @@ const EditPageScreen = () => {
       });
   };
 
+  const resetImage = () => {
+    setLoginuser({...loginuser, profile_img: null});
+  };
+
+  const openImgModal = () => {
+    setImgModalVisible(true);
+  };
+
+  const closeImgModal = () => {
+    setImgModalVisible(false);
+  };
+
+  // 비밀번호 업데이트
+  const ChangePassword = () => {
+    axios
+      .put(`${Server_IP}/members/change-password`, newPassword, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+      })
+      .then(response => {
+        Alert.alert('성공', '비밀번호가 업데이트되었습니다.');
+      })
+      .catch(error => {
+        Alert.alert('오류', '비밀번호 업데이트에 실패했습니다.');
+        console.error(error);
+      });
+  };
+
+  const deleteUser = () => {
+    axios
+      .put(`${Server_IP}/members/delete`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+      })
+      .then(response => {
+        Alert.alert('성공', '회원 탈퇴가 이루어졌습니다..');
+
+        navigation.navigate('Home');
+      })
+      .catch(error => {
+        Alert.alert('오류', '회원 탈퇴에 실패했습니다.');
+        console.error(error);
+      });
+  };
+
   // 사용자 정보 업데이트
   const updateUserInfo = () => {
-    const dataToUpdate = {
-      name,
-      nickname,
-      ...(isPasswordVerified && {password: newPassword}), // 새로운 비밀번호가 입력된 경우에만 포함
-    };
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('nickname', nickname);
+    if (profileImg) {
+      formData.append('profileImg', {
+        uri: profileImg.uri,
+        type: profileImg.type,
+        name: profileImg.fileName,
+      });
+    }
 
     axios
-      .put(
-        `http://localhost:8080/members/my-info/${loginuser.memberId}`,
-        dataToUpdate,
-      )
+      .put(`${Server_IP}/members/my-info`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'multipart/form-data',
+        },
+      })
       .then(response => {
         Alert.alert('성공', '사용자 정보가 업데이트되었습니다.');
       })
@@ -143,19 +200,20 @@ const EditPageScreen = () => {
   return (
     <View style={styles.container}>
       <Header label="정보 수정" goto={'MyPage'} />
-      <Pressable onPress={selectImage} style={{padding: 30}}>
+      <Pressable onPress={openImgModal} style={{padding: 30}}>
         <Image
           source={{uri: loginuser.profile_img}}
           style={styles.profileImage}
           onError={() => console.log('이미지 로드 실패')}
         />
       </Pressable>
+
       <View style={styles.infoSection}>
         <View style={styles.infoRow}>
           <FontAwesome6 name="user" size={30} color="#8C8677" />
           <TextInput
             style={styles.textInput}
-            placeholder="이름"
+            placeholder={loginuser.name}
             value={name}
             onChangeText={text => setName(text)}
           />
@@ -165,7 +223,7 @@ const EditPageScreen = () => {
           <MaterialIcons name="tag-faces" size={32} color="#8C8677" />
           <TextInput
             style={styles.textInput}
-            placeholder="닉네임"
+            placeholder={loginuser.nickname}
             value={nickname}
             onChangeText={text => setNickname(text)}
           />
@@ -173,40 +231,59 @@ const EditPageScreen = () => {
         <Line />
         <View style={styles.pwRow}>
           <MaterialIcons name="lock" size={32} color="#8C8677" />
-          {isPasswordVerified ? (
-            <TextInput
-              style={styles.textInput}
-              placeholder="새 비밀번호"
-              value={newPassword}
-              onChangeText={text => setNewPassword(text)}
-              secureTextEntry
-            />
-          ) : (
-            <Button_Green
-              label="확인"
-              onPress={() => setIsModalVisible(true)}
-            />
-          )}
+          <Button_Green
+            label="확인"
+            onPress={() => setIsPWModalVisible(true)}
+          />
         </View>
         <View style={styles.Buttons}>
           <Button_Green label="정보 수정" onPress={updateUserInfo} />
-          <Button_Red label="계정 탈퇴" />
+          <Button_Red label="계정 탈퇴" onPress={deleteUser} />
         </View>
       </View>
 
-      <Modal visible={isModalVisible} transparent={true} animationType="slide">
+      <Modal
+        visible={isPWModalVisible}
+        transparent={true}
+        animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <TextInput
-              placeholder="현재 비밀번호"
-              value={currentPasswordInput}
-              onChangeText={text => setCurrentPasswordInput(text)}
-            />
+            {!isPasswordVerified ? (
+              <TextInput
+                placeholder="현재 비밀번호"
+                value={currentPasswordInput}
+                secureTextEntry={true}
+                onChangeText={text => setCurrentPasswordInput(text)}
+              />
+            ) : (
+              <View>
+                <TextInput
+                  placeholder="새 비밀번호"
+                  value={newPassword}
+                  secureTextEntry={true}
+                  onChangeText={text => setNewPassword(text)}
+                />
+                <TextInput
+                  placeholder="비밀번호 확인"
+                  value={confirmPassword}
+                  onChangeText={text => setConfirmPassword(text)}
+                  secureTextEntry={true}
+                />
+              </View>
+            )}
             <View style={styles.Buttons}>
-              <Button_Green label="입력" onPress={verifyCurrentPassword} />
+              {!isPasswordVerified ? (
+                <Button_Green
+                  label="입력"
+                  onPress={verifyCurrentPassword}
+                  disabled={newPassword !== confirmPassword}
+                />
+              ) : (
+                <Button_Green label="입력" onPress={ChangePassword} />
+              )}
               <Button_Red
                 label="취소"
-                onPress={() => setIsModalVisible(false)}
+                onPress={() => setIsPWModalVisible(false)}
                 color="red"
               />
             </View>
@@ -214,12 +291,40 @@ const EditPageScreen = () => {
         </View>
       </Modal>
 
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isImgModalVisible}
+        onRequestClose={closeImgModal}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity
+              onPress={() => {
+                selectImage();
+                closeImgModal();
+              }}>
+              <Text style={styles.modalText}>앨범에서 찾기</Text>
+            </TouchableOpacity>
+            <View style={styles.separator} />
+            <TouchableOpacity
+              onPress={() => {
+                resetImage();
+                closeImgModal();
+              }}>
+              <Text style={styles.modalText}>기본 이미지</Text>
+            </TouchableOpacity>
+            <View style={styles.separator} />
+            <TouchableOpacity onPress={closeImgModal}>
+              <Text style={styles.modalText}>닫기</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     alignItems: 'center',
@@ -284,7 +389,16 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
+  modalText: {
+    fontSize: 18,
+    marginVertical: 10,
+  },
+  separator: {
+    height: 1,
+    width: '100%',
+    backgroundColor: 'gray',
+    marginVertical: 10,
+  },
 });
 
 export default EditPageScreen;
-

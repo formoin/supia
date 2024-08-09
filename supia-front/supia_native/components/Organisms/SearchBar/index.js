@@ -2,65 +2,70 @@ import {View, StyleSheet, Pressable, TextInput, Text} from 'react-native';
 import React, {useState} from 'react';
 import axios from 'axios';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
 
-export default function Searchbar({active, searchName, type}) {
+export default function Searchbar({active, searchName, type, onSearch}) {
   const [value, setValue] = useState('');
-  const [searchData, setSearchData] = useState(null);
-  const [friendData, setFriendData] = useState(null);
 
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ'
-  const memberId = 1;
-
+  const token =
+    'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJydGNUZXN0M0BuYXZlci5jb20iLCJtZW1iZXJJZCI6NSwiaWF0IjoxNzIzMTg5MTgxLCJleHAiOjE3NTQ3MjUxODF9.re7cZkk68OKfFfjWvNNyDDVlp-lx4zTWEFcv84J58Z0m1OdW6gZeQuQ-Ljp9X5LR7pPr8C6w-upCNcaPGXLTnA';
   const getUserSearch = async () => {
+    console.log('가즈아 ' + value);
     try {
-        const response = await axios.get('https://i11b304.p.ssafy.io/api/search', {
-         headers: {
+      // const response = await axios.get(`${Server_IP}/search`, {
+      const response = await axios.get(
+        `https://i11b304.p.ssafy.io/api/search`,
+        {
+          headers: {
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
             'Content-Type': 'application/json; charset=utf-8',
           },
           params: {
             type: 0, // 0: 유저 검색, 1: 아이템 검색
-            keyword: '싸피'
-          }
-        });
+            keyword: 'ssafy',
+          },
+        },
+      );
 
-         if (response.status === 200) {
-              console.log(response.data)
-              setSearchData(response.data);
-              console.log("user 검색 성공");
-         } else {
-              console.log("user 검색 실패");
-         }
-     } catch (error) {
-         console.error("user 요청 중 오류 발생:", error);
-     }
+      console.log('axios' + response);
+      if (response.status === 200) {
+        console.log(response.data);
+        onSearch(response.data);
+        console.log('user 검색 성공');
+      } else {
+        console.log('user 검색 실패');
+      }
+    } catch (error) {
+      console.error('user 요청 중 오류 발생:', error);
+    }
   };
 
   const getItemSearch = async () => {
+    // console.log('getItemSearch' + value);
     try {
-        const response = await axios.get('https://i11b304.p.ssafy.io/api/search', {
-         headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          params: {
-            type: 1,
-            keyword: 'item'
-          }
-        });
+      const response = await axios.get(`${Server_IP}/search`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        params: {
+          type: 1,
+          keyword: value,
+        },
+      });
 
-         if (response.status === 200) {
-              console.log(response.data)
-              setSearchData(response.data);
-              console.log("item 검색 성공");
-         } else {
-              console.log("item 검색 실패");
-         }
-     } catch (error) {
-         console.error("item 요청 중 오류 발생:", error);
-     }
+      if (response.status === 200) {
+        console.log(response.data);
+        onSearch(response.data);
+        console.log('item 검색 성공');
+      } else {
+        console.log('item 검색 실패');
+      }
+    } catch (error) {
+      console.error('item 요청 중 오류 발생:', error);
+    }
   };
 
   // X 버튼 클릭 시 초기화
@@ -77,12 +82,13 @@ export default function Searchbar({active, searchName, type}) {
   const onSubmitEditing = () => {
     // 엔터 키를 눌렀을 때 실행할 코드
     console.log('Submit pressed');
-    if (type === "text1") {
-        getUserSearch();
+    if (type === 'text1') {
+      console.log('유저 찾기');
+      getUserSearch();
     } else {
-        getItemSearch(); // 400: 검색 결과가 없습니다.
+      console.log('아이템 찾기');
+      getItemSearch(); // 400: 검색 결과가 없습니다.
     }
-
   };
 
   return (

@@ -4,8 +4,9 @@ import PopupHeader from '../../Atoms/PopupHeader';
 import Searchbar from '../../Organisms/SearchBar';
 import Green from '../../Atoms/Button_Green';
 import ReplyMessage from './ReplyMessageModal';
+import moment from 'moment';
 
-export default function ReadMessageModal({ visible, onClose, friendName, content, sentTime, type }) {
+export default function ReadMessageModal({ visible, onClose, type, fromMessage, toMessage }) {
   const [isReplyModalVisible, setReplyModalVisible] = useState(false);
 
   const handleReplyPress = () => {
@@ -16,6 +17,12 @@ export default function ReadMessageModal({ visible, onClose, friendName, content
   const handleReplyClose = () => {
     setReplyModalVisible(false);
   };
+
+  const formatSentTime = (dateString) => {
+    return dateString ? moment(dateString).format('YYYY/MM/DD HH:mm') : '정보 없음';
+  };
+
+  const messageContent = type === 'text1' ? fromMessage : toMessage;
 
   return (
     <>
@@ -28,23 +35,27 @@ export default function ReadMessageModal({ visible, onClose, friendName, content
         <View style={styles.modalContainer}>
           <View style={styles.modalView}>
             <PopupHeader Label="메세지 확인" onClose={onClose} />
-            <Text style={styles.timeText}>보낸 시간: {sentTime}</Text>
-            <Searchbar active={false} searchName={friendName} />
-            <View style={styles.rectangle}>
-              <Text style={styles.text}>{content}</Text>
-            </View>
-            {type === 'text1' ? (
-              <Green label="확인완료" onPress={onClose} />
-            ) : (
+            {messageContent && messageContent.length > 0 ? (
               <>
-                <Green label="답장하기" onPress={handleReplyPress} />
+                <Text style={styles.timeText}>보낸 시간: {formatSentTime(messageContent[0].sentTime)}</Text>
+                <Searchbar active={false} searchName={type === 'text1' ? messageContent[0].toMemberNickname : messageContent[0].fromMemberNickname} />
+                <View style={styles.rectangle}>
+                  <Text style={styles.text}>{messageContent[0].content}</Text>
+                </View>
+                {type === 'text1' ? (
+                  <Green label="확인완료" onPress={onClose} />
+                ) : (
+                  <Green label="답장하기" onPress={handleReplyPress} />
+                )}
               </>
+            ) : (
+              <Text style={styles.timeText}>보낸 시간: 정보 없음</Text>
             )}
           </View>
         </View>
       </Modal>
 
-      <ReplyMessage visible={isReplyModalVisible} onClose={handleReplyClose} friendName={friendName} />
+      <ReplyMessage visible={isReplyModalVisible} onClose={handleReplyClose} toMessage={toMessage} />
     </>
   );
 }

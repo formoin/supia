@@ -2,21 +2,22 @@ import React, { useState } from 'react';
 import { StyleSheet, View, TextInput, Alert } from 'react-native';
 import Button_Green from './Button_Green';
 import axios from 'axios';
+import loginStore from '../store/useLoginStore';
 
 export default function TextFrame({ memberId, friendId, onClose }) {
   const [text, setText] = useState('');
-
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ';
+  const { token } = loginStore.getState()
 
   const sendMessage = async () => {
     const Message = {
-      fromMemberId: memberId,
-      toMemberId: friendId,
+      fromMemberId: 8,
+      toMemberId: 6,
+
       content: text,
     };
 
     try {
-      const response = await axios.post('https://i11b304.p.ssafy.io/api/messages', Message, {
+      const response = await axios.post('https://i11b304.p.ssafy.io/api/messages', message, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',

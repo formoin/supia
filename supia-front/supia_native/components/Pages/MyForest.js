@@ -10,11 +10,11 @@ import { PanGestureHandler } from 'react-native-gesture-handler';
 import useStore from '../store/useStore';
 import Popup from '../Popup';
 import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
-
-const token =
-'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzA3NDgwMSwiZXhwIjoxNzU0NjEwODAxfQ.2bMm_t46dnLK6MlmQJHvQAfBLdPvPK7m38xpLsJwj55d-lb91ZEYaLb8aK8YwiYfG3Ip_ho05HMcWNFDgp2xmA'
+import loginStore from '../store/useLoginStore'
+import { captureRef } from 'react-native-view-shot';
 
 export default function MyForestScreen() {
+  const { token } = loginStore.getState()
   const navigation = useNavigation();
   const [isModalVisible1, setIsModalVisible1] = useState(false); // setting modal
   const [isModalVisible2, setIsModalVisible2] = useState(false); // dict modal
@@ -23,39 +23,39 @@ export default function MyForestScreen() {
   const { droppedImages, updateImagePosition, setDroppedImages, setForestId } = useStore();
   const [bgiData, setBgiData] = useState(null);
   const [bgmData, setBgmData] = useState(null);
+  const forestRef = useRef();
+  const setForestImageUri = useStore(state => state.setForestImageUri);
 
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzMwNzUsImV4cCI6MTc1NDU2OTA3NX0.g8jpiTc7tLMNf_QvYq5SLLsIA1REIKPyl37c1w0OYXAGDJ6JOuDjDxh0zO8zORd0EZNgl2ADyEXaw6KmZ3lWwQ'
-
-   const getForest = async () => {
-     try {
-         const response = await axios.get('https://i11b304.p.ssafy.io/api/forest',{
-           headers: {
-             Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
-             Accept: 'application/json',
-                 'Content-Type': 'application/json; charset=utf-8',
-             },
-         });
-          if (response.status === 200) {
-               console.log(response.data)
-               setForestId(data.forestId)
-              console.log("숲 로딩 성공");
-              console.log(data)
-              const images = data.items.map(item => ({
-                itemId: item.itemId,
-                imageUrl: item.imgUrl,
-                position: {
-                  x: item.x,
-                  y: item.y,
-                },
-              }));
-            setDroppedImages(images);
-          } else {
-               console.log("숲 로딩 실패");
-          }
-      } catch (error) {
-          console.error("숲 요청 중 오류 발생:", error);
-      }
-   };
+  const getForest = async () => {
+    try {
+        const response = await axios.get('https://i11b304.p.ssafy.io/api/forest',{
+          headers: {
+            Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
+            Accept: 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+            },
+        });
+        if (response.status === 200) {
+            const data = response.data
+            console.log(data)
+            setForestId(data.forestId)
+            console.log("숲 로딩 성공");
+            const images = data.items.map(item => ({
+              itemId: item.itemId,
+              imageUrl: item.imgUrl,
+              position: {
+                x: item.x,
+                y: item.y,
+              },
+            }));
+          setDroppedImages(images);
+        } else {
+              console.log("숲 로딩 실패");
+        }
+    } catch (error) {
+        console.error("숲 요청 중 오류 발생~:", error);
+    }
+  };
 
   const getOwnBGI= async () => {
     try {
@@ -103,32 +103,46 @@ export default function MyForestScreen() {
     }
   }
 
-   useEffect(() => {
-     getForest();
-     getOwnBGI();
-     getOwnBGM();
-   }, []);
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+        getForest();
+        getOwnBGI();
+        getOwnBGM();
+    });
+    // 컴포넌트 언마운트 시 리스너 제거
+    return unsubscribe;
+}, [navigation]);
 
-//   useEffect(() => {
-//     const unsubscribe = navigation.addListener('focus', () => {
-//         getForest();
-//     });
-
-//     // 컴포넌트 언마운트 시 리스너 제거
-//     return unsubscribe;
-// }, [navigation]);
+  // 숲 화면 캡처 함수
+    const handleCapture = async () => {
+      try {
+        if (forestRef.current) {
+          const uri = await captureRef(forestRef.current, {
+            format: 'png',
+            quality: 0.8,
+          });
+          console.log("숲 화면 캡처 성공:", uri);
+          setForestImageUri(uri);
+        } else {
+          console.error("forestRef가 초기화되지 않았습니다.");
+        }
+      } catch (error) {
+        console.error("숲 화면 캡처 실패:", error);
+      } finally {
+        setSavePopupVisible(true);
+      }
+    };
 
 
   // 저장 팝업
   const [savePopupVisible, setSavePopupVisible] = useState(false);
   const handleOpenSavePopup = () => {
-    setSavePopupVisible(true); // 팝업 열기
+    handleCapture()
   };
   const handleCloseSavePopup = () => {
     setSavePopupVisible(false); // 팝업 닫기
     navigation.navigate("Home");
   };
-
   
   const goSetting = () => {
     setIsModalVisible1(!isModalVisible1);
@@ -168,36 +182,38 @@ export default function MyForestScreen() {
 
   // console.log('droppedImages:', droppedImages);
   return (
-    <View style={styles.container}>
-      <ImageBackground 
+  <View style={styles.container}>
+    <View ref={forestRef} style={styles.container}>
+      <ImageBackground
         source={require('../../assets/basic/forest_2.png')}
         style={styles.image}
       >
         {droppedImages.map((imageData, index) => (
           <PanGestureHandler
-          key={imageData.itemId}
-          onGestureEvent={onGestureEvent(imageData.itemId)}
-          onHandlerStateChange={onHandlerStateChange(imageData.itemId)}
-        >
-          <View
-            style={[
-              styles.imageWrapper,
-              {
-                transform: [
-                  { translateX: draggedPosition?.itemId === imageData.itemId ? draggedPosition.x : imageData.position.x },
-                  { translateY: draggedPosition?.itemId === imageData.itemId ? draggedPosition.y : imageData.position.y },
-                ],
-              },
-            ]}
+            key={imageData.itemId}
+            onGestureEvent={onGestureEvent(imageData.itemId)}
+            onHandlerStateChange={onHandlerStateChange(imageData.itemId)}
           >
-            <Image
-              source={{ uri: imageData.imageUrl }}
-              style={styles.sticker}
-            />
-          </View>
-        </PanGestureHandler>
+            <View
+              style={[
+                styles.imageWrapper,
+                {
+                  transform: [
+                    { translateX: draggedPosition?.itemId === imageData.itemId ? draggedPosition.x : imageData.position.x },
+                    { translateY: draggedPosition?.itemId === imageData.itemId ? draggedPosition.y : imageData.position.y },
+                  ],
+                },
+              ]}
+            >
+              <Image
+                source={{ uri: imageData.imageUrl }}
+                style={styles.sticker}
+              />
+            </View>
+          </PanGestureHandler>
         ))}
       </ImageBackground>
+    </View>
 
 
       <Pressable style={styles.iconContainer} onPress={goSetting}>
@@ -227,7 +243,7 @@ export default function MyForestScreen() {
           animationType="slide"
           transparent={true}
           visible={isModalVisible2}
-          onRequestClose={goDictionary} 
+          onRequestClose={goDictionary}
         >
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
@@ -252,7 +268,7 @@ export default function MyForestScreen() {
           />
         </View>
       </Modal>
-    
+
     </View>
   );
 }

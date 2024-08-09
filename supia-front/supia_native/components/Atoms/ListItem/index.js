@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Text, View, Pressable, StyleSheet, Modal} from 'react-native';
+import {Text, View, Pressable, StyleSheet, Modal, Image } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
@@ -7,8 +7,10 @@ import FriendModal from '../../FriendModal';
 import NoteModal from '../../NoteModal';
 import Popup from '../../Popup';
 import axios from 'axios';
+import loginStore from '../../store/useLoginStore'
+import useStore from '../../store/useStore'
 
-export default function Label({ pic, title, content, name, UserLevel, onOpenPopup,
+export default function Label({ pic, url, title, content, name, UserLevel, onOpenPopup,
                                 onClose, page, handleFriendChange}) {
   const [FriendModalVisible, setFriendModalVisible] = useState(false);
   const [SearchModalVisible, setSearchModalVisible] = useState(false);
@@ -16,9 +18,8 @@ export default function Label({ pic, title, content, name, UserLevel, onOpenPopu
   const [DeletePopupVisible, setDeletePopupVisible] = useState(false);
   const [userDetail, setUserDetail] = useState(null);
   const [friendDetail, setFriendDetail] = useState(null);
-
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMwMzYwMzQsImV4cCI6MTc1NDU3MjAzNH0.OTJ1PJyv3x1bFCXqM0N560D1bic1c9JyaJyz8RcqJXU9aICkDLIFtJ3V8_CA1s0PGxqoejj6sNoKpgdLsqPcZQ'
-  const memberId = 1;
+  const { token } = loginStore.getState()
+  const { getS3Url } = useStore()
 
   const getUserDetail = async () => {
       try {
@@ -113,7 +114,12 @@ export default function Label({ pic, title, content, name, UserLevel, onOpenPopu
 
   return (
     <View style={styles.container}>
-      <AntDesign name={pic} size={24} onPress={handleOpenUserModal} />
+        {/*<Image
+          source={{uri: getS3Url(url)}}
+          name={pic}
+          onPress={handleOpenUserModal}
+          style={styles.image}
+        />*/} {/*s3 이미지가 아직 안들어온 데이터들 때문에 오류나서 우선 주석 처리*/}
       <View style={styles.profile}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.content}>{content}</Text>
@@ -220,4 +226,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
+  image: {
+    width: 50,
+    height: 50,
+  }
 });

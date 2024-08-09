@@ -4,7 +4,23 @@ import Fontisto from 'react-native-vector-icons/Fontisto';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {StyleSheet, View, Text, Image} from 'react-native';
 
-export default function MyInfo() {
+export default function MyInfo({level, point}) {
+  const getLevelInfo = (level) => {
+    switch (level) {
+      case 0:
+        return { text: '씨앗', image: require('../../../assets/level/씨앗.png') };
+      case 1:
+        return { text: '새싹', image: require('../../../assets/level/새싹.png') };
+      case 2:
+        return { text: '잎새', image: require('../../../assets/level/잎새.png') };
+      case 3:
+        return { text: '꽃', image: require('../../../assets/level/꽃.png') };
+      case 4:
+        return { text: '열매', image: require('../../../assets/level/열매.png') };
+      }
+  };
+  const { text, image } = getLevelInfo(level)
+
   return (
     <View style={styles.container}>
       <View style={styles.itemcontainer}>
@@ -18,8 +34,8 @@ export default function MyInfo() {
             <Text style={styles.textstyle}>레벨</Text>
           </View>
           <View style={styles.iconText}>
-            <Image style={styles.image} />
-            <Text>새싹</Text>
+            <Image source={image} style={{marginBottom:5}}/>
+            <Text>{text}</Text>
           </View>
         </View>
       </View>
@@ -31,7 +47,7 @@ export default function MyInfo() {
             <Text style={styles.textstyle}>포인트</Text>
           </View>
           <View style={styles.centeredText}>
-            <Text>200 P</Text>
+            <Text>{point} P</Text>
           </View>
         </View>
       </View>

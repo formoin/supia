@@ -7,15 +7,14 @@ import Frame from './Atoms/Frame';
 import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
 import axios from 'axios'
 import useStore from './store/useStore';
+import loginStore  from './store/useLoginStore';
+import { captureRef } from 'react-native-view-shot';
 
-
-const token =
-'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzA3NDgwMSwiZXhwIjoxNzU0NjEwODAxfQ.2bMm_t46dnLK6MlmQJHvQAfBLdPvPK7m38xpLsJwj55d-lb91ZEYaLb8aK8YwiYfG3Ip_ho05HMcWNFDgp2xmA'
-
-export default function Popup({onClose, Label, content, friendName, imguri, date, itemId, onDeleteSuccess, when }) {
+export default function Popup({onClose, Label, content, friendName, imguri, date, itemId, onDeleteSuccess, when, forestRef }) {
+  const { token } = loginStore.getState();
   const handleDelete = async () => { // 아이템 삭제
     try {
-      const response = await axios.delete(`http://i11b304.p.ssafy.io/api/items/${itemId}`,
+      const response = await axios.delete(`http://i11b304.p.ssafy.io/api/items/1`, // 수정 iteamid
         {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -62,18 +61,18 @@ export default function Popup({onClose, Label, content, friendName, imguri, date
     // }));
     const payload = [
       {
-          "forestId": 7,
+          "forestId": 8,
           "itemId": 1,
           "x": 10, // x좌표
           "y": 10  // y좌표
       },
       {
-          "forestId": 7,
+          "forestId": 8,
           "itemId": 2,
           "x": 176.2890625, // x좌표
           "y": 163.1556854248047  // y좌표
       }
-  ];
+    ];
     try {
       const response = await axios.post(`${Server_IP}/forest`, payload,
         {
@@ -81,32 +80,29 @@ export default function Popup({onClose, Label, content, friendName, imguri, date
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
             'Content-Type': 'application/json; charset=utf-8',
-          },
-          params: {
-            memberId: 3
           }
         },
       )
       if (response.status === 200) {
-        console.log("숲 상태 저장 성공");
+        console.log("아이템 배치 저장 성공");
         onDeleteSuccess();
       } else {
-        console.log("숲 상태 저장 실패");
+        console.log("아이템 배치 저장 실패");
       }
     }catch (error) {
-      console.error('숲 상태 요청 중 실패', error);
+      console.error('아이템 배치 요청 중 실패', error);
     }
   }
 
   const setWhen = () => {
-    if (when === 'friend') {
-        handleFriendDelete('내이름넣기', friendName);
-    } else if (when === 'save') {
-        handleSave(); // save에 대한 처리 함수 호출
+    if (when === 'save') {
+      handleSave(); // 숲 상태 저장
+    } else if (when === 'friend') {
+      handleFriendDelete('내이름넣기', friendName);
     } else {
-        handleDelete(); // 나머지 경우에 대한 처리
+      handleDelete(); // 아이템 삭제
     }
-};
+  };
 
   return (
     <View style={imguri ? styles.containerWithImage : styles.container}>

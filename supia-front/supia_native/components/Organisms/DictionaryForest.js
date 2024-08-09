@@ -8,13 +8,12 @@ import { View, StyleSheet, Pressable, ScrollView, Button } from 'react-native';
 import DictionarySticker from './DictionarySticker'
 import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
 import axios from 'axios';
-
-const token =
-'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzAxODY0NywiZXhwIjoxNzU0NTU0NjQ3fQ.pfSY7fLlBdcflPTvIG47Rs_c1ZWnuYXWdAc2bwkMYfDkyB4laNZ6I7qh4oBZ07-SraxYniZeuO8BeMWVH_dMCA'
+import loginStore from '../store/useLoginStore';
 
 export default function DictionaryForest({goDictionary, showSticker, setShowSticker}) {
   const {activeDic, resetActiveDic} = useStore();
   const [speciesList, setSpeciesList] = useState([]);
+  const { token } = loginStore.getState() 
 
   // api
   const fetchSpeciesData = async (category) => {
@@ -82,61 +81,6 @@ export default function DictionaryForest({goDictionary, showSticker, setShowStic
     );
   };
 
-// 임시로 한거
-  // const renderCard = () => {
-  //   switch (activeDic) {
-  //     case 'text1':
-  //       return (
-  //         <View style={styles.Cardcontainer}>
-  //           <Card
-  //             representativeImg="https://newsimg-hams.hankookilbo.com/2023/06/16/c80476cb-0647-4485-a536-3a01c842a38f.jpg"
-  //             speciesName="개망초"
-  //             mini={true}
-  //             setShowSticker = {setShowSticker}
-  //           />
-  //           <Card
-  //             imguri="https://newsimg-hams.hankookilbo.com/2023/06/16/c80476cb-0647-4485-a536-3a01c842a38f.jpg"
-  //             name="개망초"
-  //           />
-  //           <Card
-  //             imguri="https://newsimg-hams.hankookilbo.com/2023/06/16/c80476cb-0647-4485-a536-3a01c842a38f.jpg"
-  //             name="개망초"
-  //           />
-  //           <Card
-  //             imguri="https://newsimg-hams.hankookilbo.com/2023/06/16/c80476cb-0647-4485-a536-3a01c842a38f.jpg"
-  //             name="개망초"
-  //           />
-  //         </View>
-  //       );
-  //     case 'text2':
-  //       return (
-  //         <View style={styles.Cardcontainer}>
-  //           <Card
-  //             imguri=""
-  //             name="다람쥐"
-  //           />
-  //         </View>
-  //       );
-  //     case 'text3':
-  //       return (
-  //         <View style={styles.Cardcontainer}>
-  //           <Card
-  //             imguri="https://png.pngtree.com/png-clipart/20160610/ourmid/pngtree-butterfly-png-image_629260.png"
-  //             name="나비"
-  //           />
-  //         </View>
-  //       );
-  //     case 'text4':
-  //       return (
-  //         <View style={styles.Cardcontainer}>
-  //           <Card imguri="" name="기타" />
-  //         </View>
-  //       );
-  //     default:
-  //       return null;
-  //   }
-  // };
-
   return (
     <View style={styles.container}>
         <View style={styles.headerContainer}>
@@ -156,7 +100,6 @@ export default function DictionaryForest({goDictionary, showSticker, setShowStic
         <ScrollView>
           {renderCard()}
         </ScrollView>
-
 
         {showSticker && (
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center' }}>

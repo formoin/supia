@@ -40,11 +40,13 @@ function BottomNav() {
   const startStopwatch = useStore(state => state.startStopwatch);
   const setWalkStartTime = useStore(state => state.setWalkStartTime);
   const setCurrentLocation = useStore(state => state.setCurrentLocation); // 현재 위치를 상태에 저장하는 함수
+  const clearItems = useStore(state => state.clearItems);
 
   const handleWalkButtonPress = async () => {
     const currentTime = new Date().toISOString(); // 현재 시간
     setWalkStartTime(currentTime); // 상태에 시간 저장
     startStopwatch(); // 스톱워치 시작
+    clearItems();
     navigation.navigate('Walk'); // 산책 페이지로 이동
   };
 
@@ -168,7 +170,7 @@ function BottomNav() {
         component={EditPageScreen}
         options={{tabBarButton: () => null}}
       />
-      {/* <BottomTab.Screen
+      <BottomTab.Screen
         name="Capture"
         component={CaptureScreen}
         options={{
@@ -177,7 +179,7 @@ function BottomNav() {
             display: 'none',
           },
         }}
-      /> */}
+      />
     </BottomTab.Navigator>
   );
 }
