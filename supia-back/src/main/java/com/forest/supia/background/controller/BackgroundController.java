@@ -57,7 +57,7 @@ public class BackgroundController {
          }
     }
 
-    @PostMapping("/purchase/bgm")
+    @GetMapping("/purchase/bgm")
     public ResponseEntity<PurchaseResponseDto> purchaseBgm(@RequestHeader("Authorization") String token, @RequestParam("bgmId") Long bgmId) {
         try {
             long memberId = jwtUtil.extractMemberId(token);
@@ -68,7 +68,7 @@ public class BackgroundController {
         }
     }
 
-    @PostMapping("/purchase/bgi")
+    @GetMapping("/purchase/bgi")
     public ResponseEntity<PurchaseResponseDto> purchaseBgi(@RequestHeader("Authorization") String token, @RequestParam("bgiId") Long bgiId) {
         try {
             long memberId = jwtUtil.extractMemberId(token);

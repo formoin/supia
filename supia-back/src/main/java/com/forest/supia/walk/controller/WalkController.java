@@ -20,7 +20,7 @@ public class WalkController {
     private final WalkService walkService;
 
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody WalkDto walkDto) throws Exception {
+    public ResponseEntity<?> saveWalk(@RequestBody WalkDto walkDto) throws Exception {
 
         Long id = walkService.walk(walkDto);
 

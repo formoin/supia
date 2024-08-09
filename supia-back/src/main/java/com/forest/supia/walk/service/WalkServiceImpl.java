@@ -1,5 +1,7 @@
 package com.forest.supia.walk.service;
 
+import com.forest.supia.exception.CustomException;
+import com.forest.supia.exception.ExceptionResponse;
 import com.forest.supia.item.dto.ItemDto;
 import com.forest.supia.item.dto.SpeciesResponse;
 import com.forest.supia.item.entity.Item;
@@ -11,6 +13,7 @@ import com.forest.supia.member.repository.MemberRepository;
 import com.forest.supia.walk.repository.WalkRepository;
 import com.forest.supia.walk.dto.WalkDto;
 import com.forest.supia.walk.entity.Walk;
+import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,9 +53,16 @@ public class WalkServiceImpl implements WalkService{
         for(ItemDto itemDto : walkDto.getItems()) {
             String address = itemDto.getPosition();
 
-            //TODO: 주소 요청 데이터 형태 확인 및 시, 동 string 변환
+            Species species;
 
-            Species species = speciesRepository.findByNameContaining(itemDto.getSpecies()).orElse(null);
+            try{
+
+                species = speciesRepository.findByNameContaining(itemDto.getSpecies()).orElse(null);
+            }
+            catch (PersistenceException e) {
+                throw new ExceptionResponse(CustomException.ERROR_LOAD_SPECIES_EXCEPTION);
+            }
+
             if(species==null) {
                 species = Species.createSpecies(itemDto.getSpecies(), itemDto.getImageUrl());
                 speciesRepository.save(species);
