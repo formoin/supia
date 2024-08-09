@@ -38,7 +38,7 @@ temp_image_path = "./img/input/temp_image.png"
 output_image_path = r"illustrated.png"
 
 species_dict = {
-    "동물": {"bird": "새", "cat": "고양이", "dog": "개"},
+    "동물": {"bird": "새", "cat": "고양이", "dog": "강아지"},
     "곤충": {
         "butterfly": "나비",
         "dragonfly": "잠자리",
