@@ -45,10 +45,10 @@ public class ForestController {
     }
 
     @PatchMapping
-    public ResponseEntity<?> updateItemToForest(@RequestBody ForestItemSoundRequest forestItemSoundRequest) throws Exception {
+    public ResponseEntity<?> updateSoundToForest(@RequestBody ForestItemSoundRequest forestItemSoundRequest) throws Exception {
 
 
-        ForestItem forestItem = forestService.updateItemForest(forestItemSoundRequest);
+        ForestItem forestItem = forestService.updateSoundForest(forestItemSoundRequest);
 
         if(forestItem == null) ResponseEntity.status(HttpStatus.BAD_REQUEST).body("숲 아이템 업데이트에 실패했습니다.");
         return ResponseEntity.ok(forestItem);

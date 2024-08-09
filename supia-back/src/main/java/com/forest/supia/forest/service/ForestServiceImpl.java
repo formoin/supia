@@ -71,14 +71,16 @@ public class ForestServiceImpl implements ForestService{
 
         Forest forest = forestRepository.findById(forestSettingRequest.getForestId()).orElseThrow(() -> new InvalidParameterException("Cannot find forest"));
 
-
+        forest.setThumbnail(forestSettingRequest.getThumbnail());
+        forestRepository.save(forest);
+        if(forest.getThumbnail()== null) throw new ExceptionResponse(CustomException.FAIL_SAVE_THUMBNAIL_EXCEPTION);
         List<ForestItemSettingRequest> forestItemSettingRequestList = forestSettingRequest.getForestItemSettingRequestList();
 
         for(ForestItemSettingRequest f : forestItemSettingRequestList) {
 
             forestItemRepository.deleteByItemId(f.getItemId());
             Item item = itemRepository.findById(f.getItemId());
-            if(item == null) throw new NoSuchObjectException("해당하는 아이템이 없습니다.");
+            if(item == null) throw new ExceptionResponse(CustomException.NOT_FOUND_ITEM_EXCEPTION);
             ForestItem forestItem = ForestItem.createForestItem(item, forest, f.getX(), f.getY(), true);
             forestItemRepository.save(forestItem);
 
@@ -89,7 +91,7 @@ public class ForestServiceImpl implements ForestService{
     }
 
     @Override
-    public ForestItem updateItemForest(ForestItemSoundRequest forestItemSoundRequest) {
+    public ForestItem updateSoundForest(ForestItemSoundRequest forestItemSoundRequest) {
         ForestItem forestItem = forestItemRepository.findById(forestItemSoundRequest.getId()).orElse(new ForestItem());
 
         forestItem.update(forestItemSoundRequest);
