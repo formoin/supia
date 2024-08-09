@@ -3,7 +3,7 @@ import glob
 from random import shuffle
 
 # Load a model
-model = YOLO("./data/runs/classify/train/weights/best.pt")  # load a custom model
+model = YOLO("../../model/best.pt")  # load a custom model
 
 test_list = glob.glob("../../../Downloads/test2017/test2017/*")
 
@@ -16,4 +16,4 @@ shuffle(test_list)
 # results = model(test_list)  # predict on an image
 
 # model.predict(test_list, save=True)
-model.predict(test_list[:1000], save=True)
+model.predict("../../img/input/dog3.jpg", save=True, show=True)

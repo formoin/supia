@@ -84,9 +84,11 @@ async def process_image(
         cv2.imwrite(temp_image_path, image_bgr)
 
         # Classification
-        cls_result = cls_model(image_rgb)
+        cls_result = cls_model(image)
         probs = cls_result[0].probs.top1
         probs_name = cls_result[0].names[probs]
+
+        print(cls_result[0].probs)
 
         # Determine category and Korean name
         category = None
