@@ -143,7 +143,7 @@ public class MessageServiceImpl implements MessageService{
             messageResponses.add(messageResponse);
 
             message.check(message, memberId);
-
+            messageRepository.save(message);
         }
         return messageResponses;
 

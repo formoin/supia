@@ -41,6 +41,10 @@ public class Forest {
         this.bgi = bgi;
     }
 
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
+
     public static Forest createForest(Member member, String thumbnail, String bgi) {
         Forest forest = new Forest();
         forest.thumbnail = thumbnail;
