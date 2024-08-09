@@ -16,7 +16,8 @@ app = FastAPI()
 
 # Load models
 seg_model = SAM("./model/mobile_sam.pt")
-cls_model = YOLO("./model/yolov8n-cls.pt")
+# cls_model = YOLO("./model/yolov8n-cls.pt")
+cls_model = YOLO("./model/best.pt")
 
 # Set AWS S3
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -36,6 +37,24 @@ s3_client = boto3.client(
 temp_image_path = "./img/input/temp_image.png"
 output_image_path = r"illustrated.png"
 
+species_dict = {
+    "동물": {"bird": "새", "cat": "고양이", "dog": "개"},
+    "곤충": {
+        "butterfly": "나비",
+        "dragonfly": "잠자리",
+        "grasshopper": "메뚜기",
+        "ladybird": "무당벌레",
+        "mosquito": "모기",
+    },
+    "식물": {
+        "daisy": "데이지",
+        "dandelion": "민들레",
+        "rose": "장미",
+        "sunflower": "해바라기",
+        "tulip": "튤립",
+    },
+}
+
 
 @app.post("/ai/process-image/")
 async def process_image(
@@ -47,7 +66,9 @@ async def process_image(
     if not file:
         raise HTTPException(status_code=400, detail="File is required")
 
-    if not file.filename.lower().endswith(".png"):
+    if not (
+        file.filename.lower().endswith(".png") or file.filename.lower().endswith(".jpg")
+    ):
         raise HTTPException(status_code=400, detail="Only .png files are allowed")
 
     try:
@@ -61,6 +82,23 @@ async def process_image(
 
         # Save the image temporarily
         cv2.imwrite(temp_image_path, image_bgr)
+
+        # Classification
+        cls_result = cls_model(image_rgb)
+        probs = cls_result[0].probs.top1
+        probs_name = cls_result[0].names[probs]
+
+        # Determine category and Korean name
+        category = None
+        probs_name_kr = None
+        for cat, species in species_dict.items():
+            if probs_name in species:
+                category = cat
+                probs_name_kr = species[probs_name]
+                break
+
+        if category is None or probs_name_kr is None:
+            raise HTTPException(status_code=400, detail="Unrecognized species name")
 
         # Segment the image
         center_x = image_rgb.shape[1] // 2
@@ -87,12 +125,6 @@ async def process_image(
         new_image_bgra = cv2.cvtColor(new_image, cv2.COLOR_RGBA2BGRA)
         # cv2.imwrite(seg_image_path, new_image_bgra)
 
-        # Classification
-        cls_result = cls_model(new_image)
-        probs = cls_result[0].probs.top1
-        probs_name = cls_result[0].names[probs]
-        category = "animal"
-
         # Illustration
         hand_drawing_img = color_hand_drawing(new_image)
 
@@ -109,7 +141,11 @@ async def process_image(
         file_url = f"{AWS_S3_URL}/{s3_file_name}"
 
         return JSONResponse(
-            content={"hand_drawing_img_url": file_url, "probs_name": probs_name},
+            content={
+                "hand_drawing_img_url": file_url,
+                "category": category,
+                "probs_name": probs_name_kr,
+            },
             status_code=200,
         )
     except Exception as e:
