@@ -9,7 +9,7 @@ public interface ForestService {
     ForestResponse getForest(long memberId);
 
     long setItemForest(ForestSettingRequest forestSettingRequest) throws Exception;
-    ForestItem updateItemForest(ForestItemSoundRequest forestItemSoundRequest);
+    ForestItem updateSoundForest(ForestItemSoundRequest forestItemSoundRequest);
 
     boolean deleteItemForest(long forestItemId);
 

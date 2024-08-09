@@ -34,7 +34,8 @@ public class WalkController {
         if (id == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("산책 저장 실패");
         return ResponseEntity.ok(id);
     }
-
+    
+    //동 클릭시 해당 동에 수집된 자연물 종 불러오기
     @GetMapping
     public ResponseEntity<?> getSpeciesByDong(@RequestParam("address") String address) throws Exception {
 

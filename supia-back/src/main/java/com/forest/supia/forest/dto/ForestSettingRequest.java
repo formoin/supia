@@ -8,5 +8,6 @@ import java.util.List;
 @Getter @Setter
 public class ForestSettingRequest {
     private long forestId;
+    private String thumbnail;
     private List<ForestItemSettingRequest> forestItemSettingRequestList;
 }
