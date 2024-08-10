@@ -149,10 +149,15 @@ async def process_image(
         file_url = f"{AWS_S3_URL}/{s3_file_name}"
 
         return JSONResponse(
+            # content={
+            #     "hand_drawing_img_url": file_url,
+            #     "category": category,
+            #     "probs_name": probs_name_kr,
+            # },
             content={
                 "hand_drawing_img_url": file_url,
                 "category": category,
-                "probs_name": probs_name_kr,
+                "probs_name": "unknown",
             },
             status_code=200,
         )
