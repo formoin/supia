@@ -58,13 +58,13 @@ public class BackgroundController {
     }
 
     @GetMapping("/purchase/bgm")
-    public ResponseEntity<PurchaseResponseDto> purchaseBgm(@RequestHeader("Authorization") String token, @RequestParam("bgmId") Long bgmId) {
+    public ResponseEntity<?> purchaseBgm(@RequestHeader("Authorization") String token, @RequestParam("bgmId") Long bgmId) {
         try {
             long memberId = jwtUtil.extractMemberId(token);
             PurchaseResponseDto response = ownBgmService.purchaseBgm(memberId, bgmId);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -75,7 +75,7 @@ public class BackgroundController {
             PurchaseResponseDto response = ownBgiService.purchaseBgi(memberId, bgiId);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
