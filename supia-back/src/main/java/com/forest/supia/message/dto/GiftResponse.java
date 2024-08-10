@@ -6,14 +6,11 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Getter @Setter
-public class MessageResponse {
+public class GiftResponse {
     private long messageId;
     private String fromMemberNickname;
-    private String toMemberNickname;
     private String fromMemberImg;
-    private String toMemberImg;
+    private String species;
     private String content;
-    private boolean isCheck;
-    private int category;
     private LocalDateTime sentTime;
 }

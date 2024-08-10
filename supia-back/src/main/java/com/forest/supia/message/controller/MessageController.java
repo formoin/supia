@@ -1,7 +1,9 @@
 package com.forest.supia.message.controller;
 
 import com.forest.supia.config.auth.JwtUtil;
+import com.forest.supia.exception.CustomException;
 import com.forest.supia.message.dto.GiftRequest;
+import com.forest.supia.message.dto.GiftResponse;
 import com.forest.supia.message.dto.MessageRequest;
 import com.forest.supia.message.dto.MessageResponse;
 import com.forest.supia.message.service.MessageService;
@@ -23,10 +25,9 @@ public class MessageController {
     // 메세지 보내기
     @PostMapping
     public ResponseEntity<?> sendMessage(@RequestBody MessageRequest messageRequest) {
-        long result = messageService.sendMessage(messageRequest);
+        messageService.sendMessage(messageRequest);
 
-        if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("등록에 실패했습니다.");
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok("메세지 발신 성공");
     }
 
     // 메세지함
@@ -35,7 +36,7 @@ public class MessageController {
         long memberId = jwtUtil.extractMemberId(token);
         List<MessageResponse> result = messageService.getMessageBox(memberId);
 
-        if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("메세지함이 비었습니다.");
+        if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomException.NOT_FOUND_MESSAGE_EXCEPTION);
         return ResponseEntity.ok(result);
     }
 
@@ -44,7 +45,7 @@ public class MessageController {
         long memberId = jwtUtil.extractMemberId(token);
         List<MessageResponse> result = messageService.getSenderMessageBox(memberId);
 
-        if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("메세지함이 비었습니다.");
+        if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomException.NOT_FOUND_MESSAGE_EXCEPTION);
         return ResponseEntity.ok(result);
     }
 
@@ -56,8 +57,7 @@ public class MessageController {
         long memberId = jwtUtil.extractMemberId(token);
 
         MessageResponse result = messageService.getMessageDetail(messageId, memberId);
-
-        if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("메세지 확인에 실패했습니다.");
+        
         return ResponseEntity.ok(result);
     }
     // 메세지 삭제
@@ -65,24 +65,30 @@ public class MessageController {
     public ResponseEntity<?> deleteMessage(@RequestParam("messageId") long messageId, @RequestHeader("Authorization") String token) {
 
         long memberId = jwtUtil.extractMemberId(token);
+        messageService.deleteMessage(messageId, memberId);
 
 
-        long result = messageService.deleteMessage(messageId, memberId);
-
-        if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("메세지 삭제에 실패했습니다.");
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok("메세지 삭제 성공");
     }
 
 
-
-
     // 알림함 확인
-    @GetMapping("/notification")
+    @GetMapping("/notification-box")
     public ResponseEntity<?> notificationBox(@RequestHeader("Authorization") String token) {
         long memberId = jwtUtil.extractMemberId(token);
         List<MessageResponse> result = messageService.getNotificationBox(memberId);
 
         if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("알림함이 비었습니다.");
+        return ResponseEntity.ok(result);
+    }
+
+    // 선물함 확인
+    @GetMapping("/gift-box")
+    public ResponseEntity<?> giftBox(@RequestHeader("Authorization") String token) {
+        long memberId = jwtUtil.extractMemberId(token);
+        List<GiftResponse> result = messageService.getGiftBox(memberId);
+
+        if(result==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("선물함이 비었습니다.");
         return ResponseEntity.ok(result);
     }
 
@@ -94,23 +100,23 @@ public class MessageController {
         if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("선물 전송에 실패했습니다.");
         return ResponseEntity.ok(result);
     }
+    
 
     // 선물 수락하기
     @GetMapping("/gift")
     public ResponseEntity<?> acceptGift(@RequestParam("messageId") long messageId) {
-        long result = messageService.acceptGift(messageId);
-
-        if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("선물 수락에 실패했습니다.");
-        return ResponseEntity.ok(result);
+        messageService.acceptGift(messageId);
+        
+        return ResponseEntity.ok("선물 수락 성공");
     }
 
     // 선물 거절하기
     @DeleteMapping("/gift")
     public ResponseEntity<?> refuseGift(@RequestParam("messageId") long messageId) {
-        long result = messageService.refuseGift(messageId);
+        messageService.refuseGift(messageId);
 
-        if(result==0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("선물 수락에 실패했습니다.");
-        return ResponseEntity.ok(result);
+        
+        return ResponseEntity.ok("선물 거절 성공");
     }
 
     

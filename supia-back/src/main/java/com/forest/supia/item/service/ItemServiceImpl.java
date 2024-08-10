@@ -11,6 +11,7 @@ import com.forest.supia.item.entity.Item;
 import com.forest.supia.item.entity.Species;
 import com.forest.supia.item.repository.ItemRepository;
 import com.forest.supia.item.repository.SpeciesRepository;
+import jakarta.persistence.PersistenceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -36,28 +37,31 @@ public class ItemServiceImpl implements ItemService {
 
         SpeciesDetailResponse speciesDetailResponse = new SpeciesDetailResponse();
 
-        Species species = speciesRepository.findById(speciesId).orElseThrow();
+        Species species = speciesRepository.findById(speciesId).orElseThrow(()->new ExceptionResponse(CustomException.NOT_FOUND_SPECIES_EXCEPTION));
 
         speciesDetailResponse.setSpeciesName(species.getName());
         speciesDetailResponse.setDescription(species.getDescription());
 
-        List<ItemResponse> itemResponseList =  itemRepository.findByMemberIdAndSpciesId(memberId, speciesId);
-
-        speciesDetailResponse.setItems(itemResponseList);
+        try {
+            List<ItemResponse> itemResponseList =  itemRepository.findByMemberIdAndSpciesId(memberId, speciesId);
+            speciesDetailResponse.setItems(itemResponseList);
+        }
+        catch (PersistenceException e) {
+            throw new ExceptionResponse(CustomException.NOT_FOUND_SPECIES_EXCEPTION);
+        }
 
         return speciesDetailResponse;
     }
 
     @Override
-    public boolean deleteItem(long itemId) {
+    public void deleteItem(long itemId) {
         try {
-            System.out.println("!!!!!!!!"+itemId);
+
             Item item = itemRepository.findById(itemId).orElseThrow(() -> new ExceptionResponse(CustomException.NOT_FOUND_ITEM_EXCEPTION));
             forestItemRepository.findByItemId(itemId).ifPresent(forestItem -> forestItemRepository.deleteById(forestItem.getId()));
 
             item.setMember(null);
             itemRepository.save(item);
-            return true;
         }
         catch (Exception e) {
             throw new ExceptionResponse(CustomException.FAIL_DELETE_ITEM_EXCEPTION);

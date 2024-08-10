@@ -10,5 +10,5 @@ public interface ItemService {
 
     SpeciesDetailResponse getDetailSpecies(long memberId, long speciesId);
 
-    boolean deleteItem(long itemId) throws Exception;
+    void deleteItem(long itemId) throws Exception;
 }

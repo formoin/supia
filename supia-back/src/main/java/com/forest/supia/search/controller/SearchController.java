@@ -1,6 +1,7 @@
 package com.forest.supia.search.controller;
 
 import com.forest.supia.config.auth.JwtUtil;
+import com.forest.supia.exception.CustomException;
 import com.forest.supia.member.dto.MemberResponse;
 import com.forest.supia.search.dto.ItemSearchResponse;
 import com.forest.supia.search.dto.MemberSearchResponse;
@@ -26,12 +27,12 @@ public class SearchController {
 
         if(type ==0) {
             List<MemberSearchResponse> memberSearchResponseList = searchService.searchMember(keyword);
-            if(memberSearchResponseList.isEmpty()) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("검색 결과가 없습니다.");
+            if(memberSearchResponseList.isEmpty()) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomException.NOT_FOUND_RESULT_EXCEPTION);
             else return ResponseEntity.ok(memberSearchResponseList);
         }
         else if(type ==1)  {
             List<ItemSearchResponse> itemSearchResponseList = searchService.searchItem(keyword);
-            if(itemSearchResponseList.isEmpty()) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("검색 결과가 없습니다.");
+            if(itemSearchResponseList.isEmpty()) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomException.NOT_FOUND_RESULT_EXCEPTION);
             else return ResponseEntity.ok(itemSearchResponseList);
         }
         else {

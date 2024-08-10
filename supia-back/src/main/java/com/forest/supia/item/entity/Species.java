@@ -26,7 +26,7 @@ public class Species {
     public static Species createSpecies(String name, String representativeImg) {
         Species species = new Species();
         species.name = name;
-        species.category ="";
+        species.category ="기타";
         species.sound = "";
         species.description = "사용자가 등록한 아이템입니다.";
         species.representativeImg = representativeImg;

@@ -20,9 +20,9 @@ public class NotificationController {
 
     @GetMapping(value = "/subscribe/{memberId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@PathVariable("memberId") long memberId) {
-//        Long memberId = jwtUtill.extractMemberId(token);
 
         return notificationService.subscribe(memberId);
+
     }
 
 }

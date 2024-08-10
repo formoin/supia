@@ -1,5 +1,7 @@
 package com.forest.supia.walk.service;
 
+import com.forest.supia.exception.CustomException;
+import com.forest.supia.exception.ExceptionResponse;
 import com.forest.supia.item.dto.ItemDto;
 import com.forest.supia.item.dto.SpeciesResponse;
 import com.forest.supia.item.entity.Item;
@@ -37,7 +39,7 @@ public class WalkServiceImpl implements WalkService{
     public Long walk(WalkDto walkDto) {
 
         Member member = memberRepository.findById(walkDto.getMemberId())
-                .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + walkDto.getMemberId()));
+                .orElseThrow(() -> new ExceptionResponse(CustomException.NOT_FOUND_MEMBER_EXCEPTION));
 
         LocalDateTime startDateTime = walkDto.getWalkStart();
         LocalDateTime endDateTime = walkDto.getWalkEnd();
@@ -58,6 +60,8 @@ public class WalkServiceImpl implements WalkService{
             }
             Item item = Item.createItem(member, species, walkDate, address, itemDto.getImageUrl(), itemDto.getOriginalUrl());
             items.add(item);
+
+            itemRepository.save(item);
         }
 
         Walk walk = Walk.createWalk(member, walkDate, walkTime, walkDto.getDistance(), items);

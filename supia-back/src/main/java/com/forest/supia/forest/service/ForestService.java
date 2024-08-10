@@ -9,9 +9,9 @@ public interface ForestService {
     ForestResponse getForest(long memberId);
 
     void setItemForest(ForestSettingRequest forestSettingRequest) throws Exception;
-    ForestItem updateSoundForest(ForestItemSoundRequest forestItemSoundRequest);
+    void updateSoundForest(ForestItemSoundRequest forestItemSoundRequest);
 
-    boolean deleteItemForest(long forestItemId);
+    void deleteItemForest(long forestItemId);
 
-    long updateForestTheme(long memberId, long itemId, int type);
+    void updateForestTheme(long memberId, long itemId, int type);
 }

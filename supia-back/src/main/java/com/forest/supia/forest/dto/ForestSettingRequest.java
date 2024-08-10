@@ -9,5 +9,7 @@ import java.util.List;
 public class ForestSettingRequest {
     private long forestId;
     private String thumbnail;
+    private String bgm;
+    private String bgi;
     private List<ForestItemSettingRequest> forestItemSettingRequestList;
 }

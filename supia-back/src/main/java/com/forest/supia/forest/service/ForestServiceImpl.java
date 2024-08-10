@@ -14,6 +14,7 @@ import com.forest.supia.forest.repository.ForestRepository;
 import com.forest.supia.item.entity.Item;
 import com.forest.supia.item.repository.ItemRepository;
 import com.forest.supia.member.repository.MemberRepository;
+import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -69,60 +70,62 @@ public class ForestServiceImpl implements ForestService{
     @Override
     @Transactional
     public void setItemForest(ForestSettingRequest forestSettingRequest) throws Exception {
-
-
-
         Forest forest = forestRepository.findById(forestSettingRequest.getForestId()).orElseThrow(() -> new InvalidParameterException("Cannot find forest"));
 
+        // 숲 썸네일, 테마 설정
         forest.setThumbnail(forestSettingRequest.getThumbnail());
+        forest.setTheme(forestSettingRequest.getBgm(), forestSettingRequest.getBgi());
         forestRepository.save(forest);
-        if(forest.getThumbnail()== null) throw new ExceptionResponse(CustomException.FAIL_SAVE_THUMBNAIL_EXCEPTION);
-        List<ForestItemSettingRequest> forestItemSettingRequestList = forestSettingRequest.getForestItemSettingRequestList();
-        System.out.println(forest.getId());
+        
+        if(forest.getThumbnail()== null) throw new ExceptionResponse(CustomException.FAIL_SAVE_FOREST_EXCEPTION);
+        
+        // 현재 있는 아이템 삭제
         List<ForestItem> forestItems = forestItemRepository.findByForestId(forest.getId()).orElse(new ArrayList<>());
         List<Long> forestItemIds = new ArrayList<>();
         for(ForestItem forestItem:forestItems) {
-            System.out.println(forestItem.getId());
             forestItemIds.add(forestItem.getId());
         }
-
         forestItemRepository.deleteAllByIds(forestItemIds);
+        
+        // 숲에 아이템 배치
+        List<ForestItemSettingRequest> forestItemSettingRequestList = forestSettingRequest.getForestItemSettingRequestList();
         for(ForestItemSettingRequest f : forestItemSettingRequestList) {
-
             Item item = itemRepository.findById(f.getItemId()).orElseThrow(()->new ExceptionResponse(CustomException.NOT_FOUND_ITEM_EXCEPTION));
 
             ForestItem forestItem = ForestItem.createForestItem(item, forest, f.getX(), f.getY(), true);
             forestItemRepository.save(forestItem);
-
         }
 
 
     }
 
     @Override
-    public ForestItem updateSoundForest(ForestItemSoundRequest forestItemSoundRequest) {
+    public void updateSoundForest(ForestItemSoundRequest forestItemSoundRequest) {
         ForestItem forestItem = forestItemRepository.findById(forestItemSoundRequest.getId()).orElse(new ForestItem());
 
         forestItem.update(forestItemSoundRequest);
 
-
-        return forestItemRepository.save(forestItem);
+        try{
+            forestItemRepository.save(forestItem);
+        }
+        catch (PersistenceException e) {
+            throw new ExceptionResponse(CustomException.FAIL_SAVE_FOREST_EXCEPTION);
+        }
 
     }
 
     @Override
-    public boolean deleteItemForest(long forestItemId) {
+    public void deleteItemForest(long forestItemId) {
         try {
             forestItemRepository.deleteById(forestItemId);
-            return true;
         }
         catch (Exception e) {
-            return false;
+            throw new ExceptionResponse(CustomException.FAIL_DELETE_ITEM_EXCEPTION);
         }
     }
 
     @Override
-    public long updateForestTheme(long memberId, long itemId, int type) {
+    public void updateForestTheme(long memberId, long itemId, int type) {
         Forest forest = memberRepository.findById(memberId).orElseThrow(()->new ExceptionResponse(CustomException.NOT_FOUND_FOREST_EXCEPTION)).getForest();
 
         Bgm bgm;
@@ -137,9 +140,13 @@ public class ForestServiceImpl implements ForestService{
             forest.setTheme(forest.getBgm(), bgi.getPath());
         }
 
-        forestRepository.save(forest);
+        try {
+            forestRepository.save(forest);
+        }
+        catch (PersistenceException e) {
+            throw new ExceptionResponse(CustomException.FAIL_SAVE_FOREST_EXCEPTION);
+        }
 
-        return forest.getId();
     }
 
 

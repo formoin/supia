@@ -1,6 +1,8 @@
 package com.forest.supia.member.controller;
 
 import com.forest.supia.config.auth.JwtUtil;
+import com.forest.supia.exception.CustomException;
+import com.forest.supia.exception.ExceptionResponse;
 import com.forest.supia.member.dto.LoginDto;
 import com.forest.supia.member.dto.MemberInfoResponse;
 import com.forest.supia.member.dto.SignUpDto;
@@ -37,13 +39,12 @@ public class MemberController {
 
 
     @GetMapping("/list")
-    public ResponseEntity<List<Member>> listMember(){
+    public ResponseEntity<?> listMember(){
         List<Member> memberList = memberService.listMember();
         if(!memberList.isEmpty()) {
-            System.out.println(memberList);
             return ResponseEntity.ok(memberList);
         } else{
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(CustomException.NOT_FOUND_MEMBER_EXCEPTION);
         }
     }
 
