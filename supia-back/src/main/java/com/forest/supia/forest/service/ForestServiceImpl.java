@@ -14,6 +14,7 @@ import com.forest.supia.forest.repository.ForestRepository;
 import com.forest.supia.item.entity.Item;
 import com.forest.supia.item.repository.ItemRepository;
 import com.forest.supia.member.repository.MemberRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +44,7 @@ public class ForestServiceImpl implements ForestService{
         forestResponse.setForestId(forest.getId());
         forestResponse.setBgm(forest.getBgm());
         forestResponse.setBgi(forest.getBgi());
-        List<ForestItem> forestItems = forestItemRepository.findByForestId(forest.getId()).orElse(null);
+        List<ForestItem> forestItems = forestItemRepository.findByForestId(forest.getId()).orElse(new ArrayList<>());
         List<ForestItemResponse> forestItemResponseList = new ArrayList<>();
 
         for(ForestItem forestItem : forestItems) {
@@ -64,8 +65,10 @@ public class ForestServiceImpl implements ForestService{
         return forestResponse;
     }
 
+
     @Override
-    public long setItemForest(ForestSettingRequest forestSettingRequest) throws Exception {
+    @Transactional
+    public void setItemForest(ForestSettingRequest forestSettingRequest) throws Exception {
 
 
 
@@ -75,18 +78,24 @@ public class ForestServiceImpl implements ForestService{
         forestRepository.save(forest);
         if(forest.getThumbnail()== null) throw new ExceptionResponse(CustomException.FAIL_SAVE_THUMBNAIL_EXCEPTION);
         List<ForestItemSettingRequest> forestItemSettingRequestList = forestSettingRequest.getForestItemSettingRequestList();
+        System.out.println(forest.getId());
+        List<ForestItem> forestItems = forestItemRepository.findByForestId(forest.getId()).orElse(new ArrayList<>());
+        List<Long> forestItemIds = new ArrayList<>();
+        for(ForestItem forestItem:forestItems) {
+            System.out.println(forestItem.getId());
+            forestItemIds.add(forestItem.getId());
+        }
 
+        forestItemRepository.deleteAllByIds(forestItemIds);
         for(ForestItemSettingRequest f : forestItemSettingRequestList) {
 
-            forestItemRepository.deleteByItemId(f.getItemId());
-            Item item = itemRepository.findById(f.getItemId());
-            if(item == null) throw new ExceptionResponse(CustomException.NOT_FOUND_ITEM_EXCEPTION);
+            Item item = itemRepository.findById(f.getItemId()).orElseThrow(()->new ExceptionResponse(CustomException.NOT_FOUND_ITEM_EXCEPTION));
+
             ForestItem forestItem = ForestItem.createForestItem(item, forest, f.getX(), f.getY(), true);
             forestItemRepository.save(forestItem);
 
         }
 
-        return 1;
 
     }
 
@@ -116,13 +125,15 @@ public class ForestServiceImpl implements ForestService{
     public long updateForestTheme(long memberId, long itemId, int type) {
         Forest forest = memberRepository.findById(memberId).orElseThrow(()->new ExceptionResponse(CustomException.NOT_FOUND_FOREST_EXCEPTION)).getForest();
 
-        Bgm bgm = bgmRepository.findById(itemId).orElseThrow(() -> new ExceptionResponse(CustomException.NOT_FOUND_BACKGROUND_ITEM_EXCEPTION));
-        Bgi bgi = bgiRepository.findById(itemId).orElseThrow(() -> new ExceptionResponse(CustomException.NOT_FOUND_BACKGROUND_ITEM_EXCEPTION));
+        Bgm bgm;
+        Bgi bgi;
 
         if(type ==0) {
+            bgm = bgmRepository.findById(itemId).orElseThrow(() -> new ExceptionResponse(CustomException.NOT_FOUND_BACKGROUND_ITEM_EXCEPTION));
             forest.setTheme( bgm.getPath(), forest.getBgi() );
         }
         else if(type ==1) {
+            bgi = bgiRepository.findById(itemId).orElseThrow(() -> new ExceptionResponse(CustomException.NOT_FOUND_BACKGROUND_ITEM_EXCEPTION));
             forest.setTheme(forest.getBgm(), bgi.getPath());
         }
 

@@ -8,7 +8,7 @@ import com.forest.supia.forest.entity.ForestItem;
 public interface ForestService {
     ForestResponse getForest(long memberId);
 
-    long setItemForest(ForestSettingRequest forestSettingRequest) throws Exception;
+    void setItemForest(ForestSettingRequest forestSettingRequest) throws Exception;
     ForestItem updateSoundForest(ForestItemSoundRequest forestItemSoundRequest);
 
     boolean deleteItemForest(long forestItemId);

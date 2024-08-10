@@ -19,7 +19,7 @@ public class ForestItem {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     private Item item;
 
     @ManyToOne(fetch = FetchType.LAZY)

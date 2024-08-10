@@ -30,18 +30,15 @@ public class ForestController {
         return ResponseEntity.ok(forest);
     }
 
+
     @PostMapping
     public ResponseEntity<?> setItemToForest(@RequestBody ForestSettingRequest forestSettingRequest) throws Exception {
 
 
-        try {
-            forestService.setItemForest(forestSettingRequest);
-        }
-        catch (Exception e) {
-
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body("숲 아이템 저장에 실패했습니다.");
-        }
-        return ResponseEntity.ok(1);
+      
+        forestService.setItemForest(forestSettingRequest);
+        
+        return ResponseEntity.ok("숲 아이템 저장 성공");
     }
 
     @PatchMapping

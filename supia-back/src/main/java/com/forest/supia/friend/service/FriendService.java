@@ -11,11 +11,11 @@ public interface FriendService {
 
     MemberResponse getFriendProfile(long memberId);
 
-    long sendFriendRequest(FriendRequest friendRequest);
+    void sendFriendRequest(FriendRequest friendRequest);
 
-    long acceptFriendRequest(long messageId);
+    void acceptFriendRequest(long messageId);
 
-    long refuseFriendRequest(long messageId);
+    void refuseFriendRequest(long messageId);
 
-    long deleteFriend(long friendId);
+    void deleteFriend(long friendId);
 }
