@@ -5,16 +5,17 @@ import com.forest.supia.message.entity.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
     Message save(Message message);
 
-    List<Message> findByToMemberAndCategoryAndToMemberDelete(Member member, int category, boolean toMemberDelete);
-    List<Message> findByFromMemberAndCategoryAndFromMemberDelete(Member member, int category, boolean fromMemberDelete);
+    Optional<List<Message>> findByToMemberAndCategoryAndToMemberDelete(Member member, int category, boolean toMemberDelete);
+    Optional<List<Message>> findByFromMemberAndCategoryAndFromMemberDelete(Member member, int category, boolean fromMemberDelete);
 
-    List<Message> findByToMemberAndCategoryGreaterThan(Member member, int category);
+    Optional<List<Message>> findByToMemberAndCategory(Member member, int category);
 
-    List<Message> findByToMemberAndCategoryAndIsCheck(Member member, int category, boolean isCheck);
+    Optional<List<Message>> findByToMemberAndCategoryAndIsCheck(Member member, int category, boolean isCheck);
 
-    List<Message> findByToMemberAndCategoryGreaterThanAndIsCheck(Member member, int category, boolean isCheck);
+    Optional<List<Message>> findByToMemberAndCategoryGreaterThanAndIsCheck(Member member, int category, boolean isCheck);
 }

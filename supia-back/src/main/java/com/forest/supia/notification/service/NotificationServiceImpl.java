@@ -1,5 +1,7 @@
 package com.forest.supia.notification.service;
 
+import com.forest.supia.exception.CustomException;
+import com.forest.supia.exception.ExceptionResponse;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
 import com.forest.supia.notification.controller.NotificationController;
@@ -51,6 +53,7 @@ public class NotificationServiceImpl implements NotificationService {
             } catch (IOException e) {
                 emitterRepository.deleteById(memberId);
                 emitter.completeWithError(e);
+                throw new ExceptionResponse(CustomException.FAIL_SEND_NOTIFICATION_EXCEPTION);
             }
         }
     }

@@ -97,18 +97,18 @@ public class BackgroundController {
     public ResponseEntity<?> updateBgm(@RequestHeader("Authorization") String token, @RequestParam("bgmId") long bgmId) {
         long memberId = jwtUtil.extractMemberId(token);
 
-        long result = forestService.updateForestTheme(memberId, bgmId, 0);
+        forestService.updateForestTheme(memberId, bgmId, 0);
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok("BGM 변경 성공");
     }
 
     @GetMapping("/check/bgi")
     public ResponseEntity<?> updateBgi(@RequestHeader("Authorization") String token, @RequestParam("bgmId") long bgiId) {
         long memberId = jwtUtil.extractMemberId(token);
 
-        long result = forestService.updateForestTheme(memberId, bgiId, 1);
+        forestService.updateForestTheme(memberId, bgiId, 1);
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok("BGI 변경 성공");
     }
 
 

@@ -1,6 +1,8 @@
 package com.forest.supia.item.controller;
 
 import com.forest.supia.config.auth.JwtUtil;
+import com.forest.supia.exception.CustomException;
+import com.forest.supia.exception.ExceptionResponse;
 import com.forest.supia.item.dto.SpeciesDetailResponse;
 import com.forest.supia.item.dto.SpeciesResponse;
 import com.forest.supia.item.service.ItemService;
@@ -30,16 +32,16 @@ public class ItemController {
     public ResponseEntity<?> getDetailSpecies(@RequestHeader("Authorization") String token, @RequestParam("speciesId") long speciesId) throws Exception {
         long memberId = jwtUtil.extractMemberId(token);
         SpeciesDetailResponse itemDetail = itemService.getDetailSpecies(memberId, speciesId);
-        if(itemDetail == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("아이템 정보 불러오기 실패");
+
         return ResponseEntity.ok(itemDetail);
     }
 
     @DeleteMapping
     public ResponseEntity<?> deleteItem(@RequestParam("itemId") long itemId) throws Exception {
 
-        boolean result = itemService.deleteItem(itemId);
-        if(!result) return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("아이템 삭제 실패");
-        return ResponseEntity.ok(result);
+        itemService.deleteItem(itemId);
+        
+        return ResponseEntity.ok("아이템 삭제 성공");
 
     }
 

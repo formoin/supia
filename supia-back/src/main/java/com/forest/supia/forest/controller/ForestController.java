@@ -34,8 +34,6 @@ public class ForestController {
     @PostMapping
     public ResponseEntity<?> setItemToForest(@RequestBody ForestSettingRequest forestSettingRequest) throws Exception {
 
-
-      
         forestService.setItemForest(forestSettingRequest);
         
         return ResponseEntity.ok("숲 아이템 저장 성공");
@@ -43,22 +41,18 @@ public class ForestController {
 
     @PatchMapping
     public ResponseEntity<?> updateSoundToForest(@RequestBody ForestItemSoundRequest forestItemSoundRequest) throws Exception {
+        
+        forestService.updateSoundForest(forestItemSoundRequest);
 
-
-        ForestItem forestItem = forestService.updateSoundForest(forestItemSoundRequest);
-
-        if(forestItem == null) ResponseEntity.status(HttpStatus.BAD_REQUEST).body("숲 아이템 업데이트에 실패했습니다.");
-        return ResponseEntity.ok(forestItem);
+        return ResponseEntity.ok("아이템 소리 온오프 성공");
     }
 
     @DeleteMapping
     public ResponseEntity<?> deleteItemFromForest(@RequestParam("forestItemId") long forestItemId) throws Exception {
 
+        forestService.deleteItemForest(forestItemId);
 
-        boolean result = forestService.deleteItemForest(forestItemId);
-
-        if(!result) ResponseEntity.status(HttpStatus.BAD_REQUEST).body("숲 아이템 삭제에 실패했습니다.");
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok("아이템 삭제 성공");
     }
 
     

@@ -2,10 +2,7 @@ package com.forest.supia.search.service;
 
 import com.forest.supia.friend.entity.Friend;
 import com.forest.supia.friend.repository.FriendRepository;
-import com.forest.supia.item.entity.Item;
-import com.forest.supia.item.entity.Species;
 import com.forest.supia.item.repository.ItemRepository;
-import com.forest.supia.item.repository.SpeciesRepository;
 import com.forest.supia.member.dto.MemberResponse;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;

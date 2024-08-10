@@ -97,7 +97,7 @@ public class FriendServiceImpl implements FriendService {
         Friend friend = Friend.createFriend(fromMember, toMember);
         Friend check = friendRepository.findByFromMemberAndToMember(fromMember, toMember).orElse(null);
 
-        int body = messageRepository.findByToMemberAndCategoryGreaterThanAndIsCheck(toMember, 1, false).size();
+        int body = messageRepository.findByToMemberAndCategoryGreaterThanAndIsCheck(toMember, 1, false).orElse(new ArrayList<>()).size();
 
         notificationService.notifyMessage(toMember.getId(), body, "SSE", "alarm");
 
@@ -121,7 +121,7 @@ public class FriendServiceImpl implements FriendService {
         //fromMember: 친구 신청 보낸 사람. 지금 친구 수락 알람 받을 사람.
         Message reply = Message.createMessage(message.getToMember(), message.getFromMember(), 3, message.getToMember().getName()+"님이 친구 요청을 수락하셨습니다.");
         messageRepository.save(reply);
-        int body = messageRepository.findByToMemberAndCategoryGreaterThanAndIsCheck(message.getFromMember(), 1, false).size();
+        int body = messageRepository.findByToMemberAndCategoryGreaterThanAndIsCheck(message.getFromMember(), 1, false).orElse(new ArrayList<>()).size();
         notificationService.notifyMessage(message.getFromMember().getId(), body, "SSE", "alarm");
 
         friendRepository.save(friend);

@@ -2,6 +2,7 @@ package com.forest.supia.walk.controller;
 
 
 import com.forest.supia.config.auth.JwtUtil;
+import com.forest.supia.exception.CustomException;
 import com.forest.supia.item.dto.SpeciesResponse;
 import com.forest.supia.walk.dto.WalkDto;
 import com.forest.supia.walk.dto.WalkHistoryResponseDto;
@@ -32,7 +33,7 @@ public class WalkController {
         Long id = walkService.walk(walkDto);
 
         if (id == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("산책 저장 실패");
-        return ResponseEntity.ok(id);
+        return ResponseEntity.ok("산책 저장 성공");
     }
     
     //동 클릭시 해당 동에 수집된 자연물 종 불러오기
@@ -42,7 +43,7 @@ public class WalkController {
         List<SpeciesResponse> speciesResponseList = walkService.getSpeciesByDong(address);
 
         if (speciesResponseList == null)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("해당 지역에 수집된 자연물이 없습니다.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomException.NOT_FOUND_RESULT_EXCEPTION);
         return ResponseEntity.ok(speciesResponseList);
     }
 
