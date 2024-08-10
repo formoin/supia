@@ -2,6 +2,7 @@ package com.forest.supia.forest.repository;
 
 import com.forest.supia.forest.entity.Forest;
 import com.forest.supia.forest.entity.ForestItem;
+import com.forest.supia.item.entity.Item;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,9 +16,9 @@ public interface ForestItemRepository extends JpaRepository<ForestItem, Long> {
     Optional<List<ForestItem>> findByForestId(long forestId);
 
 
-    ForestItem findByItemId(Long itemId);
+    Optional<ForestItem> findByItemId(Long itemId);
 
-    void deleteByItemId(Long itemId);
+    void deleteByItem(Item item);
 
     void deleteByForest_Id(Long forestId);
 

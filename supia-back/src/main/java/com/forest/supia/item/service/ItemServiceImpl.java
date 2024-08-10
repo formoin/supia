@@ -2,6 +2,7 @@ package com.forest.supia.item.service;
 
 import com.forest.supia.exception.CustomException;
 import com.forest.supia.exception.ExceptionResponse;
+import com.forest.supia.forest.entity.ForestItem;
 import com.forest.supia.forest.repository.ForestItemRepository;
 import com.forest.supia.item.dto.ItemResponse;
 import com.forest.supia.item.dto.SpeciesDetailResponse;
@@ -50,9 +51,12 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public boolean deleteItem(long itemId) {
         try {
-            forestItemRepository.deleteByItemId(itemId);
-            Item item = itemRepository.findById(itemId).orElseThrow(()->new ExceptionResponse(CustomException.NOT_FOUND_ITEM_EXCEPTION));
+            System.out.println("!!!!!!!!"+itemId);
+            Item item = itemRepository.findById(itemId).orElseThrow(() -> new ExceptionResponse(CustomException.NOT_FOUND_ITEM_EXCEPTION));
+            forestItemRepository.findByItemId(itemId).ifPresent(forestItem -> forestItemRepository.deleteById(forestItem.getId()));
+
             item.setMember(null);
+            itemRepository.save(item);
             return true;
         }
         catch (Exception e) {
