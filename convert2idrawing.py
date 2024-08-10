@@ -9,15 +9,13 @@ os.environ["LOKY_MAX_CPU_COUNT"] = "4"
 
 
 def color_hand_drawing(image_array):
-    # Open images
-    # with Image.open("./img/seg/segment1.jpg") as img:
+
     img = Image.fromarray(image_array)
+
     # Step 1: Convert image to RGB
     img = img.convert("RGBA")
 
-    # Step 2: Detect Edge
-    edges = detect_edges(img)
-
+    # Step 2: Blur image
     img = img.filter(ImageFilter.BoxBlur(radius=1))
 
     # Step 3: Simplify colors
@@ -63,6 +61,8 @@ def simplify_colors(image):
         .reshape(img_array.shape)
         .astype(np.uint8)
     )
-
+    
     # Convert numpy array to image
     return Image.fromarray(clustered_img_array, "RGBA")
+
+     

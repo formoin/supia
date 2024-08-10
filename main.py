@@ -25,7 +25,6 @@ AWS_S3_BUCKET_NAME = os.getenv("AWS_S3_BUCKET_NAME")
 AWS_REGION = os.getenv("AWS_REGION")
 AWS_S3_URL = f"https://{AWS_S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com"
 
-
 s3_client = boto3.client(
     "s3",
     aws_access_key_id=AWS_ACCESS_KEY_ID,
@@ -133,7 +132,6 @@ async def process_image(
 
         # Convert to BGRA for saving
         new_image_bgra = cv2.cvtColor(new_image, cv2.COLOR_RGBA2BGRA)
-        # cv2.imwrite(seg_image_path, new_image_bgra)
 
         # Illustration
         hand_drawing_img = color_hand_drawing(new_image).crop((x1-5, y1-5, x2+5, y2+5))
