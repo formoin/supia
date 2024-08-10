@@ -235,12 +235,11 @@ public class MessageServiceImpl implements MessageService{
         item.setMember(message.getToMember());
 
         itemRepository.save(item);
-
+        messageRepository.deleteById(messageId);
     }
 
     @Override
     public void refuseGift(long messageId) {
-
         messageRepository.deleteById(messageId);
 
     }

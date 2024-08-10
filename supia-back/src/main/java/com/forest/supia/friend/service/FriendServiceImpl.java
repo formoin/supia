@@ -125,6 +125,7 @@ public class FriendServiceImpl implements FriendService {
         notificationService.notifyMessage(message.getFromMember().getId(), body, "SSE", "alarm");
 
         friendRepository.save(friend);
+        messageRepository.deleteById(messageId);
 
     }
 
