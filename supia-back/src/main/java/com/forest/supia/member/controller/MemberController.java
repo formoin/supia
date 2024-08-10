@@ -92,6 +92,7 @@ public class MemberController {
         return "login";
     }
 
+    @Transactional
     @GetMapping("/my-info")
     public ResponseEntity<Map<String, MemberInfoResponse>> getMemberInfo(@RequestHeader("Authorization") String token) {
         long memberId = jwtUtil.extractMemberId(token);
