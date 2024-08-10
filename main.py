@@ -16,7 +16,6 @@ app = FastAPI()
 
 # Load models
 seg_model = SAM("./model/mobile_sam.pt")
-# cls_model = YOLO("./model/yolov8n-cls.pt")
 cls_model = YOLO("./model/best.pt")
 
 # Set AWS S3
@@ -77,6 +76,20 @@ async def process_image(
         image = Image.open(BytesIO(image_data))
         image_rgb = np.array(image.convert("RGB"))
 
+        frame_width = image.size[0] * 0.8
+        frame_height = image.size[1] * 0.4
+
+        center_x = int(image.size[0] // 2)
+        center_y = int(image.size[1] // 2)
+
+        # top-left corner of frame
+        x1 = int(center_x - frame_width // 2)
+        y1 = int(center_y - frame_height // 2)
+        
+        # buttom-right corner of frame
+        x2 = int(center_x + frame_width // 2)
+        y2 = int(center_y + frame_height // 2)
+
         # Convert to BGR for OpenCV
         image_bgr = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR)
 
@@ -84,11 +97,9 @@ async def process_image(
         cv2.imwrite(temp_image_path, image_bgr)
 
         # Classification
-        cls_result = cls_model(image)
+        cls_result = cls_model(image_rgb[y1:y2, x1:x2])
         probs = cls_result[0].probs.top1
         probs_name = cls_result[0].names[probs]
-
-        print(cls_result[0].probs)
 
         # Determine category and Korean name
         category = None
@@ -103,12 +114,9 @@ async def process_image(
             raise HTTPException(status_code=400, detail="Unrecognized species name")
 
         # Segment the image
-        center_x = image_rgb.shape[1] // 2
-        center_y = image_rgb.shape[0] // 2
         results = seg_model.predict(
-            temp_image_path, points=[[center_x, center_y]], labels=[1]
+            temp_image_path, bboxes=[x1, y1, x2, y2]
         )
-
         # Extract mask coordinates
         mask_coords = results[0].masks[0].xy[0]
 
@@ -128,7 +136,7 @@ async def process_image(
         # cv2.imwrite(seg_image_path, new_image_bgra)
 
         # Illustration
-        hand_drawing_img = color_hand_drawing(new_image)
+        hand_drawing_img = color_hand_drawing(new_image).crop((x1-5, y1-5, x2+5, y2+5))
 
         # Save hand-drawing image to file
         hand_drawing_img.save(output_image_path)
