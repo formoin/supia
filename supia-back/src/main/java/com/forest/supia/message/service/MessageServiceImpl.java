@@ -1,5 +1,7 @@
 package com.forest.supia.message.service;
 
+import com.forest.supia.exception.CustomException;
+import com.forest.supia.exception.ExceptionResponse;
 import com.forest.supia.item.entity.Item;
 import com.forest.supia.item.repository.ItemRepository;
 import com.forest.supia.member.entity.Member;
@@ -151,10 +153,10 @@ public class MessageServiceImpl implements MessageService{
 
     @Override
     public long sendGift(GiftRequest giftRequest) {
-        Member fromMember = memberRepository.findById(giftRequest.getFromMemberId()).orElseThrow(() -> new InvalidParameterException("Cannot find member"));
+        Member fromMember = memberRepository.findById(giftRequest.getFromMemberId()).orElseThrow(() -> new ExceptionResponse(CustomException.NOT_FOUND_MEMBER_EXCEPTION));
         Member toMember = memberRepository.findById(giftRequest.getToMemberId()).orElseThrow(() -> new InvalidParameterException("Cannot find member"));
 
-        Item item = itemRepository.findById(giftRequest.getItemId());
+        Item item = itemRepository.findById(giftRequest.getItemId()).orElseThrow(()-> new ExceptionResponse(CustomException.NOT_FOUND_ITEM_EXCEPTION));
         item.setMember(null);
 
         System.out.println(item.getId() + " " + item.getMember());

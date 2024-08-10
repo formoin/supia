@@ -1,8 +1,12 @@
 package com.forest.supia.item.service;
 
+import com.forest.supia.exception.CustomException;
+import com.forest.supia.exception.ExceptionResponse;
+import com.forest.supia.forest.repository.ForestItemRepository;
 import com.forest.supia.item.dto.ItemResponse;
 import com.forest.supia.item.dto.SpeciesDetailResponse;
 import com.forest.supia.item.dto.SpeciesResponse;
+import com.forest.supia.item.entity.Item;
 import com.forest.supia.item.entity.Species;
 import com.forest.supia.item.repository.ItemRepository;
 import com.forest.supia.item.repository.SpeciesRepository;
@@ -18,6 +22,7 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final SpeciesRepository speciesRepository;
+    private final ForestItemRepository forestItemRepository;
 
     @Override
     public List<SpeciesResponse> getDictionary(long memberId, String category) {
@@ -45,11 +50,13 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public boolean deleteItem(long itemId) {
         try {
-            itemRepository.deleteById(itemId);
+            forestItemRepository.deleteByItemId(itemId);
+            Item item = itemRepository.findById(itemId).orElseThrow(()->new ExceptionResponse(CustomException.NOT_FOUND_ITEM_EXCEPTION));
+            item.setMember(null);
             return true;
         }
         catch (Exception e) {
-            return false;
+            throw new ExceptionResponse(CustomException.FAIL_DELETE_ITEM_EXCEPTION);
         }
     }
 

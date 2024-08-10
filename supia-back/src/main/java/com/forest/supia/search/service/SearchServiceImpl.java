@@ -49,8 +49,8 @@ public class SearchServiceImpl implements SearchService{
 
         boolean isFriend = false;
 
-        List<Friend> friendListFrom = friendRepository.findByFromMember(findMember);
-        List<Friend> friendListTo = friendRepository.findByToMember(findMember);
+        List<Friend> friendListFrom = friendRepository.findByFromMember(findMember).orElse(new ArrayList<>());
+        List<Friend> friendListTo = friendRepository.findByToMember(findMember).orElse(new ArrayList<>());
 
         for(Friend friend : friendListFrom){
             if(friend.getToMember().getId() == memberId && friend.isAreWeFriend()){

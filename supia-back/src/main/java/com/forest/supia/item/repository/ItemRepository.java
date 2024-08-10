@@ -14,6 +14,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
@@ -48,7 +49,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     )
     List<SpeciesResponse> speciesResponseListByDong(@Param("dongCode") String dongCode);
 
-    Item findById(long itemId);
+    Optional<Item> findById(long itemId);
     void deleteById(long itemId);
 
     @Query(

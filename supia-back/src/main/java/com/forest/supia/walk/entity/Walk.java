@@ -28,12 +28,10 @@ public class Walk {
     private long walkTime;
     private double distance;
 
-    @OneToMany(cascade = CascadeType.PERSIST)
-    private List<Item> items = new ArrayList<>();
+
     //==연관관계 메서드==//
 
     public void addItem(Item item) {
-        items.add(item);
         item.setWalk(this);
     }
 

@@ -69,13 +69,13 @@ public class BackgroundController {
     }
 
     @GetMapping("/purchase/bgi")
-    public ResponseEntity<PurchaseResponseDto> purchaseBgi(@RequestHeader("Authorization") String token, @RequestParam("bgiId") Long bgiId) {
+    public ResponseEntity<?> purchaseBgi(@RequestHeader("Authorization") String token, @RequestParam("bgiId") Long bgiId) {
         try {
             long memberId = jwtUtil.extractMemberId(token);
             PurchaseResponseDto response = ownBgiService.purchaseBgi(memberId, bgiId);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(e);
         }
     }
 

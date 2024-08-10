@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FriendRepository extends JpaRepository<Friend, Long> {
-    List<Friend> findByToMember(Member toMember);
+    Optional<List<Friend>> findByToMember(Member toMember);
 
-    List<Friend> findByFromMember(Member fromMember);
+    Optional<List<Friend>> findByFromMember(Member fromMember);
 
     Friend save(Friend friend);
 
