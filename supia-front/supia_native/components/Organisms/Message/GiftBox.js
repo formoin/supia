@@ -1,53 +1,67 @@
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
-import Label from '../../Atoms/ListItem';
 import React, { useState } from 'react';
-import axios from 'axios';
-import ReadMessageModal from './ReadMessageModal';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import Label from '../../Atoms/ListItem';
+import GiftModal from './GiftModal';
+import moment from 'moment'
 
-export default function GiftBox({messageId, friendName}) {
+export default function GiftBox({ gift }) {
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedGift, setSelectedGift] = useState(null); // 선택된 선물
+  const [gifts, setGifts] = useState(gift); // 선물 목록 상태
 
-  const onPress = () => {
-    alert("선물 확인")
+  const onPress = (item) => {
+    setSelectedGift(item);
+    setModalVisible(true);
   };
 
-    const markMessageAsRead = async (messageId) => {
-      const url = "http://i11b304.p.ssafy.io/api/messages/detail";
-      const data = { is_check: true };
+  const handleAccept = () => {
+    // 선물 수락 시 처리할 로직
+    setGifts(gifts.filter(g => g.messageId !== selectedGift.messageId)); // 선물 목록에서 해당 선물 제거
+  };
 
-      try {
-        const response = await axios.patch(url, data)
+  const handleRefuse = () => {
+    // 선물 거절 시 처리할 로직
+    setGifts(gifts.filter(g => g.messageId !== selectedGift.messageId)); // 선물 목록에서 해당 선물 제거
+  };
 
-        if (response.status === 200) {
-          console.log("메시지 읽음 처리 성공");
-        } else {
-          console.log("메시지 읽음 처리 실패");
-        }
-      } catch (error) {
-        console.error("요청 중 오류 발생:", error);
-      }
-    };
+  const formatTime = (dateString) => {
+    return dateString ? moment(dateString).format('YYYY/MM/DD HH:mm') : '시간 정보 없음';
+  };
 
   return (
     <View>
-      <View style={styles.container}>
-        <View style={styles.messageHeader}>
-          <Text style={styles.messageText}>시스템</Text>
-          <Text style={styles.timeText}>Today 10:30PM</Text>
+      {gifts.map((item, index) => (
+        <View key={index} style={styles.container}>
+          <View style={styles.messageHeader}>
+            <Text style={styles.messageText}>시스템</Text>
+            <Text style={styles.timeText}>{formatTime(item.sentTime)}</Text>
+          </View>
+          <View style={styles.messageContent}>
+            <Label
+              pic="infocirlceo"
+              title="선물 도착"
+              url={item.fromMemberImg}
+              content={`${item.fromMemberNickname}님이 ${item.species}를 보내셨습니다.`}
+            />
+            <Pressable style={styles.button} onPress={() => onPress(item)}>
+              <Text style={styles.buttonText}>확인</Text>
+            </Pressable>
+          </View>
         </View>
-        <View style={styles.messageContent}>
-          <Label pic="infocirlceo" title="선물 도착" content={`${friendName}님이 개망초를 보냈습니다.`} />
-          <Pressable style={styles.button} onPress={onPress}>
-            <Text style={styles.buttonText}>확인</Text>
-          </Pressable>
-        </View>
-      </View>
+      ))}
 
-      <ReadMessageModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        friendName="formoin"
-      />
+      {/* 선택된 선물의 정보를 모달에 전달 */}
+      {selectedGift && (
+        <GiftModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          imageUrl={selectedGift.content} // 선물 이미지 URL
+          content={`${selectedGift.fromMemberNickname}님이 ${selectedGift.species}를 보내셨습니다.`}
+          messageId={selectedGift.messageId}
+          onAccept={handleAccept} // 수락 시 호출할 콜백 함수
+          onRefuse={handleRefuse} // 거절 시 호출할 콜백 함수
+        />
+      )}
     </View>
   );
 }
@@ -67,21 +81,17 @@ const styles = StyleSheet.create({
   messageContent: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingVertical: 8,
   },
   messageText: {
     fontSize: 16,
   },
-  timeText: {
-    fontSize: 16,
-    color: 'gray',
-  },
   button: {
-    width: 45,
+    width: 60,
     height: 35,
     backgroundColor: '#A2AA7B',
-    padding: 10,
+    padding: 8,
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 10,

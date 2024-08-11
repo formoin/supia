@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
+import {View, Text, StyleSheet, Pressable, Image} from 'react-native';
 import Button from './Atoms/Button_Green';
 import Octicons from 'react-native-vector-icons/Octicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -7,59 +7,70 @@ import axios from 'axios';
 import useStore from './store/useStore';
 import loginStore from './store/useLoginStore';
 
-const Popup_Buy = ({ goBuy, background, music, point, id }) => {
+
+const Popup_Buy = ({ goBuy, background, music, point, id, getPoint, getBackground, getMusic, getOwnBGI, getOwnBGM }) => {
   const { activeText } = useStore();
   const { token } = loginStore.getState();
   const { getS3Url } = useStore();
-
   const sendThemeData = async () => {
-
     try {
-      const response = await axios.get('https://i11b304.p.ssafy.io/api/background/purchase/bgi', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json; charset=utf-8',
+      const response = await axios.get(
+        'https://i11b304.p.ssafy.io/api/background/purchase/bgi',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+          params: {
+            bgiId: background.id,
+          },
         },
-        params: {
-            bgiId: background.id
-        }
-      });
+      );
 
       if (response.status === 200) {
-        console.log(response.data)
+        getPoint();
+        getBackground();
+        getOwnBGI();
+
         console.log("테마 구매 정보 저장 성공");
       } else {
-        console.log("테마 구매 정보 저장 실패");
+        console.log('테마 구매 정보 저장 실패');
       }
     } catch (error) {
-      console.error("테마 구매 정보 저장 중 오류 발생:", error);
-      alert("포인트가 부족합니다!")
+      console.error('테마 구매 정보 저장 중 오류 발생:', error);
+      alert('포인트가 부족합니다!');
+
     }
   };
 
   const sendMusicData = async () => {
-
     try {
-      const response = await axios.get('https://i11b304.p.ssafy.io/api/background/purchase/bgm', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json; charset=utf-8',
+      const response = await axios.get(
+        'https://i11b304.p.ssafy.io/api/background/purchase/bgm',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+          params: {
+            bgmId: music.id,
+          },
         },
-        params: {
-            bgmId: music.id
-        }
-      });
+      );
 
       if (response.status === 200) {
-        console.log(response.data)
+        getPoint();
+        getMusic();
+        getOwnBGM();
+
         console.log("음악 구매 정보 저장 성공");
       } else {
-        console.log("음악 구매 정보 저장 실패");
+        console.log('음악 구매 정보 저장 실패');
       }
     } catch (error) {
-      console.error("음악 구매 정보 저장 중 오류 발생:", error);
+      console.error('음악 구매 정보 저장 중 오류 발생:', error);
     }
   };
 
@@ -75,36 +86,32 @@ const Popup_Buy = ({ goBuy, background, music, point, id }) => {
     }
   };
 
-   return (
-      <View style={styles.modalView}>
-        <View style={styles.header}>
-          <Text style={styles.modalText}>
-            {isBackground ? "배경사진" : "배경음악"}
-          </Text>
-          <Pressable onPress={goBuy}>
-            <Octicons name="x" size={30} style={styles.closeIcon} />
-          </Pressable>
-        </View>
-        {isBackground ? (
-          <View style={styles.imageContainer}>
-            <Text style={styles.itemName}>{item.name}</Text>
-            <Image
-              source={{ uri: getS3Url(item.path) }}
-              style={styles.image}
-            />
-          </View>
-        ) : (
-          <View style={styles.musicContainer}>
-            <FontAwesome name="file-sound-o" size={60} style={styles.soundIcon} />
-            <Text style={styles.musicName}>{item.name}</Text>
-          </View>
-        )}
-        <Text style={styles.text}>필요 Point: {item.price} P</Text>
-        <Text style={styles.text}>내 Point: {point} P</Text>
-        <Button label="구매하기" onPress={handleBuyPress} />
+  return (
+    <View style={styles.modalView}>
+      <View style={styles.header}>
+        <Text style={styles.modalText}>
+          {isBackground ? '배경사진' : '배경음악'}
+        </Text>
+        <Pressable onPress={goBuy}>
+          <Octicons name="x" size={30} style={styles.closeIcon} />
+        </Pressable>
       </View>
-    );
-
+      {isBackground ? (
+        <View style={styles.imageContainer}>
+          <Text style={styles.itemName}>{item.name}</Text>
+          <Image source={{uri: getS3Url(item.path)}} style={styles.image} />
+        </View>
+      ) : (
+        <View style={styles.musicContainer}>
+          <FontAwesome name="file-sound-o" size={60} style={styles.soundIcon} />
+          <Text style={styles.musicName}>{item.name}</Text>
+        </View>
+      )}
+      <Text style={styles.text}>필요 Point: {item.price} P</Text>
+      <Text style={styles.text}>내 Point: {point} P</Text>
+      <Button label="구매하기" onPress={handleBuyPress} />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -179,6 +186,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
 
 export default Popup_Buy;

@@ -1,20 +1,69 @@
-import React from 'react';
-import { StyleSheet, View, Pressable, Image } from 'react-native';
+import React, {useState} from 'react';
+import useStore from '../store/useStore';
+import {
+  StyleSheet,
+  View,
+  Pressable,
+  Image,
+  Modal,
+  Dimensions,
+} from 'react-native';
 
-export default function ModalImage({ UserName }) {
-  const gotoForest = () => {
-    alert('forest')
-  }
+export default function ModalImage({UserName, uri}) {
+  const [fullView, setFullView] = useState(false);
+  const { getS3Url } = useStore()
+
+  const goToForestView = () => {
+    setFullView(!fullView);
+  };
+
+  // 핸드폰 width랑 height 바꾸게 dimension으로 가져옴
+  const {width, height} = Dimensions.get('window');
+
+  const getImageUri = (thumbnail) => {
+    if (thumbnail.startsWith('file://')) {
+      return { uri: thumbnail }; // file 경로일 때
+    } else {
+      return { uri: getS3Url(thumbnail) }; // S3 경로일 때
+    }
+  };
+
   return (
     <View>
-      <Pressable onPress={gotoForest}>
+      <Pressable onPress={goToForestView}>
         <Image
           style={styles.img}
-          source={{
-            uri: 'https://s3-alpha-sig.figma.com/img/fe6c/a030/81ce3c956b41f826ef51fe083f24ee5d?Expires=1722816000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=gBZEI908eBLhDdeHHxlPENh4XX5oxgoyY~DUx-J-4A-41AbK3i3Vsu3Zw5UMKg72bJHdnsQsnsB5~5OfV49K0BWWul1c~-pcyHj7ClBzkUGxf2Aq2M-FEpPl4zVNG48hntsQDZBlxL2v0phNwxz1p~M4lJw3yW7s3-zTp9oHqXjGnVH5gCgbahOkJL9sQxDrX--RSk~ts6JmlARgqtSQj~wUYeDjCksQcDGX9MOWV19KD6PsimxzNQzzXasaHvOeMtbqdlWLb6C5XFGb7z6r-FUtoKquh5sLdVNQK4LKyGJ~bjFQs~N5gJoJvVxuJoxnIfd2iBv3HNyGpMVCvADHwQ__',
-          }}
+          source={
+            getImageUri(uri)
+          }
         />
       </Pressable>
+      {fullView && (
+        <Modal statusBarTranslucent={true}>
+          <Pressable onPress={goToForestView} style={{flex: 1}}>
+            {/*회전 시 width와 height를 바꿔줘서 화면을 90도 회전시 맞게 설정
+              그리고 left와 top을 설정해주는데, 90도 돌아간 상태에서 커져서 여백 공간이 드러나게 되기 때문
+              가로 세로 화면의 크기만큼 위치를 다시 설정해준다.
+              */}
+            <Image
+              style={[
+                styles.fullViewImg,
+                {
+                  width: height,
+                  height: width,
+                  position: 'absolute',
+                  left: (width - height) / 2,
+                  top: (height - width) / 2,
+                },
+              ]}
+              resizeMode="cover"
+              source={
+               getImageUri(uri)
+              }
+            />
+          </Pressable>
+        </Modal>
+      )}
     </View>
   );
 }
@@ -26,7 +75,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     elevation: 4,
     margin: 5,
-    backgroundColor: 'lightgray'
+    backgroundColor: 'lightgray',
   },
-  
+
+  fullViewImg: {
+    transform: [{rotate: '90deg'}],
+  },
 });

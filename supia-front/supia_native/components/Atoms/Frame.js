@@ -1,9 +1,11 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-const Frame = () => {
+const Frame = ({ children }) => {
   return (
-    <View style={styles.rectangle} />
+    <View style={styles.rectangle}>
+      {children}
+    </View>
   );
 };
 

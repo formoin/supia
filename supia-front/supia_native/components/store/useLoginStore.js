@@ -8,11 +8,9 @@ const useLoginStore = createStore(
       login: () => set({isLoggedIn: true}),
       logout: () => set({isLoggedIn: false}),
       token:
+"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMDE2QG5hdmVyLmNvbSIsIm1lbWJlcklkIjoxMCwiaWF0IjoxNzIzMzY4NDUzLCJleHAiOjE3NTQ5MDQ0NTN9.3y12CDK1Zg_xQirCmgvB_wJ52whnBAeJVzTYERW6BWlmN-x3a4vVp_Fhx4AZW38Q-lUj7knU2thSXEAAFHvnlg"
 
-        'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJydGNUZXN0M0BuYXZlci5jb20iLCJtZW1iZXJJZCI6NSwiaWF0IjoxNzIzMTgwOTUzLCJleHAiOjE3NTQ3MTY5NTN9.FDQOfI26lKaPrcfU_EtxWMjZVgalA3-U0t5lSVYIcTxxeDpM-rF6-qhG5XOHnwj4W5gCRLPLkbsc1-nLeplKQA',
-
-    }),
-
+}),
     {
       name: 'login state',
     },

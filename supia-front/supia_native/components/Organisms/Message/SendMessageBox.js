@@ -4,14 +4,14 @@ import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 import ReadMessageModal from './ReadMessageModal';
 import moment from 'moment';
+import loginStore from '../../store/useLoginStore'
 
 export default function SendMessage({ edit, fromMessage, onDelete }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState(fromMessage);
-
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMxMTIyMTAsImV4cCI6MTc1NDY0ODIxMH0.X3flqfSBEKkZH_-xKQNxXZH5aRpBQtMJYeDOGgAdwdIuU5VBmuIwL4HVoNrAi_Ak9Jh8gPe2K2g3Y_ivMf2ZQg';
+  const { token } = loginStore.getState()
 
   const messageDetail = useCallback(async (messageId) => {
     setLoading(true);

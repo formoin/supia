@@ -1,88 +1,101 @@
-import React, {useState} from 'react';
-import {Text, View, Pressable, StyleSheet, Modal, Image } from 'react-native';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import React, { useState } from 'react';
+import { Text, View, Pressable, StyleSheet, Modal, Image } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import FriendModal from '../../FriendModal';
 import NoteModal from '../../NoteModal';
 import Popup from '../../Popup';
 import axios from 'axios';
-import loginStore from '../../store/useLoginStore'
-import useStore from '../../store/useStore'
+import loginStore from '../../store/useLoginStore';
+import useStore from '../../store/useStore';
 
-export default function Label({ pic, url, title, content, name, UserLevel, onOpenPopup,
-                                onClose, page, handleFriendChange}) {
+export default function Label({
+  url,
+  title,
+  content,
+  name,
+  UserLevel,
+  onOpenPopup,
+  onClose,
+  page,
+  handleFriendChange,
+  friend,
+  user
+}) {
   const [FriendModalVisible, setFriendModalVisible] = useState(false);
   const [SearchModalVisible, setSearchModalVisible] = useState(false);
   const [NoteModalVisible, setNoteModalVisible] = useState(false);
   const [DeletePopupVisible, setDeletePopupVisible] = useState(false);
   const [userDetail, setUserDetail] = useState(null);
   const [friendDetail, setFriendDetail] = useState(null);
-  const { token } = loginStore.getState()
-  const { getS3Url } = useStore()
+  const { token } = loginStore.getState();
+  const { getS3Url } = useStore();
 
   const getUserDetail = async () => {
-      try {
-          const response = await axios.get("https://i11b304.p.ssafy.io/api/search/member",
-            {
-             headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-                'Content-Type': 'application/json; charset=utf-8',
-              },
-            }
-          );
+    try {
+      const response = await axios.get(
+        'https://i11b304.p.ssafy.io/api/search/member',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        },
+      );
 
-           if (response.status === 200) {
-                console.log(response.data)
-                setUserDetail(response.data);
-                console.log("유저 정보 로딩 성공");
-           } else {
-                console.log("유저 정보 로딩 실패");
-           }
-       } catch (error) {
-           console.error("유저 정보 요청 중 오류 발생:", error);
-       }
-    };
+      if (response.status === 200) {
+        console.log(response.data);
+        setUserDetail(response.data);
+        console.log('유저 정보 로딩 성공');
+      } else {
+        console.log('유저 정보 로딩 실패');
+      }
+    } catch (error) {
+      console.error('유저 정보 요청 중 오류 발생:', error);
+    }
+  };
 
   const getFriendDetail = async () => {
-      try {
-          const response = await axios.get("https://i11b304.p.ssafy.io/api/friend/detail",
-            {
-             headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-                'Content-Type': 'application/json; charset=utf-8',
-              },
-            }
-          );
+    try {
+      const response = await axios.get(
+        'https://i11b304.p.ssafy.io/api/friends/detail',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+          params: {
+            friendId: friend.friendId
+          }
+        },
+      );
 
-           if (response.status === 200) {
-                console.log(response.data)
-                setFriendDetail(response.data);
-                console.log("친구 정보 로딩 성공");
-           } else {
-                console.log("친구 정보 로딩 실패");
-           }
-       } catch (error) {
-           console.error("친구 정보 요청 중 오류 발생:", error);
-       }
-    };
+      if (response.status === 200) {
+        console.log(response.data);
+        setFriendDetail(response.data);
+        console.log('친구 정보 로딩 성공');
+      } else {
+        console.log('친구 정보 로딩 실패');
+      }
+    } catch (error) {
+      console.error('친구 정보 요청 중 오류 발생:', error);
+    }
+  };
 
   const handleOpenUserModal = () => {
-    if (pic === 'user' && page === 'search') {
+    if (page === 'search') {
       getUserDetail();
       setSearchModalVisible(true); // 검색 모달 열기
-    }
-    else if (pic === 'user') {
+    } else if (page === 'friend') {
       getFriendDetail();
       setFriendModalVisible(true); // 친구 모달 열기
     }
   };
 
   const handleCloseUserModal = () => {
-    setFriendModalVisible(false); // 검색 모달 닫기
-    setSearchModalVisible(false); // 친구 모달 닫기
+    setFriendModalVisible(false); // 친구 모달 닫기
+    setSearchModalVisible(false); // 검색 모달 닫기
   };
 
   const handleOpenNoteModal = () => {
@@ -114,12 +127,12 @@ export default function Label({ pic, url, title, content, name, UserLevel, onOpe
 
   return (
     <View style={styles.container}>
-        {/*<Image
-          source={{uri: getS3Url(url)}}
-          name={pic}
-          onPress={handleOpenUserModal}
-          style={styles.image}
-        />*/} {/*s3 이미지가 아직 안들어온 데이터들 때문에 오류나서 우선 주석 처리*/}
+        <Pressable onPress={handleOpenUserModal}>
+          <Image
+            source={{ uri: getS3Url(url) }}
+            style={styles.image}
+          />
+        </Pressable>
       <View style={styles.profile}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.content}>{content}</Text>
@@ -135,9 +148,10 @@ export default function Label({ pic, url, title, content, name, UserLevel, onOpe
         onRequestClose={handleCloseUserModal}>
         <View style={styles.modalBackground}>
           <FriendModal
-            UserName={title}
-            UserLevel={UserLevel}
-            onClose={handleCloseUserModal} // onClose prop 전달
+            friendDetail={friendDetail}
+            onClose={handleCloseUserModal}
+            page="friend"
+            friend={friend}
           />
         </View>
       </Modal>
@@ -149,9 +163,8 @@ export default function Label({ pic, url, title, content, name, UserLevel, onOpe
         onRequestClose={handleCloseUserModal}>
         <View style={styles.modalBackground}>
           <FriendModal
-            UserName={title}
-            UserLevel={UserLevel}
-            onClose={handleCloseUserModal} // onClose prop 전달
+            userDetail={userDetail}
+            onClose={handleCloseUserModal}
             page="search"
           />
         </View>
@@ -163,7 +176,7 @@ export default function Label({ pic, url, title, content, name, UserLevel, onOpe
         visible={NoteModalVisible}
         onRequestClose={handleCloseNoteModal}>
         <View style={styles.modalBackground}>
-          <NoteModal onClose={handleCloseNoteModal} friendName={title} />
+          <NoteModal onClose={handleCloseNoteModal} friend={friend} user={user} page={page} />
         </View>
       </Modal>
 
@@ -176,10 +189,10 @@ export default function Label({ pic, url, title, content, name, UserLevel, onOpe
           <Popup
             onClose={handleCloseDeletePopup}
             Label="친구 삭제"
-            friendName={title}
+            friend={friend}
             content="님을 친구 목록에서 삭제하시겠습니까?"
-            when = 'friend'
-            onDeleteSuccess={() => {
+            when="friend"
+            onDelete={() => {
               handleCloseDeletePopup();
               handleFriendChange();
             }}
@@ -196,7 +209,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingLeft: 15,
+    paddingLeft: 5,
     paddingRight: 15,
     paddingTop: 5,
     paddingBottom: 5,
@@ -229,5 +242,6 @@ const styles = StyleSheet.create({
   image: {
     width: 50,
     height: 50,
-  }
+    borderRadius: 25,
+  },
 });

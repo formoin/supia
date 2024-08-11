@@ -1,0 +1,51 @@
+{
+  "monthly": [
+    {
+      "walkDate": "2024-08-01",
+      "month": null,
+      "totalDistance": 7.0
+    },
+    {
+      "walkDate": "2024-08-02",
+      "month": null,
+      "totalDistance": 5.0
+    },
+    {
+      "walkDate": "2024-08-03",
+      "month": null,
+      "totalDistance": 3.0
+    },
+    {
+      "walkDate": "2024-08-04",
+      "month": null,
+      "totalDistance": 3.0
+    },
+    {
+      "walkDate": "2024-08-05",
+      "month": null,
+      "totalDistance": 7.0
+    },
+    {
+      "walkDate": "2024-08-06",
+      "month": null,
+      "totalDistance": 5.0
+    },
+    {
+      "walkDate": "2024-08-08",
+      "month": null,
+      "totalDistance": 0.0
+    }
+  ],
+  "yearly": [
+    {
+      "walkDate": null,
+      "month": "2024-08",
+      "totalDistance": 30.0
+    },
+    {
+      "walkDate": null,
+      "month": "2024-07",
+      "totalDistance": 2091.0
+    }
+  ]
+}

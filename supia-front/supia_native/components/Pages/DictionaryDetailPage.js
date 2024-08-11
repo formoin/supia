@@ -5,13 +5,11 @@ import Line from '../Atoms/Line';
 import Feather from "react-native-vector-icons/Feather";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import SendGiftModal from "../SendGiftModal";
-import Popup from '../Popup'
-import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
+import Popup from '../Popup';
+import { Server_IP } from '@env';
 import axios from "axios";
-
-const token =
-'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTFAbmF2ZXIuY29tIiwibWVtYmVySWQiOjcsImlhdCI6MTcyMzAxODY0NywiZXhwIjoxNzU0NTU0NjQ3fQ.pfSY7fLlBdcflPTvIG47Rs_c1ZWnuYXWdAc2bwkMYfDkyB4laNZ6I7qh4oBZ07-SraxYniZeuO8BeMWVH_dMCA'
-
+import loginStore from "../store/useLoginStore";
+import useStore from '../store/useStore';
 
 export default function DictionaryDetailScreen({ route }) {
   const { id, representativeImg, speciesName } = route.params;
@@ -19,60 +17,65 @@ export default function DictionaryDetailScreen({ route }) {
   const [sendgiftVisible, setSendgiftVisible] = useState(false);
   const [deletetVisible, setDeletetVisible] = useState(false);
   const [speciesDetail, setSpeciesDetail] = useState(null);
-
+  const { token } = loginStore.getState();
+  const {getS3Url} = useStore();
+  
   const sendGift = () => {
-    setSendgiftVisible(true)
-  }
+    setSendgiftVisible(true);
+  };
+
   const handleCloseModal = () => {
     setSendgiftVisible(false);
-    setSelectedItemId(null)
+    setSelectedItemId(null);
   };
+
   const deleteitem = () => {
-    setDeletetVisible(true)
-  }
+    setDeletetVisible(true);
+  };
+
   const handleClosePopup = () => {
     setDeletetVisible(false);
     setSelectedItemId(null);
   };
 
-
-  // api
+  // API 호출 함수
   const fetchSpeciesDetail = async (speciesId) => {
     try {
       const response = await axios.get(`${Server_IP}/items/detail`, {
         headers: {
-          Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
+          Authorization: `Bearer ${token}`,
           Accept: 'application/json',
-              'Content-Type': 'application/json; charset=utf-8',
+          'Content-Type': 'application/json; charset=utf-8',
         },
         params: {
           speciesId: speciesId,
         },
       });
       if (response.status === 200) {
+        console.log('도감 상세 성공:', response.data); // API 응답 데이터 콘솔에 출력
         setSpeciesDetail(response.data);
-        console.log(speciesDetail)
       }
     } catch (error) {
       if (error.response) {
-        console.error('Error:', error.response.data);
+        console.error('도감 상세 API Error:', error);
         if (error.response.status === 400) {
           console.error('종 세부정보 로딩 실패');
         }
       } else {
         console.error('Network Error:', error.message);
       }
-    }};
+    }
+  };
 
-    useEffect(() => {
-      fetchSpeciesDetail(id); // speciesId로 API 호출
-    }, [id]);
+  useEffect(() => {
+    fetchSpeciesDetail(id); // speciesName으로 API 호출
+  }, [id]);
 
-    useEffect(() => {
-      setSelectedItemId(null); // 초기화
-    }, [route]);
+  useEffect(() => {
+    setSelectedItemId(null); // 초기화
+  }, [route]);
 
-    const selectedItem = speciesDetail?.items.find(item => item.id === selectedItemId);
+  const selectedItem = speciesDetail?.items?.find(item => item.id === selectedItemId);
 
   return (
     <View style={styles.container}>
@@ -81,11 +84,11 @@ export default function DictionaryDetailScreen({ route }) {
       <View style={styles.infoContainer}>
         <View style={{ alignItems: 'center', justifyContent: 'center' }}>
           <Text style={styles.NameFont}>{speciesName}</Text>
-          <Image source={{ uri: representativeImg }} style={styles.image} />
+          <Image source={{ uri: getS3Url(representativeImg) }} style={styles.image} />
           <View style={styles.textContainer}>
             <ScrollView>
               <Text style={styles.InfoFont}>
-                {speciesDetail.description}
+                {speciesDetail?.description}
               </Text>
             </ScrollView>
           </View>
@@ -93,25 +96,31 @@ export default function DictionaryDetailScreen({ route }) {
         </View>
         <View>
           <View style={styles.miniTitle}>
-            <Text style={{ flex: 1}}>{speciesName} ({speciesDetail.items.length})</Text>
+            {/* speciesDetail이 null이 아닌 경우에만 렌더링 */}
+            {speciesDetail && (
+              <Text style={{ flex: 1 }}>
+                {speciesName} ({speciesDetail.items.length})
+              </Text>
+            )}
             {selectedItemId !== null && (
               <TouchableOpacity style={styles.iconContainer}>
-                <AntDesign name="delete" size={24} color="#A2AA7B" onPress={deleteitem}/>
-                <Feather name="gift" size={24} color="#A2AA7B" onPress={sendGift} style={{marginHorizontal:7}}/>
+                <AntDesign name="delete" size={24} color="#A2AA7B" onPress={deleteitem} />
+                <Feather name="gift" size={24} color="#A2AA7B" onPress={sendGift} style={{ marginHorizontal: 7 }} />
               </TouchableOpacity>
             )}
           </View>
           <ScrollView horizontal>
-            {speciesDetail.items.map((item) => (
+            {/* speciesDetail이 null이 아닌 경우에만 아이템 렌더링 */}
+            {speciesDetail?.items?.map((item) => (
               <TouchableOpacity
                 key={item.id}
                 style={[
                   styles.itemContainer,
-                  selectedItemId  === item.id && styles.selectedItemContainer
+                  selectedItemId === item.id && styles.selectedItemContainer,
                 ]}
                 onPress={() => setSelectedItemId(selectedItemId === item.id ? null : item.id)}
               >
-                <Image source={{ uri: item.imgUrl }} style={{ width: 60, height: 60, marginVertical: 4 }} />
+                <Image source={{ uri: getS3Url(item.imgUrl) }} style={{ width: 60, height: 60, marginVertical: 4, transform: [{ rotate: '90deg' }] }} />
                 <Text style={{ fontSize: 12 }}>{item.acquireDate}</Text>
               </TouchableOpacity>
             ))}
@@ -126,7 +135,19 @@ export default function DictionaryDetailScreen({ route }) {
         onRequestClose={handleCloseModal}
       >
         <View style={styles.modalBackground}>
-          <SendGiftModal onClose={handleCloseModal} selectedItemId={selectedItemId} speciesName={speciesName} representativeImg={representativeImg} date={item.acquireDate}/>
+          <SendGiftModal
+            onClose={handleCloseModal}
+            selectedItemId={selectedItemId}
+            speciesName={speciesName}
+            representativeImg={selectedItem?.imgUrl}
+            date={selectedItem?.acquireDate}
+            itemId={selectedItem?.id}
+            onGiftSuccess={() => {
+              handleCloseModal();
+              fetchSpeciesDetail(id); // 업데이트된 데이터 가져오기
+              setSelectedItemId(null); // 선택된 아이템 초기화
+            }}
+          />
         </View>
       </Modal>
 
@@ -135,23 +156,23 @@ export default function DictionaryDetailScreen({ route }) {
         transparent={true}
         visible={deletetVisible}
         onRequestClose={handleClosePopup}>
-          <View style={styles.modalBackground}>
-            <Popup
-              onClose={handleClosePopup}
-              Label="아이템 삭제"
-              friendName={speciesName}
-              content=" 을(를) 도감에서 삭제하시겠습니까?"
-              imguri = {selectedItem.imgUrl}
-              date = {selectedItem.acquireDate}
-              itemid = {selectedItemId}
-              onDeleteSuccess={() => {
-                handleClosePopup();
-                fetchSpeciesDetail('', id); // 업데이트된 데이터 가져오기
-                setSelectedItemId(null); // 선택된 아이템 초기화
-              }}
-              when='item'
-            />
-          </View>
+        <View style={styles.modalBackground}>
+          <Popup
+            onClose={handleClosePopup}
+            Label="아이템 삭제"
+            friendName={speciesName}
+            content=" 을(를) 도감에서 삭제하시겠습니까?"
+            imguri={selectedItem?.imgUrl}
+            date={selectedItem?.acquireDate}
+            itemid={selectedItem?.id}
+            onDeleteSuccess={() => {
+              handleClosePopup();
+              fetchSpeciesDetail(id); // 업데이트된 데이터 가져오기
+              setSelectedItemId(null); // 선택된 아이템 초기화
+            }}
+            when='item'
+          />
+        </View>
       </Modal>
     </View>
   );

@@ -8,7 +8,6 @@ import {NavigationContainer} from '@react-navigation/native';
 import SignUpScreen from './components/Pages/User/SignUpPage';
 import CallScreen from './components/Pages/CallPage';
 import MyPageScreen from './components/Pages/User/MyPage';
-//import Webview from './components/Pages/WebView'
 
 const Stack = createStackNavigator();
 
@@ -28,7 +27,6 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
-        {/*<Stack.Screen name="Web" component={Webview} />*/}
         <Stack.Screen name="Main" component={BottomNavBar} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Regist" component={SignUpScreen} />

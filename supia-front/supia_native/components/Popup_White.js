@@ -1,14 +1,16 @@
 import React from 'react';
-import { StyleSheet, View, Text, Image, ActivityIndicator } from 'react-native';
+import { FlatList, ScrollView, StyleSheet, View, Text, Image, ActivityIndicator } from 'react-native';
 import { useEffect, useState } from 'react';
 import axios from 'axios'
 import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
 import loginStore from './store/useLoginStore';
+import useStore from './store/useStore';
 
 const Popup_White = ({ri, dong, code}) => {
   const [speciesData, setSpeciesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const { token } = loginStore.getState()
+  const { getS3Url } = useStore()
 
   useEffect(() => {
     // api 받아오기
@@ -24,8 +26,7 @@ const Popup_White = ({ri, dong, code}) => {
               address: code,
           },
       });
-
-        console.log(code, response.data)
+        console.log(code)
         const data = response.data
         // const data = await response.json();
 
@@ -48,13 +49,17 @@ const Popup_White = ({ri, dong, code}) => {
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : speciesData.length > 0 ? (
-        speciesData.map((species, index) => (
-          <View key={index} style={styles.container}>
-            <Image source={{uri: species.imageUri}} style={styles.image} />
-            <Text style={styles.p_text}>{species.name}</Text>
-            {/* <View style={styles.line} /> */}
-          </View>
-        ))
+        <FlatList
+          data={speciesData}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.container}>
+              <Image source={{ uri: getS3Url(item.representativeImg) }} style={styles.image} />
+              <Text style={styles.p_text}>{item.speciesName}</Text>
+            </View>
+          )}
+          contentContainerStyle={styles.listContent}  // 리스트 스타일
+        />
       ) : (
         <Text style={styles.noDataText}>발견된 자연물이 없습니다</Text>
       )}
@@ -80,6 +85,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 50,
     backgroundColor: '#fff',
+    // transform: [{ rotate: '90deg' }]
   },
   text: {
     padding: 20,

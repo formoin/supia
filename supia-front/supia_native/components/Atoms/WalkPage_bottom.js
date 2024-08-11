@@ -30,6 +30,7 @@ const WalkPage_bottom = ({onOpenPopup, distance, mapRef}) => {
   const finalDistance = useStore(state => state.finalDistance);
   const walkStartTime = useStore(state => state.walkStartTime);
   const walkEndTime = useStore(state => state.walkEndTime);
+  const [friends, setFriends] = useState([]);
   const {items} = useStore();
 
   const { token } = loginStore.getState()
@@ -58,7 +59,7 @@ const WalkPage_bottom = ({onOpenPopup, distance, mapRef}) => {
   const sendWalkData = async () => {
     const currentTime = new Date().toISOString();
     const walkData = {
-      memberId : 8, // 수정
+      memberId : 11, // 수정
       walkStart: formatTime(walkStartTime),
       walkEnd: formatTime(currentTime),
       distance: parseFloat(distance.toFixed(2)),
@@ -80,7 +81,7 @@ const WalkPage_bottom = ({onOpenPopup, distance, mapRef}) => {
 
       if (response.status === 200) {
         console.log(walkData);
-        console.log('산책 정보 저장');
+        console.log('산책 정보 저장', response.data);
       } else {
         console.log(walkData);
         console.log('산책 저장 실패');
@@ -88,6 +89,26 @@ const WalkPage_bottom = ({onOpenPopup, distance, mapRef}) => {
     } catch (error) {
       console.log(walkData);
       console.error('산책 끝 요청 중 오류 발생:', error);
+    }
+  };
+
+  const getFriends = async () => {
+    try {
+      const response = await axios.get(
+        "https://i11b304.p.ssafy.io/api/friends",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        },
+      );
+      setFriends(response.data);
+      console.log(response.data);
+      console.log('친구 리스트 불러오기 성공');
+    } catch (error) {
+      console.error('친구 목록을 가져오는 데 실패했습니다:', error);
     }
   };
 
@@ -99,7 +120,7 @@ const onPressPause = useCallback(async () => {
   const currentTime = new Date().toISOString();
   setWalkEndTime(currentTime);
   setRouteWidth(4); // 경로 너비 설정
-  console.log('Final Distance:', distance.toFixed(2));
+  // console.log('Final Distance:', distance.toFixed(2));
 
 
     setLoading(true); // 로딩 시작
@@ -122,6 +143,7 @@ const onPressPause = useCallback(async () => {
   }, [resetStopwatch, pauseStopwatch, setWalkEndTime, setRouteWidth, distance, mapRef, setCapturedImageUri]);
 
   const onPressUser = () => {
+    getFriends()
     setPopupVisible(true);
   };
 
@@ -192,6 +214,7 @@ const onPressPause = useCallback(async () => {
               visible={popupVisible}
               onClose={handlePopupClose}
               onOpenPopup={onOpenPopup}
+              friends={friends}
             />
           </View>
         </TouchableWithoutFeedback>

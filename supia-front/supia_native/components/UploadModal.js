@@ -1,29 +1,89 @@
-import React from 'react';
-import { StyleSheet, View, Text, Image, Pressable, TouchableOpacity } from 'react-native';
+import React, {useState} from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  Pressable,
+  TouchableOpacity,
+  TextInput,
+} from 'react-native';
 import Octicons from 'react-native-vector-icons/Octicons';
 import useStore from './store/useStore';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
-export default function UploadModal({onClose, drawingImg, probsName, originalUrl, code}) {
+export default function UploadModal({
+  onClose,
+  drawingImg,
+  probsName,
+  category,
+  originalUrl,
+  code,
+}) {
+  const [unknownValue, setUnkownValue] = useState();
   const {addItem, items, getS3Url} = useStore();
 
   const saveItem = () => {
-    const newItem ={
-      imageUrl: drawingImg,
-      originalUrl: originalUrl,
-      species:probsName,
-      position:code
+    if (probsName === 'unknown') {
+      const newItem = {
+        imageUrl: drawingImg,
+        originalUrl: originalUrl,
+        species: unknownValue,
+        category: 4,
+        position: code,
+      };
+      console.log(newItem);
+      addItem(newItem);
+    } else {
+      const newItem = {
+        imageUrl: drawingImg,
+        originalUrl: originalUrl,
+        species: probsName,
+        category: category,
+        position: code,
+      };
+      addItem(newItem);
     }
-    addItem(newItem)
-    onClose()
-  }
+
+    onClose();
+  };
+
+  const onChangeUnknownValue = text => {
+    setUnkownValue(text);
+  };
 
   return (
     <View style={styles.container}>
       <Pressable onPress={onClose} style={styles.closeButton}>
         <Octicons name="x" size={25} style={styles.closeIcon} />
       </Pressable>
-      <Image source={{ uri: getS3Url(drawingImg) }} style={{ width: 250, height: 250, marginTop: 30 }} />
-      <Text style={styles.contentText}>"{probsName}"를 발견했다!</Text>
+      <Image
+        source={{uri: getS3Url(drawingImg)}}
+        style={{
+          width: 250,
+          height: 250,
+          marginTop: 30,
+          transform: [{rotate: '90deg'}],
+        }}
+      />
+      {probsName !== 'unknown' ? (
+        <Text style={styles.contentText}>
+          [{category}] "{probsName}"를 발견했다!
+        </Text>
+      ) : (
+        <View style={{flexDirection: 'column'}}>
+          <Text style={styles.contentFailText}>인식 실패!</Text>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <TextInput
+              onChangeText={onChangeUnknownValue}
+              value={unknownValue}
+              placeholder="직접 이름을 설정해주세요"
+              style={styles.textInput}
+            />
+            <AntDesign name="edit" size={14} />
+          </View>
+        </View>
+      )}
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={saveItem}>
@@ -32,7 +92,6 @@ export default function UploadModal({onClose, drawingImg, probsName, originalUrl
         <TouchableOpacity style={styles.button} onPress={onClose}>
           <Text style={styles.buttonText}>다시찍기</Text>
         </TouchableOpacity>
-
       </View>
     </View>
   );
@@ -45,10 +104,10 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     borderWidth: 1,
     borderColor: 'rgba(0, 0,  0, 0.10)',
-    opacity: 1, 
+    opacity: 1,
     backgroundColor: 'white',
     shadowColor: 'rgba(0, 0, 0, 0.25)',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 4, // 안드로이드에서는 elevation으로 그림자 설정
@@ -79,10 +138,20 @@ const styles = StyleSheet.create({
     marginVertical: 30,
     textAlign: 'center',
   },
+  contentFailText: {
+    color: '#000',
+    fontSize: 22,
+    fontStyle: 'normal',
+    fontWeight: '400',
+    lineHeight: 26,
+    textAlign: 'center',
+  },
   buttonContainer: {
     flexDirection: 'row', // 가로로 배치
     justifyContent: 'center', // 중앙 정렬
     alignItems: 'center',
   },
-
+  textInput: {
+    color: 'grey',
+  },
 });

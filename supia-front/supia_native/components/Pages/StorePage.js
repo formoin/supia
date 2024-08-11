@@ -68,6 +68,7 @@ export default function StoreScreen() {
       });
       if (response.status === 200) {
         setMusic(response.data);
+        console.log(response.data)
         console.log("음악 리스트 저장");
       } else {
         console.log("음악 리스트 저장 실패");
@@ -114,7 +115,9 @@ export default function StoreScreen() {
         },
       );
       if (response.status === 200) {
-        setOwnedBGI(response.data.map(item => item.id)); // 소유한 배경 ID 목록 저장
+        const itemIds = response.data.map(item => item.itemId);
+        setOwnedBGI(itemIds);
+
         console.log('내 테마 리스트 로딩 성공');
       } else {
         console.log('내 테마 리스트 로딩 실패');
@@ -136,7 +139,8 @@ export default function StoreScreen() {
         },
       );
       if (response.status === 200) {
-        setOwnedBGM(response.data.map(item => item.id)); // 소유한 음악 ID 목록 저장
+        const itemIds = response.data.map(item => item.itemId);
+        setOwnedBGM(itemIds);
         console.log('내 음악 리스트 로딩 성공');
       } else {
         console.log('내 음악 리스트 로딩 실패');
@@ -158,7 +162,12 @@ export default function StoreScreen() {
         point={point}
         id={id}
         level={level}
-        isOwned={isOwned} // 소유 여부 전달
+        isOwned={isOwned}
+        getPoint={getPoint}
+        getBackground={getBackground}
+        getMusic={getMusic}
+        getOwnBGI={getOwnBGI}
+        getOwnBGM={getOwnBGM}
       />
     );
   };

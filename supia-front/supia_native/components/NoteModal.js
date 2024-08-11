@@ -4,19 +4,29 @@ import PopupHeader from './Atoms/PopupHeader';
 import Searchbar from './Organisms/SearchBar';
 import TextFrame from './Atoms/TextFrame';
 
-export default function NoteModal({onClose, friendName}) {
-
+export default function NoteModal({onClose, page, user, friend}) {
   return (
     <View style={styles.container}>
       <PopupHeader Label="쪽지 보내기" onClose={onClose} />
-
-      <View style={styles.searchbar}>
-        <Searchbar active={false} searchName={friendName} />
-      </View>
-
-      <View style={styles.frame}>
-        <TextFrame onClose={onClose} />
-      </View>
+      {page === 'search' ? (
+        <>
+          <View style={styles.searchbar}>
+            <Searchbar active={false} searchName={user.nickname} />
+          </View>
+          <View style={styles.frame}>
+            <TextFrame onClose={onClose} user={user} page={page} />
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={styles.searchbar}>
+            <Searchbar active={false} searchName={friend.nickname} />
+          </View>
+          <View style={styles.frame}>
+            <TextFrame onClose={onClose} friend={friend} page={page} />
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -26,15 +36,15 @@ const styles = StyleSheet.create({
     width: 339,
     height: 455,
     borderRadius: 3,
-    borderWidth: 1, // var(--sds-size-stroke-border)의 값을 1로 가정
+    borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.10)',
-    opacity: 1, // var(--sds-size-stroke-border)의 값을 1로 가정
+    opacity: 1,
     backgroundColor: '#FFFFFF',
     shadowColor: 'rgba(0, 0, 0, 0.25)',
     shadowOffset: {width: 0, height: 4},
     shadowOpacity: 1,
     shadowRadius: 4,
-    elevation: 4, // 안드로이드에서는 elevation으로 그림자 설정
+    elevation: 4,
     alignItems: 'center',
     padding: 10,
   },

@@ -5,21 +5,21 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import {StyleSheet, View, Text, Image} from 'react-native';
 
 export default function MyInfo({level, point}) {
-  const getLevelInfo = (level) => {
+  const getLevelInfo = level => {
     switch (level) {
       case 0:
-        return { text: '씨앗', image: require('../../../assets/level/씨앗.png') };
+        return {text: '씨앗', image: require('../../../assets/level/씨앗.png')};
       case 1:
-        return { text: '새싹', image: require('../../../assets/level/새싹.png') };
+        return {text: '새싹', image: require('../../../assets/level/새싹.png')};
       case 2:
-        return { text: '잎새', image: require('../../../assets/level/잎새.png') };
+        return {text: '잎새', image: require('../../../assets/level/잎새.png')};
       case 3:
-        return { text: '꽃', image: require('../../../assets/level/꽃.png') };
+        return {text: '꽃', image: require('../../../assets/level/꽃.png')};
       case 4:
-        return { text: '열매', image: require('../../../assets/level/열매.png') };
-      }
+        return {text: '열매', image: require('../../../assets/level/열매.png')};
+    }
   };
-  const { text, image } = getLevelInfo(level)
+  const {text, image} = getLevelInfo(level);
 
   return (
     <View style={styles.container}>
@@ -34,7 +34,7 @@ export default function MyInfo({level, point}) {
             <Text style={styles.textstyle}>레벨</Text>
           </View>
           <View style={styles.iconText}>
-            <Image source={image} style={{marginBottom:5}}/>
+            <Image source={image} style={{marginBottom: 5}} />
             <Text>{text}</Text>
           </View>
         </View>

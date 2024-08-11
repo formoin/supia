@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Pressable, Image} from 'react-native';
+import {View, Text, StyleSheet, Pressable, Image, ScrollView} from 'react-native';
 import {useIsFocused, useFocusEffect} from '@react-navigation/native';
 import Header from '../Atoms/Header';
 import Divide from '../Divide';
@@ -8,9 +8,20 @@ import useStore from '../store/useStore';
 import Octicons from 'react-native-vector-icons/Octicons';
 import axios from 'axios';
 
-export default function BackgroundSetting({goSetting, memberId}) {
-  const {activeText, setActiveText, resetActiveText} = useStore();
-  const isFocused = useIsFocused();
+export default function BackgroundSetting({goSetting, bgiData, bgmData}) {
+  const {activeText, setActiveText, resetActiveText, BGI, setBGI, BGM, setBGM} = useStore();
+
+  const handleBGIChange = (item) => {
+    setBGI(item.path); // 클릭한 항목의 경로로 상태 업데이트
+  }
+
+  const handleBGMChange = (item) => {
+    if (BGM === item.path) {
+      setBGM(null); // 현재 선택된 항목을 다시 클릭하면 취소 (상태를 null로 설정)
+    } else {
+      setBGM(item.path); // 새로운 항목 선택
+    }
+  }
 
   useFocusEffect(
     React.useCallback(() => {
@@ -29,18 +40,38 @@ export default function BackgroundSetting({goSetting, memberId}) {
       <View style={styles.divideContainer}>
         <Divide text1="배경사진" text2="배경음악" />
       </View>
-      {activeText === 'text1' && (
-        <View style={styles.imageContainer}>
-          <Image source={{uri: '<path-to-image>'}} style={styles.image} />
-          <Text style={styles.text}>희망의 숲</Text>
-        </View>
-      )}
-      {activeText === 'text2' && (
-        <View style={styles.imageContainer}>
-          <Text style={styles.text}>모닥불 타는 소리</Text>
-        </View>
-      )}
-      <Line />
+
+    {activeText === 'text1' && bgiData && (
+      <ScrollView>
+        {bgiData.map((item, index) => (
+          <View key={index} >
+            <Pressable
+              style={[ styles.imageContainer, { backgroundColor: BGI === item.path ? 'gray' : 'white' }]}
+              onPress={() => handleBGIChange(item)} >
+              <Image source={{ uri: item.path }} style={styles.image} />
+              <Text style={styles.text}>{item.name}</Text>
+            </Pressable>
+            <Line />
+          </View>
+        ))}
+      </ScrollView>
+    )}
+
+    {activeText === 'text2' && bgmData && (
+      <ScrollView>
+        {bgmData.map((item, index) => (
+          <View key={index} >
+            <Pressable
+              style={[ styles.imageContainer, { backgroundColor: BGM === item.path ? 'gray' : 'white' }]}
+              onPress={() => handleBGMChange(item)} >
+              <Text style={styles.text}>{item.name}</Text>
+            </Pressable>
+            <Line />
+          </View>
+        ))}
+      </ScrollView>
+    )}
+
     </View>
   );
 }

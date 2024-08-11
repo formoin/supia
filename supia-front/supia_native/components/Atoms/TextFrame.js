@@ -3,21 +3,23 @@ import { StyleSheet, View, TextInput, Alert } from 'react-native';
 import Button_Green from './Button_Green';
 import axios from 'axios';
 import loginStore from '../store/useLoginStore';
+import useStore from '../store/useStore'
 
-export default function TextFrame({ memberId, friendId, onClose }) {
+export default function TextFrame({ friend, user, page, onClose }) {
   const [text, setText] = useState('');
   const { token } = loginStore.getState()
+  const { memberId } = useStore();
 
   const sendMessage = async () => {
+    const toMemberId = page === 'search' ? user.memberId : friend.memberId
     const Message = {
-      fromMemberId: 8,
-      toMemberId: 6,
-
+      fromMemberId: memberId,
+      toMemberId: toMemberId,
       content: text,
     };
 
     try {
-      const response = await axios.post('https://i11b304.p.ssafy.io/api/messages', message, {
+      const response = await axios.post('https://i11b304.p.ssafy.io/api/messages', Message, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',

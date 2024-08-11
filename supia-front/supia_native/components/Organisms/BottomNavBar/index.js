@@ -192,31 +192,60 @@ export default function BottomNavBar() {
   );
 }
 
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     backgroundColor: '#fff',
+//   },
+//   walkButtonContainer: {
+//     top: -40,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     width: 80,
+//     height: 80,
+//     borderRadius: 40,
+//     backgroundColor: 'rgba(162, 170, 123, 0.8)',
+//   },
+//   walkButton: {
+//     width: 60,
+//     height: 60,
+//     borderRadius: 35,
+//     backgroundColor: '#A2AA7B',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+//   tabBarLabel: {
+//     color: '#8C8677',
+//     fontSize: 12,
+//     marginTop: -3,
+//   },
+// });
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
   walkButtonContainer: {
-    top: -40,
+    top: Math.round((-40 / 844.5714285714286) * 844), // -40
     justifyContent: 'center',
     alignItems: 'center',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: Math.round((80 / 411.42857142857144) * 411), // 80
+    height: Math.round((80 / 844.5714285714286) * 844), // 80
+    borderRadius: Math.round((40 / 411.42857142857144) * 411), // 40
     backgroundColor: 'rgba(162, 170, 123, 0.8)',
   },
   walkButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 35,
+    width: Math.round((60 / 411.42857142857144) * 411), // 60
+    height: Math.round((60 / 844.5714285714286) * 844), // 60
+    borderRadius: Math.round((35 / 411.42857142857144) * 411), // 35
     backgroundColor: '#A2AA7B',
     justifyContent: 'center',
     alignItems: 'center',
   },
   tabBarLabel: {
     color: '#8C8677',
-    fontSize: 12,
-    marginTop: -3,
+    fontSize: Math.round((12 / 411.42857142857144) * 411), // 12
+    marginTop: Math.round((-3 / 844.5714285714286) * 844), // -3
   },
 });

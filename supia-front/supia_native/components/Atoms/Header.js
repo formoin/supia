@@ -5,7 +5,6 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 
-
 const {width: windowWidth} = Dimensions.get('window');
 
 export default function Header({label, goto, noback}) {
@@ -19,9 +18,9 @@ export default function Header({label, goto, noback}) {
     }
   };
 
-   return (
-      <View style={styles.HeaderContainer}>
-        <View style={{left: 10}}>
+  return (
+    <View style={styles.HeaderContainer}>
+      <View style={{left: 10}}>
         {!noback && (
           <Pressable onPress={onPressBackIcon}>
             <Entypo
@@ -30,12 +29,10 @@ export default function Header({label, goto, noback}) {
               style={styles.BackIcon}
             />
           </Pressable>
-)}
-
-        </View>
-          
-        <Text style={styles.label}>{label}</Text>
+        )}
       </View>
+      <Text style={styles.label}>{label}</Text>
+    </View>
   );
 }
 
@@ -57,6 +54,5 @@ const styles = StyleSheet.create({
     textAlign: 'center', // 텍스트 중앙 정렬
 
     marginRight: 20,
-
   },
 });

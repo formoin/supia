@@ -1,72 +1,101 @@
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import {View, Text, StyleSheet, Pressable} from 'react-native';
 import Label from '../../Atoms/ListItem';
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import axios from 'axios';
 import ReadMessageModal from './ReadMessageModal';
+import loginStore from '../../store/useLoginStore';
+import moment from 'moment';
 
-export default function FriendRequestBox({messageId, friendName}) {
+export default function FriendRequestBox({ friend: initialFriend, getFriend }) {
+  const [friend, setFriend] = useState(initialFriend);
   const [modalVisible, setModalVisible] = useState(false);
+  const { token } = loginStore.getState();
 
-  const okPress = () => {
-    handleAccept(messageId)
-    alert(`${friendName}님의 친구 요청을 수락했습니다.`)
+  const formatTime = (dateString) => {
+    return dateString ? moment(dateString).format('YYYY/MM/DD HH:mm') : '시간 정보 없음';
   };
 
-  const noPress = () => {
-    handleDelete(messageId)
-    alert(`${friendName}님의 친구 요청을 거절했습니다.`)
-  };
-
-  const handleAccept = async ({messageId}) => { // 친구 요청 수락
-      try {
-        const response = await axios.get("https://i11b304.p.ssafy.io/api/friends/accept", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-        });
-      } catch (error) {
-        console.error("친구 수락 실패:", error);
+  const handleAccept = async (messageId) => {
+    try {
+      const response = await axios.get("https://i11b304.p.ssafy.io/api/friends/accept", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        params: { messageId }
+      });
+      if (response.status === 200) {
+        console.log("친구 요청 수락 성공");
+        alert("친구 요청을 수락했습니다.")
+        removeFriendItem(messageId);
+      } else {
+        console.log("친구 요청 수락 실패");
       }
+    } catch (error) {
+      console.error("친구 요청 수락 중 오류 발생:", error);
+    }
   };
 
-  const handleDelete = async ({messageId}) => { // 친구 요청 거절
-      try {
-        const response = await axios.delete("https://i11b304.p.ssafy.io/api/friends/refuse", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-        });
-      } catch (error) {
-        console.error('친구 거절 실패', error);
+  const handleDelete = async (messageId) => {
+    try {
+      const response = await axios.delete("https://i11b304.p.ssafy.io/api/friends/refuse", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        params: { messageId }
+      });
+      if (response.status === 200) {
+        console.log("친구 요청 거절 성공");
+        alert("친구 요청을 거절했습니다.")
+        removeFriendItem(messageId);
+      } else {
+        console.log("친구 요청 거절 실패");
       }
+    } catch (error) {
+      console.error("친구 요청 거절 중 오류 발생:", error);
+    }
   };
+
+  const removeFriendItem = (messageId) => {
+    setFriend(prevFriend => prevFriend.filter(item => item.messageId !== messageId));
+  };
+
+  if (!friend || friend.length === 0) {
+    return <Text>친구 요청이 없습니다.</Text>;
+  }
 
   return (
     <View>
-      <View style={styles.container}>
-        <View style={styles.messageHeader}>
-          <Text style={styles.messageText}>시스템</Text>
-          <Text style={styles.timeText}>Today 10:30PM</Text>
+      {friend.map((friendItem) => (
+        <View key={friendItem.messageId} style={styles.container}>
+          <View style={styles.messageHeader}>
+            <Text style={styles.messageText}>시스템</Text>
+            <Text style={styles.timeText}>{formatTime(friendItem.sentTime)}</Text>
+          </View>
+          <View style={styles.messageContent}>
+            <Label
+              pic="infocirlceo"
+              title={friendItem.fromMemberNickname || '제목 없음'}
+              content={friendItem.content || '내용이 없습니다.'}
+              url={friendItem.fromMemberImg || '기본 이미지 URL'}
+            />
+            <Pressable style={styles.green} onPress={() => handleAccept(friendItem.messageId)}>
+              <Text style={styles.buttonText}>수락</Text>
+            </Pressable>
+            <Pressable style={styles.red} onPress={() => handleDelete(friendItem.messageId)}>
+              <Text style={styles.buttonText}>거절</Text>
+            </Pressable>
+          </View>
         </View>
-        <View style={styles.messageContent}>
-          <Label pic="infocirlceo" title="친구 신청" content={`${friendName}님이 친구를 요청했습니다.`} />
-          <Pressable style={styles.green} onPress={okPress}>
-            <Text style={styles.buttonText}>수락</Text>
-          </Pressable>
-          <Pressable style={styles.red} onPress={noPress}>
-            <Text style={styles.buttonText}>거절</Text>
-          </Pressable>
-        </View>
-      </View>
+      ))}
 
       <ReadMessageModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-        friendName="formoin"
+        friendName={friend[0]?.fromMemberNickname || 'Unknown'}
       />
     </View>
   );
@@ -116,7 +145,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 10,
-    marginRight: 10
+    marginRight: 10,
   },
   buttonText: {
     color: '#FFFFFF',

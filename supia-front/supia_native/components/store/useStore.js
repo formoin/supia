@@ -1,12 +1,20 @@
 import {create} from 'zustand';
 import axios from 'axios';
+import Sound from 'react-native-sound';
 import {KAKAO_API_KEY} from '@env';
+import useLoginStore from './useLoginStore';
+
+const {token} = useLoginStore.getState();
+import testWalkData from '../Pages/User/walkTest.json'; // 로컬 JSON 파일 가져오기
 
 const useStore = create(set => ({
+  memberId: null,
+  setMemberId: id => set({memberId: id}),
+
   // search
   activeText: 'text1',
   setActiveText: text => set({activeText: text}),
-  resetActiveText: () => set({activeText: ''}),
+  resetActiveText: () => set({activeText: 'text1'}),
 
   // Dictionarysearch
   activeDic: 'text1',
@@ -60,17 +68,16 @@ const useStore = create(set => ({
     return `https://supia.s3.ap-northeast-2.amazonaws.com/${s3Path}`;
   },
 
-    // 숲 썸네일 이미지 url
-    forestImageUri: null,
-    setForestImageUri: (uri) => set({ forestImageUri: uri }),
-
   // 숲 스티커
   // 초기 상태
   droppedImages: [],
   // 이미지를 추가, 삭제하는 함수
-  addDroppedImage: (itemId, imageUrl, position) =>
+  addDroppedImage: (itemId, imageUrl, position, soundOn) =>
     set(state => ({
-      droppedImages: [...state.droppedImages, {itemId, imageUrl, position}],
+      droppedImages: [
+        ...state.droppedImages,
+        {itemId, imageUrl, position, soundOn},
+      ],
     })),
   removeDroppedImage: itemId =>
     set(state => ({
@@ -93,11 +100,23 @@ const useStore = create(set => ({
   },
   forestId: null,
   setForestId: id => set(() => ({forestId: id})),
+  thumbnail: null,
+  setThumbnail: id => set(() => ({thumbnail: id})),
   // api로 받아온 데이터를 저장하는 함수
   setDroppedImages: images =>
     set(() => ({
       droppedImages: images,
     })),
+
+  BGI: null,
+  setBGI: bgi => set(() => ({BGI: bgi})),
+  BGM: null,
+  setBGM: bgm => set(() => ({BGM: bgm})),
+
+  BGI: null,
+  setBGI: bgi => set(() => ({BGI: bgi})),
+  BGM: null,
+  setBGM: bgm => set(() => ({BGM: bgm})),
 
   // s3 이미지
   getS3Url: imgurl => {
@@ -127,6 +146,116 @@ const useStore = create(set => ({
     } catch (error) {
       console.log('실패:', error);
       return null;
+    }
+  },
+
+  // BGM
+  currentSound: null,
+  playingSoundId: null, // 현재 재생 중인 소리의 ID
+  playSound: (url, soundId, onPlayEnd) => {
+    set(state => {
+      // 현재 재생 중인 소리가 있다면 중지
+      if (state.currentSound) {
+        state.currentSound.stop(() => {
+          state.currentSound.release();
+        });
+      }
+
+      // 새로운 소리 재생
+      const sound = new Sound(url, null, error => {
+        if (error) {
+          console.log('Failed to load the sound', error);
+          return;
+        }
+        sound.play(success => {
+          if (success) {
+            console.log('Sound played successfully');
+          } else {
+            console.log('Playback failed');
+          }
+          // 재생이 끝나면 소리 객체를 해제하고 상태를 업데이트
+          sound.release();
+          set({currentSound: null, playingSoundId: null});
+          if (onPlayEnd) onPlayEnd();
+        });
+      });
+
+      // 새로운 소리 상태 업데이트
+      return {currentSound: sound, playingSoundId: soundId};
+    });
+  },
+
+  // 산책 거리 불러오기
+  weeklyWalkHistory: null,
+  monthlyWalkHistory: null,
+  yearlyWalkHistory: null,
+  setWeeklyWalkHistory: data => set(() => ({weeklyWalkHistory: data})),
+  setMonthlyWalkHistory: data => set(() => ({monthlyWalkHistory: data})),
+  setYearlyWalkHistory: data => set(() => ({yearlyWalkHistory: data})),
+  // fetchWalkHistory: async () => {
+  //   try {
+  //     // const token = await AsyncStorage.getItem('key');
+  //     if (token) {
+  //       const response = await axios.post(
+  //         //ContextPath
+  //         `${Server_IP}/walk/history`,
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //             Accept: 'application/json',
+  //             'Content-Type': 'application/json; charset=utf-8',
+  //           },
+  //         },
+  //       );
+  //       if (response.status === 200) {
+  // 컨텍스트 내에서 setState 함수들에 접근
+  // set(state => ({
+  //   monthlyWalkHistory: response.data.monthly,
+  //   yearlyWalkHistory: response.data.yearly,
+  //   weeklyWalkHistory: response.data.monthly.slice(-7),
+  // }));
+
+  // console.log('월별 데이터:', response.data.monthly);
+  // console.log('연도별 데이터:', response.data.yearly);
+  // console.log('주별 데이터:', response.data.monthly.slice(-7));
+  //       } else {
+  //         throw new Error('걷기 기록 가져오기 실패 : response.status !== 200');
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // },
+
+  fetchWalkHistory: async () => {
+    try {
+      // Axios 요청처럼 데이터를 가공
+      const response = {
+        data: testWalkData,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {},
+        request: {},
+      };
+
+      // 데이터를 기존 axios 요청처럼 처리
+      if (response.status === 200) {
+        // 컨텍스트 내에서 setState 함수들에 접근
+        set(state => ({
+          monthlyWalkHistory: response.data.monthly,
+          yearlyWalkHistory: response.data.yearly,
+          weeklyWalkHistory: response.data.monthly.slice(-7),
+        }));
+
+        // console.log('월별 데이터:', response.data.monthly);
+        // console.log('연도별 데이터:', response.data.yearly);
+        // console.log('주별 데이터:', response.data.monthly.slice(-7));
+      } else {
+        throw new Error('걷기 기록 가져오기 실패 : response.status !== 200');
+      }
+    } catch (err) {
+      console.error(err);
     }
   },
 }));

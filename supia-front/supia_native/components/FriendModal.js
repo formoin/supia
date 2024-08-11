@@ -1,25 +1,26 @@
-import React, {useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import ModalHeader from './Atoms/ModalHeader';
 import ModalImage from './Atoms/ModalImage';
 import ModalLevel from './Atoms/ModalLevel';
 import Green from './Atoms/Button_Green';
 import Red from './Atoms/Button_Red';
 import axios from 'axios';
-import {Server_IP} from '@env';
+import { Server_IP } from '@env';
+import loginStore from './store/useLoginStore';
+import useStore from './store/useStore'
 
 export default function FriendModal({
-  UserName,
-  UserLevel,
   onClose,
   page,
-  memberId,
   toId,
+  friendDetail,
+  userDetail
 }) {
   const [isFriendRequested, setIsFriendRequested] = useState(false);
+  const { token } = loginStore.getState();
+  const { memberId } = useStore()
 
-  const token =
-    'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJydGNUZXN0M0BuYXZlci5jb20iLCJtZW1iZXJJZCI6NSwiaWF0IjoxNzIzMTkwMTY1LCJleHAiOjE3NTQ3MjYxNjV9.i8j2uViosHqkRg-VYbhmMGpFY0RqbvJr1XRfab_EZjvjT_Vnmjq6rrVe_nP-qM8Om6r23AVmemtHWqXzg7V70w';
   const sendFriendRequest = async () => {
     const friendRequest = {
       fromId: memberId,
@@ -49,14 +50,15 @@ export default function FriendModal({
     setIsFriendRequested(!isFriendRequested);
   };
 
-  return (
-    <View style={styles.container}>
-      <ModalHeader UserName={UserName} onClose={onClose} />
-      <View style={styles.line} />
-      <ModalImage />
-      <View style={styles.modalLevelContainer}>
-        <ModalLevel UserLevel={UserLevel} />
-        {page === 'search' && (
+  // 검색 페이지와 친구 페이지에 따라 다르게 렌더링
+  if (page === 'search' && userDetail) {
+    return (
+      <View style={styles.container}>
+        <ModalHeader UserName={userDetail.nickname} onClose={onClose} url={userDetail.profileImg} />
+        <View style={styles.line} />
+        <ModalImage uri={userDetail.thumbnail} />
+        <View style={styles.modalLevelContainer}>
+          <ModalLevel UserLevel={userDetail.level} />
           <View style={styles.button}>
             {isFriendRequested ? (
               <Green label="요청 대기" />
@@ -64,10 +66,26 @@ export default function FriendModal({
               <Green label="친구 요청" onPress={handleButtonClick} />
             )}
           </View>
-        )}
+        </View>
       </View>
-    </View>
-  );
+    );
+  }
+
+  if (page === 'friend' && friendDetail) {
+    return (
+      <View style={styles.container}>
+        <ModalHeader UserName={friendDetail.nickname} onClose={onClose} url={friendDetail.profileImg} />
+        <View style={styles.line} />
+        <ModalImage uri={friendDetail.thumbnail} />
+        <View style={styles.modalLevelContainer}>
+          <ModalLevel UserLevel={friendDetail.level} />
+        </View>
+      </View>
+    );
+  }
+
+  // 기본적으로 아무 것도 렌더링하지 않음
+  return null;
 }
 
 const styles = StyleSheet.create({
@@ -79,7 +97,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.10)',
     backgroundColor: '#ECEADE',
     shadowColor: 'rgba(0, 0, 0, 0.25)',
-    shadowOffset: {width: 0, height: 4},
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 4,

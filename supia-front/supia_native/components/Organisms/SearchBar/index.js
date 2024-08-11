@@ -1,20 +1,18 @@
-import {View, StyleSheet, Pressable, TextInput, Text} from 'react-native';
-import React, {useState} from 'react';
-import axios from 'axios';
+import { View, StyleSheet, Pressable, TextInput, Text } from 'react-native';
+import React from 'react';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
+import { Server_IP } from '@env';
+import loginStore from '../../store/useLoginStore';
+import axios from 'axios'
 
-export default function Searchbar({active, searchName, type, onSearch}) {
-  const [value, setValue] = useState('');
+export default function Searchbar({ active, searchName, type, value, onChangeText, onSearch }) {
+  const { token } = loginStore.getState();
 
-  const token =
-    'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJydGNUZXN0M0BuYXZlci5jb20iLCJtZW1iZXJJZCI6NSwiaWF0IjoxNzIzMTg5MTgxLCJleHAiOjE3NTQ3MjUxODF9.re7cZkk68OKfFfjWvNNyDDVlp-lx4zTWEFcv84J58Z0m1OdW6gZeQuQ-Ljp9X5LR7pPr8C6w-upCNcaPGXLTnA';
   const getUserSearch = async () => {
     console.log('가즈아 ' + value);
     try {
-      // const response = await axios.get(`${Server_IP}/search`, {
       const response = await axios.get(
-        `https://i11b304.p.ssafy.io/api/search`,
+        "https://i11b304.p.ssafy.io/api/search",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -23,7 +21,7 @@ export default function Searchbar({active, searchName, type, onSearch}) {
           },
           params: {
             type: 0, // 0: 유저 검색, 1: 아이템 검색
-            keyword: 'ssafy',
+            keyword: value,
           },
         },
       );
@@ -42,7 +40,6 @@ export default function Searchbar({active, searchName, type, onSearch}) {
   };
 
   const getItemSearch = async () => {
-    // console.log('getItemSearch' + value);
     try {
       const response = await axios.get(`${Server_IP}/search`, {
         headers: {
@@ -68,26 +65,18 @@ export default function Searchbar({active, searchName, type, onSearch}) {
     }
   };
 
-  // X 버튼 클릭 시 초기화
   const onReset = () => {
-    setValue('');
+    onChangeText(''); // 상위 컴포넌트의 상태를 초기화
   };
 
-  // TextInput 내 text 변경 시 value 변경
-  const onChangeT = text => {
-    setValue(text);
-  };
-
-  // 엔터 키를 눌렀을 때 동작 추가
   const onSubmitEditing = () => {
-    // 엔터 키를 눌렀을 때 실행할 코드
     console.log('Submit pressed');
     if (type === 'text1') {
       console.log('유저 찾기');
       getUserSearch();
     } else {
       console.log('아이템 찾기');
-      getItemSearch(); // 400: 검색 결과가 없습니다.
+      getItemSearch();
     }
   };
 
@@ -98,8 +87,8 @@ export default function Searchbar({active, searchName, type, onSearch}) {
           <AntDesign name="search1" size={20} color="#A2AA7B" />
           <TextInput
             value={value}
-            onChangeText={onChangeT}
-            onSubmitEditing={onSubmitEditing} // 엔터 키 처리
+            onChangeText={onChangeText}
+            onSubmitEditing={onSubmitEditing}
             style={styles.input}
             placeholder="Search..."
           />

@@ -16,6 +16,7 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const [memberInfo, setMemberInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { memberId, setMemberId } = useStore();
   const { token } = loginStore.getState()
   const { getS3Url } = useStore()
 
@@ -45,40 +46,16 @@ export default function HomeScreen() {
         },
       });
       if (response.status === 200) {
-        console.log(response.data);
-        {/*setMemberInfo(response.data.member)*/}
-        setMemberInfo({
-            "id": 6,
-            "email": "rtcTest3@naver.com",
-            "name": "1234",
-            "nickname": "1234",
-            "profileImg": "https://supia.s3.ap-northeast-2.amazonaws.com/profile/5.png",
-            "thumbnail": "s3://supia/background/image/forest_1.png",
-            "level": 3,
-            "exp": 155,
-            "point": 0,
-            "visit": 1,
-            "active": true
-        })
+        console.log(response.data.member)
+        console.log('썸네일주소', response.data.member.thumbnail);
+        setMemberInfo(response.data.member)
+        setMemberId(response.data.member.id);
         console.log('홈페이지 로딩 성공');
       } else {
         console.log('홈페이지 로딩 실패');
       }
     } catch (error) {
       console.error('홈페이지 요청 중 오류 발생:', error);
-      setMemberInfo({
-        "id": 6,
-        "email": "rtcTest3@naver.com",
-        "name": "111",
-        "nickname": "nope",
-        "profileImg": "https://supia.s3.ap-northeast-2.amazonaws.com/profile/5.png",
-        "thumbnail": "s3://supia/background/image/forest_1.png",
-        "level": 3,
-        "exp": 155,
-        "point": 0,
-        "visit": 1,
-        "active": true
-    })
     } finally {
         setLoading(false); // 로딩 완료
       }
@@ -101,6 +78,13 @@ export default function HomeScreen() {
       </View>
     );
   }
+  const getImageUri = (thumbnail) => {
+    if (thumbnail.startsWith('file://')) {
+      return { uri: thumbnail }; // file 경로일 때
+    } else {
+      return { uri: getS3Url(thumbnail) }; // S3 경로일 때
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -122,10 +106,10 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <View>
+      <View style={styles.thumbcontainer}>
         <Pressable onPress={goMyForest}>
           <Image
-            source={{uri: getS3Url(memberInfo.thumbnail)}} // 이미지 경로
+            source={getImageUri(memberInfo.thumbnail)} // 이미지 경로
             style={styles.thumbnail}
           />
         </Pressable>
@@ -159,6 +143,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 10, // Added padding to ensure text doesn't get cut off
   },
+  thumbcontainer:{
+    width: '100%',
+    height: '30%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },  
   textContainer: {
     flex: 1, // Allow text container to take up available space
   },
@@ -188,11 +178,12 @@ const styles = StyleSheet.create({
     marginLeft: 10
   },
   thumbnail: {
-    width: '90%',
-    height: 220,
+    width: 330,
+    height: '90%',
     marginLeft: 20,
     marginBottom: 20,
     borderRadius: 15,
+    // transform: [{rotate: '180deg'}],
   },
   info: {
     width: '90%',

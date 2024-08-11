@@ -1,219 +1,395 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {View, Button, StyleSheet} from 'react-native';
-import {
-  RTCView,
-  RTCPeerConnection,
-  RTCSessionDescription,
-  RTCIceCandidate,
-  mediaDevices,
-} from 'react-native-webrtc';
-import {WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
+import {OpenVidu} from 'openvidu-browser';
 
-const ICE_SERVERS = {
-  iceServers: [
-    {
-      urls: [TURN_URL],
-      username: TURN_ID,
-      credential: TURN_CREDENTIAL,
-    },
-  ],
-};
+import axios from 'axios';
+import React, {Component, useEffect} from 'react';
+import './App.css';
+import UserVideoComponent from './UserVideoComponent';
 
-const token =
-  'Bearer ' +
-  'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJydGNUZXN0M0BuYXZlci5jb20iLCJtZW1iZXJJZCI6NSwiaWF0IjoxNzIzMDE5NTMxLCJleHAiOjE3NTQ1NTU1MzF9.sCygAa7NjBVapBE3ZJr2d--VBfPARJLWCB_Stcw_ETJeGdI74nH8_2jDLGVXWY6YYSWLnPfzKXcnc9I2uKhs_A';
+const APPLICATION_SERVER_URL = 'http://localhost:8080/';
+//process.env.NODE_ENV === 'production' ? '' : 'https://demos.openvidu.io/';
 
-const WebRTCComponent = () => {
-  const websocketRef = useRef(null);
-  const peerConnectionRef = useRef(null);
-  const [localStream, setLocalStream] = useState(null);
-  const [remoteStream, setRemoteStream] = useState(null);
+class App extends Component {
+  constructor(props) {
+    super(props);
 
-  useEffect(() => {
-    websocketRef.current = new WebSocket(WS_IP);
-
-    websocketRef.current.onopen = () => {
-      console.log('WebSocket connected');
-      // 사용자 인증 로직
-      const authMessage = {type: 'authenticate', token};
-      websocketRef.current.send(JSON.stringify(authMessage));
+    // These properties are in the state's component in order to re-render the HTML whenever their values change
+    this.state = {
+      mySessionId: 'SessionA',
+      myUserName: 'Participant' + Math.floor(Math.random() * 100),
+      session: undefined,
+      mainStreamManager: undefined, // Main video of the page. Will be the 'publisher' or one of the 'subscribers'
+      publisher: undefined,
+      subscribers: [],
     };
 
-    websocketRef.current.onmessage = async message => {
-      const data = JSON.parse(message.data);
-      switch (data.type) {
-        case 'authenticated':
-          console.log('User authenticated');
-          break;
-        case 'offer':
-          await handleOffer(data.offer);
-          break;
-        case 'answer':
-          await handleAnswer(data.answer);
-          break;
-        case 'ice-candidate':
-          await handleIceCandidate(data.candidate);
-          break;
-        default:
-          break;
-      }
-    };
+    this.joinSession = this.joinSession.bind(this);
+    this.leaveSession = this.leaveSession.bind(this);
+    this.switchCamera = this.switchCamera.bind(this);
+    this.handleChangeSessionId = this.handleChangeSessionId.bind(this);
+    this.handleChangeUserName = this.handleChangeUserName.bind(this);
+    this.handleMainVideoStream = this.handleMainVideoStream.bind(this);
+    this.onbeforeunload = this.onbeforeunload.bind(this);
+  }
 
-    websocketRef.current.onerror = error => {
-      console.error('WebSocket error:', error);
-    };
+  componentDidMount() {
+    window.addEventListener('beforeunload', this.onbeforeunload);
+  }
 
-    websocketRef.current.onclose = () => {
-      console.log('WebSocket disconnected');
-    };
+  componentWillUnmount() {
+    window.removeEventListener('beforeunload', this.onbeforeunload);
+  }
 
-    return () => {
-      websocketRef.current.close();
-    };
-  }, []);
+  onbeforeunload(event) {
+    this.leaveSession();
+  }
 
-  const handleOffer = async offer => {
-    peerConnectionRef.current = new RTCPeerConnection({
-      ICE_SERVERS,
+  handleChangeSessionId(e) {
+    this.setState({
+      mySessionId: e.target.value,
     });
+  }
 
-    peerConnectionRef.current.onicecandidate = event => {
-      if (event.candidate) {
-        websocketRef.current.send(
-          JSON.stringify({
-            type: 'ice-candidate',
-            candidate: event.candidate,
-          }),
-        );
-      }
-    };
-
-    peerConnectionRef.current.ontrack = event => {
-      if (event.streams && event.streams[0]) {
-        setRemoteStream(event.streams[0]);
-      }
-    };
-
-    await peerConnectionRef.current.setRemoteDescription(
-      new RTCSessionDescription(offer),
-    );
-
-    const answer = await peerConnectionRef.current.createAnswer();
-    await peerConnectionRef.current.setLocalDescription(answer);
-
-    websocketRef.current.send(
-      JSON.stringify({
-        type: 'answer',
-        answer: answer,
-      }),
-    );
-  };
-
-  const handleAnswer = async answer => {
-    await peerConnectionRef.current.setRemoteDescription(
-      new RTCSessionDescription(answer),
-    );
-  };
-
-  const handleIceCandidate = async candidate => {
-    await peerConnectionRef.current.addIceCandidate(
-      new RTCIceCandidate(candidate),
-    );
-  };
-
-  const createOffer = async () => {
-    peerConnectionRef.current = new RTCPeerConnection({
-      ICE_SERVERS,
+  handleChangeUserName(e) {
+    this.setState({
+      myUserName: e.target.value,
     });
+  }
 
-    peerConnectionRef.current.onicecandidate = event => {
-      if (event.candidate) {
-        websocketRef.current.send(
-          JSON.stringify({
-            type: 'ice-candidate',
-            candidate: event.candidate,
-          }),
-        );
-      }
-    };
+  handleMainVideoStream(stream) {
+    if (this.state.mainStreamManager !== stream) {
+      this.setState({
+        mainStreamManager: stream,
+      });
+    }
+  }
 
-    peerConnectionRef.current.ontrack = event => {
-      if (event.streams && event.streams[0]) {
-        setRemoteStream(event.streams[0]);
-      }
-    };
+  deleteSubscriber(streamManager) {
+    let subscribers = this.state.subscribers;
+    let index = subscribers.indexOf(streamManager, 0);
+    if (index > -1) {
+      subscribers.splice(index, 1);
+      this.setState({
+        subscribers: subscribers,
+      });
+    }
+  }
 
-    const localStream = await getUserMedia();
-    localStream.getTracks().forEach(track => {
-      peerConnectionRef.current.addTrack(track, localStream);
-    });
-    setLocalStream(localStream);
+  //세션에 들어갈 수 있게 함.
+  joinSession() {
+    // --- 1) Get an OpenVidu object ---
 
-    const offer = await peerConnectionRef.current.createOffer();
-    await peerConnectionRef.current.setLocalDescription(offer);
+    this.OV = new OpenVidu();
 
-    websocketRef.current.send(
-      JSON.stringify({
-        type: 'offer',
-        offer: offer,
-      }),
-    );
-  };
+    // --- 2) Init a session ---
 
-  const getUserMedia = () => {
-    return new Promise((resolve, reject) => {
-      mediaDevices
-        .getUserMedia({video: true, audio: true})
-        .then(stream => {
-          resolve(stream);
-        })
-        .catch(error => {
-          reject(error);
+    this.setState(
+      {
+        session: this.OV.initSession(),
+      },
+      () => {
+        var mySession = this.state.session;
+
+        // --- 3) Specify the actions when events take place in the session ---
+
+        // On every new Stream received...
+        mySession.on('streamCreated', event => {
+          // Subscribe to the Stream to receive it. Second parameter is undefined
+          // so OpenVidu doesn't create an HTML video by its own
+          var subscriber = mySession.subscribe(event.stream, undefined);
+          var subscribers = this.state.subscribers;
+          subscribers.push(subscriber);
+
+          // Update the state with the new subscribers
+          this.setState({
+            subscribers: subscribers,
+          });
         });
+
+        // On every Stream destroyed...
+        mySession.on('streamDestroyed', event => {
+          // Remove the stream from 'subscribers' array
+          this.deleteSubscriber(event.stream.streamManager);
+        });
+
+        // On every asynchronous exception...
+        mySession.on('exception', exception => {
+          console.warn(exception);
+        });
+
+        // --- 4) Connect to the session with a valid user token ---
+
+        // Get a token from the OpenVidu deployment
+        this.getToken().then(token => {
+          // First param is the token got from the OpenVidu deployment. Second param can be retrieved by every user on event
+          // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
+          mySession
+            .connect(token, {clientData: this.state.myUserName})
+            .then(async () => {
+              // --- 5) Get your own camera stream ---
+
+              // Init a publisher passing undefined as targetElement (we don't want OpenVidu to insert a video
+              // element: we will manage it on our own) and with the desired properties
+              let publisher = await this.OV.initPublisherAsync(undefined, {
+                audioSource: undefined, // The source of audio. If undefined default microphone
+                videoSource: undefined, // The source of video. If undefined default webcam
+                publishAudio: true, // Whether you want to start publishing with your audio unmuted or not
+                publishVideo: true, // Whether you want to start publishing with your video enabled or not
+                resolution: '640x480', // The resolution of your video
+                frameRate: 30, // The frame rate of your video
+                insertMode: 'APPEND', // How the video is inserted in the target element 'video-container'
+                mirror: false, // Whether to mirror your local video or not
+              });
+
+              // --- 6) Publish your stream ---
+
+              mySession.publish(publisher);
+
+              // Obtain the current video device in use
+              var devices = await this.OV.getDevices();
+              var videoDevices = devices.filter(
+                device => device.kind === 'videoinput',
+              );
+              var currentVideoDeviceId = publisher.stream
+                .getMediaStream()
+                .getVideoTracks()[0]
+                .getSettings().deviceId;
+              var currentVideoDevice = videoDevices.find(
+                device => device.deviceId === currentVideoDeviceId,
+              );
+
+              // Set the main video in the page to display our webcam and store our Publisher
+              this.setState({
+                currentVideoDevice: currentVideoDevice,
+                mainStreamManager: publisher,
+                publisher: publisher,
+              });
+            })
+            .catch(error => {
+              console.log(
+                'There was an error connecting to the session:',
+                error.code,
+                error.message,
+              );
+            });
+        });
+      },
+    );
+  }
+
+  leaveSession() {
+    // --- 7) Leave the session by calling 'disconnect' method over the Session object ---
+
+    const mySession = this.state.session;
+
+    if (mySession) {
+      mySession.disconnect();
+    }
+
+    // Empty all properties...
+    this.OV = null;
+    this.setState({
+      session: undefined,
+      subscribers: [],
+      mySessionId: 'SessionA',
+      myUserName: 'Participant' + Math.floor(Math.random() * 100),
+      mainStreamManager: undefined,
+      publisher: undefined,
     });
-  };
+  }
 
-  return (
-    <View style={styles.container}>
-      {localStream && (
-        <RTCView
-          streamURL={localStream.toURL()}
-          style={styles.localVideo}
-          objectFit="cover"
-          mirror
-        />
-      )}
-      {remoteStream && (
-        <RTCView
-          streamURL={remoteStream.toURL()}
-          style={styles.remoteVideo}
-          objectFit="cover"
-        />
-      )}
-      <Button title="Start Call" onPress={createOffer} />
-    </View>
-  );
-};
+  async switchCamera() {
+    try {
+      const devices = await this.OV.getDevices();
+      var videoDevices = devices.filter(device => device.kind === 'videoinput');
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  localVideo: {
-    width: 200,
-    height: 150,
-    position: 'absolute',
-    bottom: 10,
-    right: 10,
-    zIndex: 1,
-  },
-  remoteVideo: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'black',
-  },
-});
+      if (videoDevices && videoDevices.length > 1) {
+        var newVideoDevice = videoDevices.filter(
+          device => device.deviceId !== this.state.currentVideoDevice.deviceId,
+        );
 
-export default WebRTCComponent;
+        if (newVideoDevice.length > 0) {
+          // Creating a new publisher with specific videoSource
+          // In mobile devices the default and first camera is the front one
+          var newPublisher = this.OV.initPublisher(undefined, {
+            videoSource: newVideoDevice[0].deviceId,
+            publishAudio: true,
+            publishVideo: true,
+            mirror: true,
+          });
+
+          //newPublisher.once("accessAllowed", () => {
+          await this.state.session.unpublish(this.state.mainStreamManager);
+
+          await this.state.session.publish(newPublisher);
+          this.setState({
+            currentVideoDevice: newVideoDevice[0],
+            mainStreamManager: newPublisher,
+            publisher: newPublisher,
+          });
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  render() {
+    const mySessionId = this.state.mySessionId;
+    const myUserName = this.state.myUserName;
+
+    return (
+      <div className="container">
+        {this.state.session === undefined ? (
+          <div id="join">
+            <div id="img-div">
+              <img
+                src="resources/images/openvidu_grey_bg_transp_cropped.png"
+                alt="OpenVidu logo"
+              />
+            </div>
+            {/* 
+                            form에서 input버튼이 눌리면 joinSession이 실행된다.
+                            통화 버튼을 누르면 자신의 Id를 SessionId를 , 이름을 UserName으로 하는 JoinSession을 실행되게 한다
+                            -> 여기서 useEffect를 써서 컴포넌트에 들어오면 바로 JoinSession을 하게 만들면 되지 않을까?
+                            그리고 앱(리액트 네이티브에서 상대방 아이디로 통화 요청을 보냄) 
+                            수락 시 아까 설정된 SessionId와 상대방의 UserName을 가지고 JosinSession을 실행되게 한다.
+                            
+                            */}
+            <div id="join-dialog" className="jumbotron vertical-center">
+              <h1> Join a video session </h1>
+              <form className="form-group" onSubmit={this.joinSession}>
+                <p>
+                  <label>Participant: </label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    id="userName"
+                    value={myUserName}
+                    onChange={this.handleChangeUserName}
+                    required
+                  />
+                </p>
+                <p>
+                  <label> Session: </label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    id="sessionId"
+                    value={mySessionId}
+                    onChange={this.handleChangeSessionId}
+                    required
+                  />
+                </p>
+                <p className="text-center">
+                  <input
+                    className="btn btn-lg btn-success"
+                    name="commit"
+                    type="submit"
+                    value="JOIN"
+                  />
+                </p>
+              </form>
+            </div>
+          </div>
+        ) : null}
+
+        {this.state.session !== undefined ? (
+          <div id="session">
+            <div id="session-header">
+              <h1 id="session-title">{mySessionId}</h1>
+              <input
+                className="btn btn-large btn-danger"
+                type="button"
+                id="buttonLeaveSession"
+                onClick={this.leaveSession}
+                value="Leave session"
+              />
+              <input
+                className="btn btn-large btn-success"
+                type="button"
+                id="buttonSwitchCamera"
+                onClick={this.switchCamera}
+                value="Switch Camera"
+              />
+            </div>
+
+            {this.state.mainStreamManager !== undefined ? (
+              <div id="main-video" className="col-md-6">
+                <UserVideoComponent
+                  streamManager={this.state.mainStreamManager}
+                />
+              </div>
+            ) : null}
+            <div id="video-container" className="col-md-6">
+              {this.state.publisher !== undefined ? (
+                <div
+                  className="stream-container col-md-6 col-xs-6"
+                  onClick={() =>
+                    this.handleMainVideoStream(this.state.publisher)
+                  }>
+                  <UserVideoComponent streamManager={this.state.publisher} />
+                </div>
+              ) : null}
+              {this.state.subscribers.map((sub, i) => (
+                <div
+                  key={sub.id}
+                  className="stream-container col-md-6 col-xs-6"
+                  onClick={() => this.handleMainVideoStream(sub)}>
+                  <span>{sub.id}</span>
+                  <UserVideoComponent streamManager={sub} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  /**
+   * --------------------------------------------
+   * GETTING A TOKEN FROM YOUR APPLICATION SERVER
+   * --------------------------------------------
+   * The methods below request the creation of a Session and a Token to
+   * your application server. This keeps your OpenVidu deployment secure.
+   *
+   * In this sample code, there is no user control at all. Anybody could
+   * access your application server endpoints! In a real production
+   * environment, your application server must identify the user to allow
+   * access to the endpoints.
+   *
+   * Visit https://docs.openvidu.io/en/stable/application-server to learn
+   * more about the integration of OpenVidu in your application server.
+   */
+  async getToken() {
+    const sessionId = await this.createSession(this.state.mySessionId);
+    return await this.createToken(sessionId);
+  }
+
+  async createSession(sessionId) {
+    const response = await axios.post(
+      APPLICATION_SERVER_URL + 'api/openvidu/sessions',
+      {customSessionId: sessionId},
+      {
+        headers: {'Content-Type': 'application/json'},
+      },
+    );
+    return response.data; // The sessionId
+  }
+
+  async createToken(sessionId) {
+    const response = await axios.post(
+      APPLICATION_SERVER_URL +
+        'api/openvidu/sessions/' +
+        sessionId +
+        '/connections',
+      {},
+      {
+        headers: {'Content-Type': 'application/json'},
+      },
+    );
+    return response.data; // The token
+  }
+}
+
+export default App;

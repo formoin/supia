@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import Header from '../Atoms/Header';
 import Divide from '../Divide';
 import FriendAccept from '../Organisms/Message/FriendAcceptBox';
@@ -7,23 +7,24 @@ import FriendRequest from '../Organisms/Message/FriendRequestBox';
 import GiftBox from '../Organisms/Message/GiftBox';
 import useStore from '../store/useStore';
 import axios from 'axios';
-import { useIsFocused, useFocusEffect } from '@react-navigation/native';
+import {useIsFocused, useFocusEffect} from '@react-navigation/native';
+import loginStore from '../store/useLoginStore';
 
 export default function AlarmScreen() {
-  const { activeText, resetActiveText } = useStore();
+
+  const { activeText, setActiveText, resetActiveText } = useStore();
   const isFocused = useIsFocused();
-  const [alarm, setAlarm] = useState(null);
+  const [gift, setGift] = useState([]);
+  const [friend, setFriend] = useState([]);
+  const { token } = loginStore.getState();
+  const [isLoading, setIsLoading] = useState(true);
 
-
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMEBzc2FmeS5jb20iLCJtZW1iZXJJZCI6MSwiaWF0IjoxNzIzMDA1MDg1LCJleHAiOjE3NTQ1NDEwODV9.ch7Dr2fSthZGXwjCxIWpH_aIT-NlPVSMfT6wfV3iyC2TprADLaSBXvpMQf_m7hKSq5Oz7Ym6QBPPQjHZ8t8ARA';
-  const memberId = 1;
-
-  // messageId, fromMemberNickname, toMemberNickname, content, category, sentTime, check
-  // category(1: 일반 메세지, 2: 선물, 3: 친구 요청) -> 2, 3
-  const getAlarm = async () => {
+  // 선물 내역 불러오기
+  const getGift = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.get(
-        "https://i11b304.p.ssafy.io/api/messages/to",
+        "https://i11b304.p.ssafy.io/api/messages/gift-box",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -33,24 +34,64 @@ export default function AlarmScreen() {
         },
       );
       if (response.status === 200) {
-//        console.log(response.data);
-        setAlarm(response.data);
-        console.log('친구, 선물 알림 로딩 성공');
+        setGift(response.data);
+        console.log('선물 내역 로딩 성공:', response.data);
       } else {
-        console.log('친구, 선물 알림 로딩 실패');
+        console.log('선물 내역 로딩 실패');
       }
     } catch (error) {
-      console.error('친구, 선물 알림 요청 중 오류 발생:', error);
+      console.error('선물 내역 중 오류 발생:', error);
+    } finally {
+        setIsLoading(false); // 로딩 완료
+      }
+  };
+
+  // 친구 요청 내역 불러오기
+  const getFriend = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+
+        "https://i11b304.p.ssafy.io/api/messages/notification-box",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        },
+      );
+      if (response.status === 200) {
+
+        setFriend(response.data);
+        console.log('친구 요청 로딩 성공:', response.data);
+
+      } else {
+        console.log('친구 요청 로딩 실패');
+      }
+    } catch (error) {
+      console.error('친구 요청 로딩 중 오류 발생:', error);
+    } finally {
+      setIsLoading(false); // 로딩 완료
     }
   };
 
+  useEffect(() => {
+    setActiveText('text1');
+  }, []);
+
+  useEffect(() => {
+    if (activeText === 'text1') {
+      getFriend();
+    } else if (activeText === 'text2') {
+      getGift();
+    }
+  }, [activeText]);
+
   useFocusEffect(
     React.useCallback(() => {
-      if (isFocused) {
-        resetActiveText();
-        getAlarm();
-      }
-    }, [isFocused, resetActiveText]),
+      resetActiveText();
+    }, [resetActiveText])
   );
 
   return (
@@ -58,16 +99,13 @@ export default function AlarmScreen() {
       <Header label="알림" />
       <View style={styles.divide}>
         <Divide text1="친구" text2="선물" />
-        <View>
+        <ScrollView>
           {activeText === 'text1' ? (
-            <>
-              <FriendAccept />
-              <FriendRequest />
-            </>
+            <FriendRequest friend={friend} getFriend={getFriend} />
           ) : (
-            <GiftBox />
+            <GiftBox gift={gift} />
           )}
-        </View>
+        </ScrollView>
       </View>
     </View>
   );

@@ -4,14 +4,14 @@ import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 import ReadMessageModal from './ReadMessageModal';
 import moment from 'moment';
+import loginStore from '../../store/useLoginStore';
 
-export default function SentMessage({ edit, toMessage, onDelete }) {
+export default function SentMessage({ edit, toMessage, onDelete, getToMessage }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState(toMessage);
-
-  const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMDAwQG5hdmVyLmNvbSIsIm1lbWJlcklkIjo2LCJpYXQiOjE3MjMxMTIyMTAsImV4cCI6MTc1NDY0ODIxMH0.X3flqfSBEKkZH_-xKQNxXZH5aRpBQtMJYeDOGgAdwdIuU5VBmuIwL4HVoNrAi_Ak9Jh8gPe2K2g3Y_ivMf2ZQg';
+  const { token } = loginStore.getState();
 
   const messageDetail = useCallback(async (messageId) => {
     setLoading(true);
@@ -31,6 +31,7 @@ export default function SentMessage({ edit, toMessage, onDelete }) {
 
       if (response.status === 200) {
         setSelectedMessage(response.data);
+        console.log(response.data);
         console.log('메시지 확인 성공');
       } else {
         console.log('메시지 확인 실패');
@@ -104,12 +105,25 @@ export default function SentMessage({ edit, toMessage, onDelete }) {
               <Text style={styles.timeText}>{formatSentTime(message.sentTime)}</Text>
             </View>
             <View style={styles.messageContent}>
-              <Label url={message.fromMemberImg} pic="smileo" title={message.fromMemberNickname} content={truncateMessage(message.content)} />
+              <Label
+                url={message.fromMemberImg}
+                title={message.fromMemberNickname}
+                content={truncateMessage(message.content)}
+              />
               <Pressable
-                style={[styles.button, edit ? styles.deleteButton : styles.readButton]}
+                style={[
+                  styles.button,
+                  edit
+                    ? styles.deleteButton
+                    : message.check
+                    ? styles.readButtonGray
+                    : styles.readButton,
+                ]}
                 onPress={() => handlePress(message)}
               >
-                <Text style={styles.buttonText}>{edit ? '삭제' : '읽기'}</Text>
+                <Text style={styles.buttonText}>
+                  {edit ? '삭제' : message.check ? '읽음' : '읽기'}
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -121,8 +135,11 @@ export default function SentMessage({ edit, toMessage, onDelete }) {
       {selectedMessage && (
         <ReadMessageModal
           visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          type="text2" // 'text2'로 설정
+            onClose={() => {
+              setModalVisible(false);
+              getToMessage();
+            }}
+          type="text2"
           toMessage={[selectedMessage]}
         />
       )}
@@ -168,6 +185,9 @@ const styles = StyleSheet.create({
   },
   readButton: {
     backgroundColor: '#A2AA7B',
+  },
+  readButtonGray: {
+    backgroundColor: '#BEBEBE',
   },
   buttonText: {
     color: '#FFFFFF',

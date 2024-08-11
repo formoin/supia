@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import axios from 'axios';
 import Line from '../../Atoms/Line';
 import Button_Green from '../../Atoms/Button_Green';
@@ -25,6 +26,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 const {height: windowHeight} = Dimensions.get('window');
 
 const EditPageScreen = ({navigation}) => {
+  const scrollRef = useRef(null);
   const [isPWModalVisible, setIsPWModalVisible] = useState(false);
   const [isImgModalVisible, setImgModalVisible] = useState(false);
   const [loginuser, setLoginuser] = useState({
@@ -49,17 +51,13 @@ const EditPageScreen = ({navigation}) => {
       try {
         const token = await AsyncStorage.getItem('key');
         if (token) {
-          const response = await axios.get(
-            //ContextPath
-            `${Server_IP}/members/my-info/`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-                'Content-Type': 'application/json; charset=utf-8',
-              },
+          const response = await axios.get(`${Server_IP}/members/my-info/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+              'Content-Type': 'application/json; charset=utf-8',
             },
-          );
+          });
           const {id, name, nickname, profileImg, level, exp, point} =
             response.data;
           setLoginuser({
@@ -75,8 +73,7 @@ const EditPageScreen = ({navigation}) => {
           setNickname(nickname);
         }
       } catch (err) {
-        setError('Failed to fetch user info');
-        console.error(err);
+        console.error('Failed to fetch user info', err);
       }
     };
 
@@ -96,7 +93,6 @@ const EditPageScreen = ({navigation}) => {
     });
   };
 
-  // 현재 비밀번호 검증
   const verifyCurrentPassword = () => {
     axios
       .post(`${Server_IP}/members/password`, {
@@ -128,7 +124,6 @@ const EditPageScreen = ({navigation}) => {
     setImgModalVisible(false);
   };
 
-  // 비밀번호 업데이트
   const ChangePassword = () => {
     axios
       .put(`${Server_IP}/members/change-password`, newPassword, {
@@ -157,9 +152,8 @@ const EditPageScreen = ({navigation}) => {
         },
       })
       .then(response => {
-        Alert.alert('성공', '회원 탈퇴가 이루어졌습니다..');
-
-        navigation.navigate('Home');
+        Alert.alert('성공', '회원 탈퇴가 이루어졌습니다.');
+        navigation.navigate('Login');
       })
       .catch(error => {
         Alert.alert('오류', '회원 탈퇴에 실패했습니다.');
@@ -167,16 +161,15 @@ const EditPageScreen = ({navigation}) => {
       });
   };
 
-  // 사용자 정보 업데이트
   const updateUserInfo = () => {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('nickname', nickname);
-    if (profileImg) {
+    if (loginuser.profile_img) {
       formData.append('profileImg', {
-        uri: profileImg.uri,
-        type: profileImg.type,
-        name: profileImg.fileName,
+        uri: loginuser.profile_img,
+        type: 'image/jpeg',
+        name: 'profile.jpg',
       });
     }
 
@@ -198,7 +191,11 @@ const EditPageScreen = ({navigation}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAwareScrollView
+      contentContainerStyle={styles.container}
+      extraScrollHeight={20}
+      enableOnAndroid={true}
+      keyboardOpeningTime={250}>
       <Header label="정보 수정" goto={'MyPage'} />
       <Pressable onPress={openImgModal} style={{padding: 30}}>
         <Image
@@ -320,13 +317,13 @@ const EditPageScreen = ({navigation}) => {
           </View>
         </View>
       </Modal>
-    </View>
+    </KeyboardAwareScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
     backgroundColor: '#ECEADE',
   },
@@ -356,7 +353,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     marginRight: 50,
-    textAlign: 'right', // 아이콘과 텍스트 입력 필드 사이의 간격 추가
+    textAlign: 'right',
   },
   Buttons: {
     flexDirection: 'row',
@@ -365,7 +362,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     width: '100%',
   },
-
   pwRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

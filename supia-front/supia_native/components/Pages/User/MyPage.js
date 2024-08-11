@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import testWalkData from './walkTest.json'; // 로컬 JSON 파일 가져오기
 import {
   ScrollView,
   View,
@@ -6,39 +7,50 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
+  Image,
 } from 'react-native';
 import {Avatar} from '@rneui/themed';
 import Line from '../../Atoms/Line';
 import Octicons from 'react-native-vector-icons/Octicons';
-import ActivityChart from '../../Organisms/BarChart/profileChart';
+import ActivityChart from '../../Organisms/BarChart/walkHistoryChart';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import {Server_IP} from '@env';
+import useLoginStore from '../../store/useLoginStore';
+import useStore from '../../store/useStore';
 
 const MyPageScreen = ({navigation}) => {
   const today = new Date();
   const formattedDate = `${today.getMonth() + 1}월 ${today.getDate()}일`;
   const [modalVisible, setModalVisible] = useState(false);
   const [error, setError] = useState(null);
-  const [loginuser, setLoginuser] = useState({
-    id: '',
-    name: '',
-    nickname: '',
-    profile_img: '',
-    level: '',
-    exp: '',
-    point: '',
-  });
+  const [loginuser, setLoginuser] = useState(null);
+  const {token} = useLoginStore.getState();
 
+  const {
+    weeklyWalkHistory,
+    monthlyWalkHistory,
+    yearlyWalkHistory,
+    fetchWalkHistory,
+  } = useStore(state => ({
+    fetchWalkHistory: state.fetchWalkHistory,
+    weeklyWalkHistory: state.weeklyWalkHistory,
+    monthlyWalkHistory: state.monthlyWalkHistory,
+    yearlyWalkHistory: state.yearlyWalkHistory,
+  }));
+
+  // 컴포넌트 진입 시 유저 정보+걷기 정보 fetch
   useEffect(() => {
+    // 유저 정보 가져오기
     const fetchUserInfo = async () => {
       try {
-        const token = await AsyncStorage.getItem('key');
+        // 원래 토큰 받아노는건 이거야
+        // const token = await AsyncStorage.getItem('key');
         if (token) {
           const response = await axios.get(
             //ContextPath
-            `${Server_IP}/members/my-info/`,
+            `${Server_IP}/members/my-info`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -47,17 +59,7 @@ const MyPageScreen = ({navigation}) => {
               },
             },
           );
-          const {id, name, nickname, profileImg, level, exp, point} =
-            response.data;
-          setLoginuser({
-            id,
-            name,
-            nickname,
-            profileImg,
-            level,
-            exp,
-            point,
-          });
+          setLoginuser(response.data.member);
         } else {
           setError('No token found');
         }
@@ -66,17 +68,86 @@ const MyPageScreen = ({navigation}) => {
         console.error(err);
       }
     };
-
     fetchUserInfo();
+    fetchWalkHistory();
   }, []);
 
-  const minExp = 300;
-  const maxExp = 500;
-  const nowExp = ((loginuser.exp - minExp) / (maxExp - minExp)) * 120;
+  // // 로컬에서 JSON 받을 때 axios 처럼 받기 위한 코드
+  // useEffect(() => {
+  //   //걷기 기록 가져오기
+  //   const fetchWalkHistory = async () => {
+  //     try {
+  //       // Axios 요청처럼 데이터를 가공
+  //       const response = {
+  //         data: testWalkData,
+  //         status: 200,
+  //         statusText: 'OK',
+  //         headers: {},
+  //         config: {},
+  //         request: {},
+  //       };
 
-  if (error) {
-    return <Text>{error}</Text>;
+  //       // 데이터를 기존 axios 요청처럼 처리
+  //       if (response.status === 200) {
+  //         // 각각의 데이터 상태에 저장
+  //         setMonthlyWalkHistory(response.data.monthly);
+  //         console.log(monthlyWalkHistory);
+  //         setYearlyWalkHistory(response.data.yearly);
+  //         console.log(yearlyWalkHistory);
+
+  //         // weeklyWalkHistory는 monthly 데이터의 마지막 7일을 사용
+  //         setWeeklyWalkHistory(response.data.monthly.slice(-7));
+  //         console.log(weeklyWalkHistory);
+  //       } else {
+  //         throw new Error('걷기 기록 가져오기 실패 : response.status !== 200');
+  //       }
+  //     } catch (err) {
+  //       setError('걷기 기록 가져오기 실패');
+  //       console.error(err);
+  //     }
+  //   };
+
+  //   fetchWalkHistory();
+  // }, []);
+
+  if (!loginuser) {
+    // loginuser가 아직 null이면 로딩 상태를 표시하거나 빈 화면을 표시할 수 있습니다.
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
   }
+
+  if (!monthlyWalkHistory) {
+    return (
+      <View style={styles.container}>
+        <Text>걷기 기록 가져오는 중...</Text>
+      </View>
+    );
+  }
+
+  const levelInfo = [
+    {text: '씨앗', image: require('../../../assets/level/씨앗.png')},
+    {text: '새싹', image: require('../../../assets/level/새싹.png')},
+    {text: '잎새', image: require('../../../assets/level/잎새.png')},
+    {text: '꽃', image: require('../../../assets/level/꽃.png')},
+    {text: '열매', image: require('../../../assets/level/열매.png')},
+  ];
+
+  const ExpMax = [100, 300, 500, 1000, 1500];
+  const minExp = 0;
+  const maxExp = ExpMax[loginuser.level];
+  const nowExp = ((loginuser.exp - minExp) / (maxExp - minExp)) * 100;
+  // if (!monthlyWalkHistory) {
+  //   // loginuser가 아직 null이면 로딩 상태를 표시하거나 빈 화면을 표시할 수 있습니다.
+  //   return (
+  //     <View style={styles.container}>
+  //       <Text>Loading...</Text>
+  //     </View>
+  //   );
+  // }
+  // console.log('??' + monthlyWalkHistory);
 
   return (
     <View style={styles.container}>
@@ -88,7 +159,7 @@ const MyPageScreen = ({navigation}) => {
               size={64}
               rounded
               source={{
-                uri: `https://picsum.photos/100/100`,
+                uri: `${loginuser.profileImg}`,
               }}>
               <Avatar.Accessory
                 onPress={() => {
@@ -99,7 +170,7 @@ const MyPageScreen = ({navigation}) => {
               />
             </Avatar>
           </View>
-          <Text style={styles.username}>{loginuser.nickname}</Text>
+          <Text style={styles.username}>{loginuser.name}</Text>
           <Text style={styles.points}>내 포인트 {loginuser.point}</Text>
         </View>
         <View style={{marginTop: 10, marginBottom: 30}}>
@@ -108,18 +179,21 @@ const MyPageScreen = ({navigation}) => {
           </View>
         </View>
         <View style={styles.levelContainer}>
-          <Avatar
-            size={64}
-            rounded
-            source={{
-              uri: `${loginuser.profile_img}`,
+          <Image
+            source={levelInfo[loginuser.level].image}
+            style={{
+              marginTop: 10,
+              marginLeft: 10,
+              width: 60,
+              height: 60,
             }}
-            title="Bj"
-            containerStyle={{backgroundColor: 'grey'}}></Avatar>
+          />
           <View style={{marginLeft: 30}}>
-            <Text style={styles.levelText}>Lv. {loginuser.level}</Text>
+            <Text style={styles.levelText}>Lv. </Text>
             <View style={styles.levelTextContainer}>
-              <Text style={styles.titleText}>새싹</Text>
+              <Text style={styles.titleText}>
+                {levelInfo[loginuser.level].text}
+              </Text>
               <TouchableOpacity onPress={() => setModalVisible(true)}>
                 <Octicons name="question" size={20} />
               </TouchableOpacity>
@@ -128,7 +202,9 @@ const MyPageScreen = ({navigation}) => {
         </View>
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
-            <View style={[styles.progress, {width: `${nowExp}%`}]} />
+            <View style={[styles.progress, {width: `${nowExp}%`}]}>
+              <Text style={styles.expValue}>{loginuser.exp}</Text>
+            </View>
           </View>
           <View style={styles.progressLabels}>
             <Text style={styles.progressLabel}>{minExp}</Text>
@@ -137,7 +213,12 @@ const MyPageScreen = ({navigation}) => {
         </View>
         <View style={styles.infoSection}>
           <View style={{padding: 15, justifyContent: 'center'}}>
-            <ActivityChart />
+            {/* 운동 정보 기록 -> walkingHistory 들고 가기 */}
+            <ActivityChart
+              weeklyWalkHistory={weeklyWalkHistory}
+              monthlyWalkHistory={monthlyWalkHistory}
+              yearlyWalkHistory={yearlyWalkHistory}
+            />
           </View>
         </View>
       </ScrollView>
@@ -281,6 +362,7 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#4caf50',
     borderRadius: 10,
+    justifyContent: 'center',
   },
   progressLabels: {
     flexDirection: 'row',
@@ -294,6 +376,12 @@ const styles = StyleSheet.create({
     color: '#4caf50',
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  expValue: {
+    textAlign: 'right',
+    color: 'white',
+    paddingRight: 5,
+    fontSize: 12,
   },
 
   infoSection: {

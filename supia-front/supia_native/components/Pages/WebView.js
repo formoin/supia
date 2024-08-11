@@ -14,10 +14,13 @@ const Webview = () => {
       <WebView
         ref={webviewRef}
         style={styles.webview}
-        source={{
-          uri: 'https://i11b304.p.ssafy.io:8443/#/saba-japan-jade-trout',
-        }}
+
+        source={{uri: 'https://i11b304.p.ssafy.io:8443/#/saba-japan-jade-trout'}}
         onNavigationStateChange={e => setNavState(e)}
+//         mediaPlaybackRequiresUserAction={false} // 자동으로 미디어를 재생할 수 있게 함
+//         javaScriptEnabled={true} // JavaScript가 실행될 수 있게 함
+//         domStorageEnabled={true} // 웹페이지의 로컬 스토리지를 사용할 수 있게 함
+
       />
     </SafeAreaView>
   );

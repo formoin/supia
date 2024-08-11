@@ -4,8 +4,48 @@ import PopupHeader from './Atoms/PopupHeader'
 import Button_Green from './Atoms/Button_Green'
 import Searchbar from './Organisms/SearchBar';
 import Frame from './Atoms/Frame';
+import useStore from './store/useStore';
+import axios from 'axios';
+import loginStore from './store/useLoginStore';
 
-export default function SendGiftModal({onClose, selectedIndex, speciesName, representativeImg, date}) {
+export default function SendGiftModal({onClose, selectedIndex, speciesName, representativeImg, date, itemId, onGiftSuccess}) {
+  const {getS3Url} = useStore();
+  const { token } = loginStore.getState()
+
+  const goGift = async () => {
+    const Message = {
+      fromMemberId: 8, //수정
+      toMemberId: 10, //수정
+      itemId
+    };
+    try {
+      const response = await axios.post(
+        'https://i11b304.p.ssafy.io/api/messages/gift',
+        Message,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        },
+      );
+  
+      if (response.status === 200) {
+        console.log('선물 보내기 성공');
+        onGiftSuccess()
+      } else {
+        console.log('선물 보내기 실패', response);
+      }
+    } catch (error) {
+      console.error('선물 요청 중 오류 발생:', error);
+    }
+  };
+
+  const handleButtonClick = () => {
+    goGift()
+  }
+  
   return (
     <View style={styles.container}>
       <PopupHeader Label="선물하기" onClose={onClose}/>
@@ -14,13 +54,13 @@ export default function SendGiftModal({onClose, selectedIndex, speciesName, repr
       </View>
       <Frame>
         <Text style={{ fontSize: 20 }}>{speciesName}</Text>
-        <Image source={{ uri: representativeImg }} style={{ width: 130, height: 130, marginVertical: 4 }} />
+        <Image source={{ uri: getS3Url(representativeImg) }} style={{ width: 130, height: 130, marginVertical: 4, transform: [{ rotate: '90deg' }] }} />
         <Text style={{ fontSize: 16 }}>{date}</Text>
         <Text style={{ fontSize: 8 }}>{selectedIndex}</Text>
       </Frame>
       <View style={styles.buttonContainer}>
         <View style={styles.button}>
-          <Button_Green label="보내기"/>
+          <Button_Green label="보내기" onPress={handleButtonClick}/>
         </View>
       </View>
     </View>

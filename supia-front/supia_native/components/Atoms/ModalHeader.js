@@ -1,14 +1,19 @@
 import React from 'react';
-import {StyleSheet, View, Text, Pressable} from 'react-native';
+import {StyleSheet, View, Text, Pressable, Image} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
+import useStore from '../store/useStore';
 
-export default function ModalHeader({UserName, onClose, page}) {
+export default function ModalHeader({UserName, onClose, page, url}) {
+  const { getS3Url } = useStore();
   return (
     <View>
       <View style={styles.Header}>
-        <View style={styles.iconContainer}>
-          <Feather name="user" size={24} color="#A2AA7B" />
+        <View>
+            <Image
+              source={{ uri: getS3Url(url) }}
+              style={styles.image}
+            />
         </View>
         <Text style={styles.typography}>{UserName}</Text>
         <Pressable onPress={onClose}>
@@ -37,4 +42,10 @@ const styles = StyleSheet.create({
     fontStyle: 'normal',
     fontWeight: '400',
   },
+    image: {
+      width: 35,
+      height: 35,
+      borderRadius: 25,
+      marginLeft: 20
+    },
 });
