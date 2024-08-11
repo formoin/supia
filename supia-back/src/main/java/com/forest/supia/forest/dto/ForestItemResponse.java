@@ -11,5 +11,6 @@ public class ForestItemResponse {
     private double x;
     private double y;
     private String imgUrl;
-    private String sound;
+    private boolean SoundOn;
+    private String soundUrl;
 }
