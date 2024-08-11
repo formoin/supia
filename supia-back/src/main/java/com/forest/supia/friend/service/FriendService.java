@@ -9,7 +9,7 @@ import java.util.List;
 public interface FriendService {
     List<FriendResponse> getFriendsList(long memberId);
 
-    MemberResponse getFriendProfile(long memberId);
+    MemberResponse getFriendProfile(long memberId, long friendId);
 
     void sendFriendRequest(FriendRequest friendRequest);
 
