@@ -70,9 +70,14 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public MemberResponse getFriendProfile(long memberId) {
+    public MemberResponse getFriendProfile(long memberId, long friendId) {
 
-        Member member = memberRepository.findById(memberId).orElseThrow(null);
+        Friend friend = friendRepository.findById(friendId).orElseThrow(()->new ExceptionResponse(CustomException.NOT_FOUND_FRIEND_EXCEPTION));
+        long friendMemberId = 0;
+        if(friend.getToMember().getId() == memberId) friendMemberId = friend.getFromMember().getId();
+        else friendMemberId = friend.getToMember().getId();
+
+        Member member = memberRepository.findById(friendMemberId).orElse(null);
         if(member== null) return null;
 
         MemberResponse friendProfile = new MemberResponse();

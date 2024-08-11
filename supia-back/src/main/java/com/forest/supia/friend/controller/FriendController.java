@@ -60,9 +60,9 @@ public class FriendController {
     }
 
     @GetMapping("/detail")
-    public ResponseEntity<?> getFriendProfile (@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> getFriendProfile (@RequestHeader("Authorization") String token, @RequestParam("friendId") long friendId) {
         long memberId = jwtUtil.extractMemberId(token);
-        MemberResponse result = friendService.getFriendProfile(memberId);
+        MemberResponse result = friendService.getFriendProfile(memberId, friendId);
 
         
         return ResponseEntity.ok(result);
