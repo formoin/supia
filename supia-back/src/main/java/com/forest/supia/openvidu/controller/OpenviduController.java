@@ -8,9 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-//TODO: 서버 배포시 Cross Origin 지우기
-@CrossOrigin(origins = "*")
-@RestController("/openvidu")
+@RestController
+@RequestMapping("/openvidu")
 public class OpenviduController {
 
 	@Value("${OPENVIDU_URL}")
