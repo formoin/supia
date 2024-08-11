@@ -27,9 +27,9 @@ public class Item {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "walk_id")
-    private Walk walk;
+//    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+//    @JoinColumn(name = "walk_id")
+//    private Walk walk;
 
     private LocalDate acquireDate;
     public void setSpecies(Species species) {
