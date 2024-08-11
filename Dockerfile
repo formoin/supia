@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./ 
 RUN npm install
 COPY . .
-RUN npm start build
+RUN npm run build
 
 FROM nginx:stable-alpine AS production-stage
 COPY --from=build /app/build /usr/share/nginx/html
