@@ -31,9 +31,9 @@ public class Walk {
 
     //==연관관계 메서드==//
 
-    public void addItem(Item item) {
-        item.setWalk(this);
-    }
+//    public void addItem(Item item) {
+//        item.setWalk(this);
+//    }
 
     //==생성 메서드==//
     public static Walk createWalk(Member member, LocalDate walkDate, long walkTime, double distance, List<Item> items) {
@@ -46,9 +46,9 @@ public class Walk {
         walk.walkTime = walkTime;
         walk.distance = distance;
 
-        for(Item item : items) {
-            walk.addItem(item);
-        }
+//        for(Item item : items) {
+//            walk.addItem(item);
+//        }
 
         // member 포인트 설정
         member.addPointDistance(distance);
