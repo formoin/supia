@@ -56,7 +56,8 @@ public class ForestServiceImpl implements ForestService{
             forestItemResponse.setItemId(forestItem.getItem().getId());
             forestItemResponse.setX(forestItem.getX());
             forestItemResponse.setY(forestItem.getY());
-            if(forestItem.isSoundOn()) forestItemResponse.setSound(forestItem.getItem().getSpecies().getSound());
+            forestItemResponse.setSoundOn(forestItem.isSoundOn());
+            forestItemResponse.setSoundUrl(forestItem.getItem().getSpecies().getSound());
 
             forestItemResponseList.add(forestItemResponse);
         }

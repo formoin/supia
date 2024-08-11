@@ -32,7 +32,7 @@ public enum CustomException {
     NOT_VALID_JWT_EXCEPTION(401,"NotValidJwtException","토큰이 유효하지 않습니다."),
 
     //403
-    ACCESS_DENIEND_EXCEPTION(403,"AccessDeniendException","권한이 없습니다");
+    ACCESS_DENIED_EXCEPTION(403,"AccessDeniedException","권한이 없습니다");
 
     private int statusNum;
     private String errorCode;
