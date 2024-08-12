@@ -40,7 +40,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeRequests(auth -> auth
-                        .requestMatchers("/members/login", "/members/register", "/members/social-login","/ws/**", "/notification/subscribe/**").permitAll()
+                        .requestMatchers("/members/login", "/members/register", "/members/social-login","/openvidu/**", "/notification/subscribe/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
