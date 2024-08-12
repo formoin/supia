@@ -102,7 +102,7 @@ public class ForestServiceImpl implements ForestService{
 
     @Override
     public void updateSoundForest(ForestItemSoundRequest forestItemSoundRequest) {
-        ForestItem forestItem = forestItemRepository.findById(forestItemSoundRequest.getId()).orElse(new ForestItem());
+        ForestItem forestItem = forestItemRepository.findByItemId(forestItemSoundRequest.getItemId()).orElse(new ForestItem());
 
         forestItem.update(forestItemSoundRequest);
 
