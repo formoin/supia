@@ -54,10 +54,10 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query(
             value = "SELECT " +
-                    "i.id AS itemId, s.name AS speciesName, i.si+' '+i.dong AS address, i.img_url AS imgUrl " +
+                    "i.id AS itemId, s.name AS speciesName, i.dong_code AS address, i.img_url AS imgUrl " +
                     "FROM item i " +
                     "INNER JOIN species s ON i.species_id = s.id " +
-                    "WHERE s.name LIKE concat('%', :keyword, '%') OR i.dong LIKE concat('%', :keyword, '%') OR i.si LIKE concat('%', :keyword, '%')",
+                    "WHERE s.name LIKE concat('%', :keyword, '%') OR i.dong_code LIKE concat('%', :keyword, '%')",
             nativeQuery = true
     )
     List<ItemSearchResponse> findItemByKeyword(@Param("keyword") String keyword);
