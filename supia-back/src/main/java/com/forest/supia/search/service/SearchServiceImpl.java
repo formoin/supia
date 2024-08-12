@@ -34,7 +34,7 @@ public class SearchServiceImpl implements SearchService{
     }
 
     public MemberResponse memberDetail(long memberId, long findId) {
-        Member findMember = memberRepository.findById(memberId).orElseThrow(null);
+        Member findMember = memberRepository.findById(findId).orElseThrow(null);
 
         MemberResponse memberResponse = new MemberResponse();
         memberResponse.setMemberId(findId);
