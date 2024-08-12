@@ -84,7 +84,7 @@ async def process_image(
         # top-left corner of frame
         x1 = int(center_x - frame_width // 2)
         y1 = int(center_y - frame_height // 2)
-        
+
         # buttom-right corner of frame
         x2 = int(center_x + frame_width // 2)
         y2 = int(center_y + frame_height // 2)
@@ -99,23 +99,27 @@ async def process_image(
         cls_result = cls_model(image_rgb[y1:y2, x1:x2])
         probs = cls_result[0].probs.top1
         probs_name = cls_result[0].names[probs]
+        probs_conf = cls_result[0].probs.top1conf.detach().item()
 
         # Determine category and Korean name
         category = None
         probs_name_kr = None
-        for cat, species in species_dict.items():
-            if probs_name in species:
-                category = cat
-                probs_name_kr = species[probs_name]
-                break
 
-        if category is None or probs_name_kr is None:
-            raise HTTPException(status_code=400, detail="Unrecognized species name")
+        if probs_conf < 0.8:
+            category = "기타"
+            probs_name_kr = "unknown"
+        else:
+            for cat, species in species_dict.items():
+                if probs_name in species:
+                    category = cat
+                    probs_name_kr = species[probs_name]
+                    break
+
+            if category is None or probs_name_kr is None:
+                raise HTTPException(status_code=400, detail="Unrecognized species name")
 
         # Segment the image
-        results = seg_model.predict(
-            temp_image_path, bboxes=[x1, y1, x2, y2]
-        )
+        results = seg_model.predict(temp_image_path, bboxes=[x1, y1, x2, y2])
         # Extract mask coordinates
         mask_coords = results[0].masks[0].xy[0]
 
@@ -134,7 +138,9 @@ async def process_image(
         new_image_bgra = cv2.cvtColor(new_image, cv2.COLOR_RGBA2BGRA)
 
         # Illustration
-        hand_drawing_img = color_hand_drawing(new_image).crop((x1-5, y1-5, x2+5, y2+5))
+        hand_drawing_img = color_hand_drawing(new_image).crop(
+            (x1 - 5, y1 - 5, x2 + 5, y2 + 5)
+        )
 
         # Save hand-drawing image to file
         hand_drawing_img.save(output_image_path)
@@ -149,15 +155,10 @@ async def process_image(
         file_url = f"{AWS_S3_URL}/{s3_file_name}"
 
         return JSONResponse(
-            # content={
-            #     "hand_drawing_img_url": file_url,
-            #     "category": category,
-            #     "probs_name": probs_name_kr,
-            # },
             content={
                 "hand_drawing_img_url": file_url,
                 "category": category,
-                "probs_name": "unknown",
+                "probs_name": probs_name_kr,
             },
             status_code=200,
         )
