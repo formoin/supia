@@ -15,7 +15,7 @@ load_dotenv()
 app = FastAPI()
 
 # Load models
-seg_model = SAM("./model/mobile_sam.pt")
+seg_model = SAM("./model/sam_b.pt")
 cls_model = YOLO("./model/best.pt")
 
 # Set AWS S3
