@@ -23,7 +23,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             value = "SELECT " +
                     "m.id AS memberId, m.nickname AS nickname, m.name AS name, m.profile_img AS imgUrl " +
                     "FROM member m " +
-                    "WHERE m.name LIKE concat('%', :keyword, '%') OR m.nickname LIKE concat('%', :keyword, '%') OR m.email LIKE concat('%', :keyword, '%') ",
+                    "WHERE (m.name LIKE concat('%', :keyword, '%') OR m.nickname LIKE concat('%', :keyword, '%') OR m.email LIKE concat('%', :keyword, '%')) " +
+                    "AND is_active = 1 ",
             nativeQuery = true
     )
     List<MemberSearchResponse> findMemberByKeyword(@Param("keyword") String keyword);

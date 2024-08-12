@@ -63,7 +63,11 @@ public class MemberController {
                 return ResponseEntity.badRequest().body(response);
             }
         } else {
-            response.put("message", "이미 가입한 회원입니다.");
+            if (check_exist.isActive()) {
+                response.put("message", "이미 가입한 회원입니다.");
+            } else {
+                response.put("message", "탈퇴한 계정입니다.");
+            }
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -78,8 +82,13 @@ public class MemberController {
         Member member = memberService.findByEmail(loginInfo.getEmail());
         String token = memberService.loginAndGetToken(loginInfo);
         if (token != null) {
-            response.put("token", token);
-            response.put("message", "로그인이 완료되었습니다.");
+            if(member.isActive()){
+                response.put("token", token);
+                response.put("message", "로그인이 완료되었습니다.");
+            } else {
+                response.put("message", "탈퇴한 회원입니다.");
+            }
+
             return ResponseEntity.ok().body(response);
         } else {
             response.put("message", "유효하지 않은 로그인입니다.");
