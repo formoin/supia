@@ -72,6 +72,7 @@ public class Member {
     public void addPointDistance(double distance) {
 
         this.point += (int) (distance / 100) * 10;
+        System.out.println("Member Entity: " +this.point);
     }
 
     public void addPointItem(int cnt) {

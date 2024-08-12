@@ -52,6 +52,7 @@ public class Walk {
 
         // member 포인트 설정
         member.addPointDistance(distance);
+        System.out.println("Walk entity!!!! : " + member.getPoint());
         member.addPointItem(items.size());
         return walk;
 

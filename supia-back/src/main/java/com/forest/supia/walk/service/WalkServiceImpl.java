@@ -64,7 +64,9 @@ public class WalkServiceImpl implements WalkService{
             itemRepository.save(item);
         }
 
+        System.out.println("Walk service(before createWalk): "+member.getPoint());
         Walk walk = Walk.createWalk(member, walkDate, walkTime, walkDto.getDistance(), items);
+        System.out.println("Walk service(after createWalk): "+member.getPoint());
         walkRepository.save(walk);
         return walk.getId();
     }
