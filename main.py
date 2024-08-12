@@ -146,6 +146,14 @@ async def process_image(
         hand_drawing_img.save(output_image_path)
 
         # Upload to S3
+        s3_original_file_name = (
+            f"item/original/{member_id}_{date}_{time}_{category}_{probs_name}.png"
+        )
+
+        s3_client.upload_file(
+            temp_image_path, AWS_S3_BUCKET_NAME, s3_original_file_name
+        )
+
         s3_file_name = (
             f"item/illustrated/{member_id}_{date}_{time}_{category}_{probs_name}.png"
         )
