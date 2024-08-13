@@ -275,10 +275,8 @@ class App extends Component {
 
   render() {
     const mySessionId = this.state.mySessionId;
-    const myUserName = this.state.myUserName;
-    const SessionId = this.state.isCaller
-      ? this.state.userId
-      : this.state.targetUserId; // 추가
+    const userId = this.state.userId;
+    const memberName = this.state.memberName; // 추가
 
     return (
       <div className="container">
@@ -331,7 +329,7 @@ class App extends Component {
         {this.state.session !== undefined ? (
           <div id="session">
             <div id="session-header">
-              <h1 id="session-title">{SessionId}</h1>
+              <h1 id="session-title">{mySessionId}</h1>
               <label
                 id="member-name-label"
                 style={{ marginRight: "20px", fontWeight: "bold" }}
@@ -409,9 +407,7 @@ class App extends Component {
       const sessionId = await this.createSession(this.state.userId);
       return await this.createToken(sessionId);
     } else {
-      const sessionId = await this.createSession(
-        this.state.targetUserId ? this.state.targetUserId : "없는 세션"
-      );
+      const sessionId = await this.createSession(this.state.targetUserId);
       return await this.createToken(sessionId);
     }
   }
