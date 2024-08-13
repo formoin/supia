@@ -1,6 +1,6 @@
 import { OpenVidu } from "openvidu-browser";
 
-import axios, { isCancel } from "axios";
+import axios from "axios";
 import React, { Component } from "react";
 import "./App.css";
 import UserVideoComponent from "./UserVideoComponent";
@@ -12,8 +12,6 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    if (window.isCaller) {
-    }
     // These properties are in the state's component in order to re-render the HTML whenever their values change
     this.state = {
       mySessionId: "SessionA",
@@ -34,8 +32,8 @@ class App extends Component {
   }
 
   componentDidMount() {
-    window.JoinSession = this.joinSession; // JoinSession을 전역으로 등록
     window.addEventListener("beforeunload", this.onbeforeunload);
+    joinSession();
   }
 
   componentWillUnmount() {
@@ -77,7 +75,7 @@ class App extends Component {
     }
   }
 
-  joinSession(sessionId, userName) {
+  joinSession() {
     // --- 1) Get an OpenVidu object ---
 
     this.OV = new OpenVidu();
@@ -121,11 +119,11 @@ class App extends Component {
         // --- 4) Connect to the session with a valid user token ---
 
         // Get a token from the OpenVidu deployment
-        this.getToken(sessionId).then((token) => {
+        this.getToken().then((token) => {
           // First param is the token got from the OpenVidu deployment. Second param can be retrieved by every user on event
           // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
           mySession
-            .connect(token, { clientData: userName }) // 여기에 UserName 삽입
+            .connect(token, { clientData: this.state.myUserName })
             .then(async () => {
               // --- 5) Get your own camera stream ---
 
@@ -367,7 +365,7 @@ class App extends Component {
   async createSession(sessionId) {
     const response = await axios.post(
       APPLICATION_SERVER_URL + "api/openvidu/sessions",
-      { customSessionId: sessionId }, // 여기에 UserId
+      { customSessionId: sessionId },
       {
         headers: { "Content-Type": "application/json" },
       }
