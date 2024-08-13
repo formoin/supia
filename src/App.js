@@ -125,6 +125,8 @@ class App extends Component {
     this.setState(
       {
         session: this.OV.initSession(),
+        mySessionId: this.state.userId || prevState.mySessionId,
+        myUserName: this.state.memberName || prevState.myUserName,
       },
       () => {
         var mySession = this.state.session;
