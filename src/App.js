@@ -275,7 +275,7 @@ class App extends Component {
 
   render() {
     const mySessionId = this.state.mySessionId;
-    const userId = this.state.userId;
+    const myUserName = this.state.myUserName;
     const memberName = this.state.memberName; // 추가
 
     return (
