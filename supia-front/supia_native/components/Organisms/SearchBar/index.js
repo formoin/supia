@@ -1,30 +1,37 @@
-import { View, StyleSheet, Pressable, TextInput, Text } from 'react-native';
+import {View, StyleSheet, Pressable, TextInput, Text} from 'react-native';
 import React from 'react';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import { Server_IP } from '@env';
+import {Server_IP} from '@env';
 import loginStore from '../../store/useLoginStore';
-import axios from 'axios'
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Searchbar({ active, searchName, type, value, onChangeText, onSearch }) {
-  const { token } = loginStore.getState();
+export default function Searchbar({
+  active,
+  searchName,
+  type,
+  value,
+  onChangeText,
+  onSearch,
+}) {
+  // const { token } = loginStore.getState();
 
   const getUserSearch = async () => {
+    const token = await AsyncStorage.getItem('key');
+
     console.log('가즈아 ' + value);
     try {
-      const response = await axios.get(
-        "https://i11b304.p.ssafy.io/api/search",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          params: {
-            type: 0, // 0: 유저 검색, 1: 아이템 검색
-            keyword: value,
-          },
+      const response = await axios.get(`${Server_IP}/search`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
-      );
+        params: {
+          type: 0, // 0: 유저 검색, 1: 아이템 검색
+          keyword: value,
+        },
+      });
 
       console.log('axios' + response);
       if (response.status === 200) {
@@ -40,6 +47,8 @@ export default function Searchbar({ active, searchName, type, value, onChangeTex
   };
 
   const getItemSearch = async () => {
+    const token = await AsyncStorage.getItem('key');
+
     try {
       const response = await axios.get(`${Server_IP}/search`, {
         headers: {

@@ -4,11 +4,12 @@ import useStore from '../store/useStore';
 import DicDivide from '../DicDivide';
 import Card from '../Atoms/Card';
 import Octicons from 'react-native-vector-icons/Octicons';
-import {View, StyleSheet, Pressable, ScrollView, Button} from 'react-native';
+import {View, StyleSheet, Pressable, ScrollView, Dimensions} from 'react-native';
 import DictionarySticker from './DictionarySticker';
 import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
 import axios from 'axios';
-import loginStore from '../store/useLoginStore';
+const {width, height} = Dimensions.get('window');
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function DictionaryForest({
   goDictionary,
@@ -17,10 +18,12 @@ export default function DictionaryForest({
 }) {
   const {activeDic, resetActiveDic} = useStore();
   const [speciesList, setSpeciesList] = useState([]);
-  const { token } = loginStore.getState();
+  // const { token } = loginStore.getState();
   const [stickerinfo, setStickerinfo] = useState(null);
   // api
   const fetchSpeciesData = async category => {
+    const token = await AsyncStorage.getItem('key');
+
     try {
       const response = await axios.get(`${Server_IP}/items`, {
         headers: {
@@ -74,7 +77,6 @@ export default function DictionaryForest({
             id={species.id}
             representativeImg={species.representativeImg}
             speciesName={species.speciesName}
-
             mini={true}
             setShowSticker={setShowSticker}
             setStickerinfo={setStickerinfo}
@@ -83,7 +85,6 @@ export default function DictionaryForest({
       </View>
     );
   };
-
 
   return (
     <View style={styles.container}>
@@ -98,7 +99,6 @@ export default function DictionaryForest({
       </View>
       <ScrollView>{renderCard()}</ScrollView>
 
-
       {showSticker && (
         <View
           style={{
@@ -111,7 +111,6 @@ export default function DictionaryForest({
             alignItems: 'center',
           }}>
           <DictionarySticker
-
             setShowSticker={setShowSticker}
             speciesName={stickerinfo?.speciesName}
             id={stickerinfo?.id}
@@ -124,8 +123,8 @@ export default function DictionaryForest({
 
 const styles = StyleSheet.create({
   container: {
-    width: 362,
-    height: 408,
+    width: height*0.45,
+    height: width,
     borderRadius: 32,
     backgroundColor: '#FCFCFC',
   },
@@ -142,9 +141,8 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   p_value: {
-    padding: 20,
-    alignItems: 'center',
-    paddingTop: 30,
+    padding: 10,
+    paddingTop: 20,
   },
   Cardcontainer: {
     flexDirection: 'row',

@@ -1,30 +1,39 @@
 import React from 'react';
-import { Modal, View, Image, StyleSheet, Text, Alert } from 'react-native';
+import {Modal, View, Image, StyleSheet, Text, Alert} from 'react-native';
 import PopupHeader from '../../Atoms/PopupHeader';
 import Green from '../../Atoms/Button_Green';
 import Red from '../../Atoms/Button_Red';
 import axios from 'axios';
-import loginStore from '../../store/useLoginStore'
+import loginStore from '../../store/useLoginStore';
+import {Server_IP} from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const GiftModal = ({ visible, onClose, imageUrl, content, messageId, onAccept, onRefuse }) => {
-  const { token } = loginStore.getState()
+const GiftModal = ({
+  visible,
+  onClose,
+  imageUrl,
+  content,
+  messageId,
+  onAccept,
+  onRefuse,
+}) => {
+  // const { token } = loginStore.getState()
 
   // 선물 수락하기
   const acceptGift = async () => {
+    const token = await AsyncStorage.getItem('key');
+
     try {
-      const response = await axios.get(
-        "https://i11b304.p.ssafy.io/api/messages/gift",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          params: {
-            messageId: messageId
-          }
+      const response = await axios.get(`${Server_IP}/messages/gift`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
-      );
+        params: {
+          messageId: messageId,
+        },
+      });
       if (response.status === 200) {
         Alert.alert('선물 수락', '선물을 수락했습니다.');
         onAccept();
@@ -33,26 +42,24 @@ const GiftModal = ({ visible, onClose, imageUrl, content, messageId, onAccept, o
         console.log('선물 수락 실패');
       }
     } catch (error) {
-      console.error('선물 수락 중 오류 발생:', error)
+      console.error('선물 수락 중 오류 발생:', error);
     }
   };
 
   // 선물 거절하기
   const refuseGift = async () => {
+    const token = await AsyncStorage.getItem('key');
     try {
-      const response = await axios.delete(
-        "https://i11b304.p.ssafy.io/api/messages/gift",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          params: {
-            messageId: messageId
-          }
+      const response = await axios.delete(`${Server_IP}/messages/gift`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
-      );
+        params: {
+          messageId: messageId,
+        },
+      });
       if (response.status === 200) {
         Alert.alert('선물 거절', '선물을 거절했습니다.');
         onRefuse();
@@ -66,12 +73,16 @@ const GiftModal = ({ visible, onClose, imageUrl, content, messageId, onAccept, o
   };
 
   return (
-    <Modal transparent={true} visible={visible} onRequestClose={onClose} animationType="slide">
+    <Modal
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+      animationType="slide">
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <PopupHeader Label="선물" onClose={onClose} />
-          <Image source={{ uri: imageUrl }} style={styles.giftImage} />
-          <Text style={styles.text}>{content || "내용이 없습니다."}</Text>
+          <Image source={{uri: imageUrl}} style={styles.giftImage} />
+          <Text style={styles.text}>{content || '내용이 없습니다.'}</Text>
           <View style={styles.buttonContainer}>
             <Green label="수락" onPress={acceptGift} />
             <Red label="거절" onPress={refuseGift} />
@@ -99,7 +110,7 @@ const styles = StyleSheet.create({
   giftImage: {
     width: 200,
     height: 200,
-    transform: [{ rotate: '90deg' }],
+    transform: [{rotate: '90deg'}],
   },
   buttonContainer: {
     flexDirection: 'row',

@@ -12,6 +12,7 @@ export default function WalkRecordScreen() {
 
   const walkStartTime = useStore(state => state.walkStartTime);
   const walkEndTime = useStore(state => state.walkEndTime);
+  const distance_km = distance / 1000
   const {items, getS3Url} = useStore();
 
   const formatTime = isoString => {
@@ -23,7 +24,7 @@ export default function WalkRecordScreen() {
   };
 
   const calculatePoints = () => {
-    const pointsFromDistance = Math.floor((distance * 1000) / 100) * 10;  // 100m당 10포인트
+    const pointsFromDistance = Math.floor(distance / 100) * 10;  // 100m당 10포인트
     const pointsFromItems = items.length * 100; // 아이템 등록당 100 포인트
     return pointsFromDistance + pointsFromItems; // 총 포인트 계산
   };
@@ -41,7 +42,7 @@ export default function WalkRecordScreen() {
           <Image source={{ uri: capturedImageUri }} style={styles.rectangle} />
           <View style={styles.rectangleContainer}>
             {distance !== undefined && (
-              <Text>{distance.toFixed(2)}km</Text>
+              <Text>{distance_km.toFixed(2)}km</Text>
             )}
           </View>
           <View style={styles.lineSpacing}>
@@ -138,7 +139,6 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     marginBottom:10,
-    transform: [{ rotate: '90deg' }]
   },
   itemText: {
     fontSize: 15,

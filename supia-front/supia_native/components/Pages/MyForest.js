@@ -6,7 +6,7 @@ import {
   Pressable,
   Modal,
   Text,
-  Button,
+  Dimensions,
   ImageBackground,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -21,11 +21,14 @@ import Popup from '../Popup';
 import loginStore from '../store/useLoginStore';
 import ViewShot from 'react-native-view-shot';
 import Sound from 'react-native-sound';
-import { Server_IP } from '@env'
-// const token = await AsyncStorage.getItem('key');
+import {Server_IP} from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ImageResizer from 'react-native-image-resizer';
+
+const {width, height} = Dimensions.get('window');
 
 export default function MyForestScreen() {
-  const {token} = loginStore.getState();
+  // const {token} = loginStore.getState();
   const navigation = useNavigation();
   const [isModalVisible1, setIsModalVisible1] = useState(false); // setting modal
   const [isModalVisible2, setIsModalVisible2] = useState(false); // dict modal
@@ -56,20 +59,19 @@ export default function MyForestScreen() {
 
   // 숲 정보 불러오기
   const getForest = async () => {
+    const token = await AsyncStorage.getItem('key');
+
     console.log(droppedImages);
 
     try {
-      const response = await axios.get(
-        'https://i11b304.p.ssafy.io/api/forest',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
-            Accept: 'application/json',
+      const response = await axios.get(`${Server_IP}/forest`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
+          Accept: 'application/json',
 
-            'Content-Type': 'application/json; charset=utf-8',
-          },
+          'Content-Type': 'application/json; charset=utf-8',
         },
-      );
+      });
       if (response.status === 200) {
         const data = response.data;
         console.log(data);
@@ -77,7 +79,7 @@ export default function MyForestScreen() {
         setForestId(data.forestId);
         setBGI(data.bgi);
         setBGM(data.bgm);
-        setForestData(data)
+        setForestData(data);
         const images = data.items.map(item => ({
           itemId: item.itemId,
           imageUrl: item.imgUrl,
@@ -98,8 +100,10 @@ export default function MyForestScreen() {
 
   // 보유 중인 BGI 불러오기
   const getOwnBGI = async () => {
+    const token = await AsyncStorage.getItem('key');
+
     try {
-      const response = await axios.get(`https://i11b304.p.ssafy.io/api/background/own-bgi`, {
+      const response = await axios.get(`${Server_IP}/background/own-bgi`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
@@ -118,10 +122,11 @@ export default function MyForestScreen() {
     }
   };
 
-
-  console.log(droppedImages)
+  console.log(droppedImages);
   // 보유 중인 BGM 불러오기
   const getOwnBGM = async () => {
+    const token = await AsyncStorage.getItem('key');
+
     try {
       const response = await axios.get(`${Server_IP}/background/own-bgm`, {
         headers: {
@@ -159,20 +164,21 @@ export default function MyForestScreen() {
     setSavePopupVisible(true); // 팝업 열기
   };
 
-
-  const handleSave = async (uri) => { // 숲 상태 저장
+  const handleSave = async uri => {
+    const token = await AsyncStorage.getItem('key');
+    // 숲 상태 저장
     const payload = {
       bgm: BGM,
       bgi: BGI,
       forestId,
-        thumbnail:uri,
-      forestItemSettingRequestList : droppedImages.map(({ itemId, position }) => ({
-          itemId,
-          x: position.x,
-          y: position.y,
-      }))
+      thumbnail: uri,
+      forestItemSettingRequestList: droppedImages.map(({itemId, position}) => ({
+        itemId,
+        x: position.x,
+        y: position.y,
+      })),
     };
-    console.log("payload", payload)
+    console.log('payload', payload);
 
     try {
       const response = await axios.post(`${Server_IP}/forest`, payload, {
@@ -184,13 +190,14 @@ export default function MyForestScreen() {
       });
       if (response.status === 200) {
         console.log('아이템 배치 저장 성공');
-        setDroppedImages([]);
+        setDroppedImages([])
       } else {
         console.log('아이템 배치 저장 실패');
       }
     } catch (error) {
       console.error('아이템 배치 요청 중 실패', error);
     }
+    setBGM(null)
     navigation.navigate('Home');
   };
 
@@ -202,7 +209,8 @@ export default function MyForestScreen() {
       if (CaptureRef.current) {
         const uri = await CaptureRef.current.capture();
         console.log('Capture complete...', uri);
-        handleSave(uri)
+        const rotatedImage = await ImageResizer.createResizedImage(uri, 1450, 720, 'JPEG', 100, 270);
+        handleSave(rotatedImage.uri);
       } else {
         console.log('Ref 렌더링 오류');
       }
@@ -222,6 +230,7 @@ export default function MyForestScreen() {
   };
 
   const goHome = () => {
+    setBGM(null)
     handleOpenSavePopup();
     // navigation.navigate("Home");
   };
@@ -255,66 +264,80 @@ export default function MyForestScreen() {
 
   useEffect(() => {
     const handleSound = () => {
-      // BGM이 null이면 현재 사운드를 정리
-      if (!BGM) {
         if (soundRef.current) {
-          soundRef.current.stop(() => {
-            soundRef.current.release();
-            soundRef.current = null;
-          });
+            // 이전 사운드를 정리
+            soundRef.current.stop(() => {
+                // release를 호출하기 전에 null 체크
+                if (soundRef.current) {
+                    soundRef.current.release();
+                    soundRef.current = null;
+                }
+
+                // 새로운 사운드가 있으면 재생
+                if (BGM) {
+                    loadAndPlaySound();
+                }
+            });
+        } else if (BGM) {
+            // 현재 사운드가 없고 BGM이 있을 때 새로운 사운드 객체 생성
+            loadAndPlaySound();
         }
-        return;
-      }
+    };
 
-      // 기존 사운드를 정리
-      if (soundRef.current) {
-        soundRef.current.stop(() => {
-          soundRef.current.release();
+    const loadAndPlaySound = () => {
+        const sound = new Sound(BGM, null, (error) => {
+            if (error) {
+                console.log('Failed to load the sound', error);
+                return;
+            }
+            sound.play((success) => {
+                if (success) {
+                    console.log('Sound played successfully');
+                } else {
+                    console.log('Playback failed');
+                }
+                // release를 호출하기 전에 null 체크
+                if (soundRef.current) {
+                    soundRef.current.release();
+                    soundRef.current = null;
+                }
+            });
         });
-        soundRef.current = null;
-      }
 
-      // 새로운 사운드 객체 생성
-      const sound = new Sound(BGM, null, error => {
-        if (error) {
-          console.log('Failed to load the sound', error);
-          return;
-        }
-        sound.play(success => {
-          if (success) {
-            console.log('Sound played successfully');
-          } else {
-            console.log('Playback failed');
-          }
-        });
-      });
-
-      soundRef.current = sound;
+        soundRef.current = sound;
     };
 
     handleSound();
 
     // 컴포넌트 언마운트 시 사운드 정리
     return () => {
-      if (soundRef.current) {
-        soundRef.current.stop(() => {
-          soundRef.current.release();
-          soundRef.current = null;
-        });
-      }
+        if (soundRef.current) {
+            soundRef.current.stop(() => {
+                // release를 호출하기 전에 null 체크
+                if (soundRef.current) {
+                    soundRef.current.release();
+                    soundRef.current = null;
+                }
+            });
+        }
     };
-  }, [BGM]);
-
+}, [BGM]);
 
   // 아이템 소리
   const soundRefs = useRef({});
-  const playItemSound = (url) => {
-    const sound = new Sound(url, null, (error) => {
+  const playItemSound = (itemId, url) => {
+    if (soundRefs.current[itemId]) {
+      soundRefs.current[itemId].release(); // 기존 사운드 객체 해제
+      soundRefs.current[itemId] = null; // 참조 초기화
+    }
+    // 새로운 사운드 객체 생성 및 재생
+    const sound = new Sound(url, null, error => {
       if (error) {
         console.log('Failed to load the item sound', error);
         return;
       }
-      sound.play((success) => {
+      soundRefs.current[itemId] = sound;
+      sound.play(success => {
         if (success) {
           console.log('Item sound played successfully');
         } else {
@@ -324,23 +347,41 @@ export default function MyForestScreen() {
     });
   };
 
+  const stopItemSound = itemId => {
+    if (soundRefs.current[itemId]) {
+      soundRefs.current[itemId].stop(() => {
+        console.log('Item sound stopped');
+        soundRefs.current[itemId].release(); // 사운드 객체 해제
+        soundRefs.current[itemId] = null; // 참조 초기화
+      });
+    }
+  };
+
   useEffect(() => {
-    if (forestData && forestData.items) { // forestData와 items가 존재하는지 확인
+    if (forestData && forestData.items) {
+      // forestData와 items가 존재하는지 확인
       droppedImages.forEach(item => {
-        if (item.soundOn) {
-          const soundInfo = forestData.items.find(sound => sound.itemId === item.itemId);
-          if (soundInfo) {
-            playItemSound(soundInfo.soundUrl); // 아이템 사운드 재생
+        const soundInfo = forestData.items.find(
+          sound => sound.itemId === item.itemId,
+        );
+        if (soundInfo) {
+          if (item.soundOn === 1 || item.soundOn === true) {
+            playItemSound(item.itemId, soundInfo.soundUrl); // 사운드 재생
+          } else {
+            stopItemSound(item.itemId); // 사운드 중지
           }
         }
       });
     } else {
       console.log('forestData or forestData.items is null or undefined');
     }
+    return () => {
+      // 컴포넌트가 언마운트되면 모든 사운드를 정리
+      Object.keys(soundRefs.current).forEach(itemId => {
+        soundRefs.current[itemId].release();
+      });
+    };
   }, [droppedImages]);
-
-
-
 
   return (
     <View style={styles.container}>
@@ -399,15 +440,15 @@ export default function MyForestScreen() {
       </Pressable>
       <Pressable
         style={styles.iconContainer}
-        onPress={goHome}
+        // onPress={goHome}
         visible={isButtonVisible}>
-        <Feather name="home" style={styles.homeicon} />
+        <Feather name="home" style={styles.homeicon} onPress={goHome}/>
       </Pressable>
       <Pressable
         style={styles.iconContainer}
-        onPress={goDictionary}
+        // onPress={goDictionary}
         visible={isButtonVisible}>
-        <Feather name="sidebar" style={styles.sideicon} />
+        <Feather name="sidebar" style={styles.sideicon} onPress={goDictionary}/>
       </Pressable>
 
       <Modal
@@ -449,7 +490,7 @@ export default function MyForestScreen() {
         transparent={true}
         visible={savePopupVisible}
         onRequestClose={handleCloseandNOSavePopup}>
-        <View style={styles.modalBackground}>
+        <View style={styles.popupBackground}>
           <Popup
             content="저장하시겠습니까?"
             onClose={handleCloseandNOSavePopup}
@@ -478,36 +519,36 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   homeicon: {
-    top: 20,
-    left: 365,
+    top: height * 0.03,
+    left: width * 0.87,
     fontSize: 30,
     color: 'white',
     transform: [{rotate: '90deg'}],
   },
   settingicon: {
-    top: 20,
-    left: 20,
+    top: height * 0.03,
+    left: width * 0.05,
     fontSize: 34,
     color: 'white',
     transform: [{rotate: '90deg'}],
   },
   sideicon: {
-    top: 770,
-    left: 365,
+    top: height * 0.97,
+    left: width * 0.87,
     fontSize: 34,
     color: 'white',
     transform: [{rotate: '90deg'}],
   },
   modalBackground: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    position: 'absolute',
+    bottom:width*0,
+    right: 0,
+    left:0,
+    // backgroundColor:'black',
   },
   modalContainer: {
     transform: [{rotate: '90deg'}],
     borderRadius: 32,
-    // backgroundColor: '#FCFCFC',
-    // padding: 20,
   },
 
   modalTitle: {
@@ -517,7 +558,17 @@ const styles = StyleSheet.create({
   sticker: {
     width: 200,
     height: 200,
-    position: 'relative',
+    position: 'absolute',
     transform: [{rotate: '90deg'}],
   },
+  popupBackground: {
+    justifyContent: 'center', // 수직 중앙 정렬
+    alignItems: 'center', // 수평 중앙 정렬
+    height: '100%',
+    transform: [{rotate: '90deg'}],
+  },
+  // popupContainer: {
+  //   transform: [{rotate: '90deg'}],
+  //   borderRadius: 32,
+  // },
 });

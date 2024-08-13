@@ -63,7 +63,6 @@ export default function UploadModal({
           width: 250,
           height: 250,
           marginTop: 30,
-          transform: [{rotate: '90deg'}],
         }}
       />
       {probsName !== 'unknown' ? (

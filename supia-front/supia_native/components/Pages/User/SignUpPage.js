@@ -1,9 +1,15 @@
 import React, {useState} from 'react';
-import {View, Pressable, TextInput, Text, StyleSheet} from 'react-native';
+import {
+  View,
+  Pressable,
+  TextInput,
+  KeyboardAvoidingView,
+  Text,
+  StyleSheet,
+} from 'react-native';
 import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_Server_IP;
-console.log(API_BASE_URL);
+import {Server_IP} from '@env';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 export default function SignUpScreen({navigation}) {
   const [values, setValues] = useState({
@@ -31,7 +37,7 @@ export default function SignUpScreen({navigation}) {
     if (values.password == values.passwordConfirm) {
       try {
         const response = await axios.post(
-          `${API_BASE_URL}/members/register`,
+          `${Server_IP}/members/register`,
           member,
           {
             headers: {
@@ -53,7 +59,10 @@ export default function SignUpScreen({navigation}) {
   };
 
   return (
-    <View style={styles.loginContainer}>
+    <KeyboardAvoidingView
+      style={styles.loginContainer}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={100}>
       <Text style={{padding: 50, fontSize: 22, color: '#321C1C'}}>
         회원가입
       </Text>
@@ -142,65 +151,17 @@ export default function SignUpScreen({navigation}) {
           </Text>
         </Pressable>
       </View>
-
-      <View style={styles.SNSSignUp}>
-        <Pressable
-          mode="contained"
-          onPress={() => {}}
-          style={[
-            styles.button,
-            {
-              width: 70,
-              height: 70,
-              borderRadius: 35,
-              marginTop: 30,
-              backgroundColor: '#fff',
-            },
-          ]}>
-          <Text>G</Text>
-        </Pressable>
-
-        <Pressable
-          mode="contained"
-          onPress={() => {}}
-          style={[
-            styles.button,
-            {
-              width: 70,
-              marginTop: 30,
-              height: 70,
-              borderRadius: 35,
-              backgroundColor: '#FFEB02',
-            },
-          ]}>
-          <Text>K</Text>
-        </Pressable>
-
-        <Pressable
-          mode="contained"
-          onPress={() => {}}
-          style={[
-            styles.button,
-            {
-              width: 70,
-              marginTop: 30,
-              height: 70,
-              borderRadius: 35,
-              backgroundColor: '#27D34A',
-            },
-          ]}>
-          <Text>N</Text>
-        </Pressable>
-      </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   loginContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#ECEADE',
-    height: '100%', // 고정된 높이 설정
+    flex: 1,
+    flexGrow: 1, // flexGrow를 추가하여 스크롤이 제대로 작동하도록 함
   },
   formBox: {
     borderRadius: 8,
@@ -220,14 +181,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#D9D9D9',
   },
-  SNSSignUp: {
-    //????
-    display: 'flex',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    alignitems: 'center',
-    gap: 25,
-  },
+
   buttonGroup: {
     alignItems: 'center',
   },

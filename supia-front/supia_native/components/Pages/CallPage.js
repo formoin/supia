@@ -2,6 +2,7 @@ import {View, Text, StyleSheet, Pressable, Alert} from 'react-native';
 import React, {useRef, useState} from 'react';
 import ViewShot from 'react-native-view-shot';
 import CaptureModal from '../Atoms/CaptureModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CallScreen({route}) {
   const captureRef = useRef();

@@ -5,17 +5,19 @@ import DicDivide from '../DicDivide';
 import Card from '../Atoms/Card';
 import useStore from '../store/useStore';
 import axios from 'axios';
-import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
+import {Server_IP} from '@env';
 import loginStore from '../store/useLoginStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function DictionaryScreen() {
   const {activeDic, resetActiveDic} = useStore();
   const [speciesList, setSpeciesList] = useState([]);
-  const {token} = loginStore.getState();
+
   // api
   const fetchSpeciesData = async category => {
+    const token = await AsyncStorage.getItem('key');
     try {
-      const response = await axios.get(`https://i11b304.p.ssafy.io/api/items`, {
+      const response = await axios.get(`${Server_IP}/items`, {
         headers: {
           Authorization: `Bearer ${token}`, // Authorization 헤더에 토큰 추가
           Accept: 'application/json',
@@ -28,12 +30,10 @@ export default function DictionaryScreen() {
       });
       // 성공적인 응답 처리
       if (response.status === 200) {
-
         // const speciesList = response.data;
         setSpeciesList(response.data);
-        console.log('도감 성공',category,response.data)
+        console.log('도감 성공', category, response.data);
         return speciesList;
-
       }
     } catch (error) {
       // 오류 처리
@@ -68,9 +68,9 @@ export default function DictionaryScreen() {
     return (
       <View style={styles.Cardcontainer}>
         {speciesList.map(species => (
-          <Card 
-            key={species.id} 
-            representativeImg={species.representativeImg} 
+          <Card
+            key={species.id}
+            representativeImg={species.representativeImg}
             speciesName={species.speciesName}
             id={species.id}
           />
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   },
   p_value: {
     padding: 20,
-    alignItems: 'center',
+    // alignItems: 'center',
     paddingTop: 30,
   },
   Cardcontainer: {

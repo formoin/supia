@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
-import { useIsFocused, useFocusEffect } from '@react-navigation/native';
+import React, {useState, useEffect} from 'react';
+import {View, StyleSheet, Pressable, ActivityIndicator} from 'react-native';
+import {useIsFocused, useFocusEffect} from '@react-navigation/native';
 import Header from '../Atoms/Header';
 import SentMessage from '../Organisms/Message/SentMessageBox';
 import SendMessage from '../Organisms/Message/SendMessageBox';
@@ -9,6 +9,9 @@ import useStore from '../store/useStore';
 import loginStore from '../store/useLoginStore';
 import Divide from '../Divide';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import {Server_IP} from '@env';
 
 export default function MessageScreen() {
   const isFocused = useIsFocused();
@@ -16,17 +19,34 @@ export default function MessageScreen() {
   const [fromMessage, setFromMessage] = useState(null);
   const [edit, setEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { activeText, setActiveText, resetActiveText } = useStore();
-  const { token } = loginStore.getState();
+  const {activeText, setActiveText, resetActiveText} = useStore();
+  // const { token } = loginStore.getState();
 
   const onPressPencil = () => {
-    setEdit((prevEdit) => !prevEdit);
+    setEdit(prevEdit => !prevEdit);
   };
 
+  useFocusEffect(
+    React.useCallback(() => {
+      resetActiveText();
+    }, [resetActiveText])
+  );
+
+    useEffect(() => {
+      setEdit(false);
+      if (activeText === 'text1') {
+        getFromMessage();
+      } else if (activeText === 'text2') {
+        getToMessage();
+      }
+    }, [activeText]);
+
   const getFromMessage = async () => {
+    const token = await AsyncStorage.getItem('key');
+
     try {
       setIsLoading(true);
-      const response = await axios.get("https://i11b304.p.ssafy.io/api/messages/from", {
+      const response = await axios.get(`${Server_IP}/messages/from`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
@@ -34,7 +54,9 @@ export default function MessageScreen() {
         },
       });
       if (response.status === 200) {
-        const filteredMessages = response.data.filter((message) => message.category === 1);
+        const filteredMessages = response.data.filter(
+          message => message.category === 1,
+        );
         setFromMessage(filteredMessages);
       } else {
         console.log('보낸 메세지함 리스트 로딩 실패');
@@ -47,9 +69,11 @@ export default function MessageScreen() {
   };
 
   const getToMessage = async () => {
+    const token = await AsyncStorage.getItem('key');
+
     try {
       setIsLoading(true);
-      const response = await axios.get("https://i11b304.p.ssafy.io/api/messages/to", {
+      const response = await axios.get(`${Server_IP}/messages/to`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
@@ -57,7 +81,9 @@ export default function MessageScreen() {
         },
       });
       if (response.status === 200) {
-        const filteredMessages = response.data.filter((message) => message.category === 1);
+        const filteredMessages = response.data.filter(
+          message => message.category === 1,
+        );
         setToMessage(filteredMessages);
       } else {
         console.log('받은 메세지함 리스트 로딩 실패');
@@ -68,21 +94,6 @@ export default function MessageScreen() {
       setIsLoading(false);
     }
   };
-
-  useFocusEffect(
-    React.useCallback(() => {
-      resetActiveText(); // 이 부분이 의도한 대로 작동하는지 확인 필요
-    }, [resetActiveText])
-  );
-
-  useEffect(() => {
-    setEdit(false);
-    if (activeText === 'text1') {
-      getFromMessage();
-    } else if (activeText === 'text2') {
-      getToMessage();
-    }
-  }, [activeText]);
 
   return (
     <View>
@@ -97,9 +108,17 @@ export default function MessageScreen() {
         {isLoading ? (
           <ActivityIndicator size="large" color="#A2AA7B" />
         ) : activeText === 'text1' ? (
-          <SendMessage edit={edit} fromMessage={fromMessage} onDelete={getFromMessage} />
+          <SendMessage
+            edit={edit}
+            fromMessage={fromMessage}
+            onDelete={getFromMessage}
+          />
         ) : (
-          <SentMessage edit={edit} toMessage={toMessage} getToMessage={getToMessage}/>
+          <SentMessage
+            edit={edit}
+            toMessage={toMessage}
+            getToMessage={getToMessage}
+          />
         )}
       </View>
     </View>
@@ -108,14 +127,15 @@ export default function MessageScreen() {
 
 const styles = StyleSheet.create({
   divideContainer: {
-    marginTop: 20,
-    flexDirection: 'row',
-    marginLeft: 25,
-    alignItems: 'center',
-    justifyContent: 'space-around',
+    width: '95%',
+    marginLeft:'2.5%',
+    marginTop: 25,
   },
   pencilIcon: {
-    paddingRight: 25,
+    position: 'absolute',
+    right: 10,
+    bottom:7,
+    alignItems: 'center',
   },
   boxContainer: {
     alignItems: 'center',

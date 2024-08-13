@@ -10,7 +10,7 @@ export default function ReadMessageModal({ visible, onClose, type, fromMessage, 
   const [isReplyModalVisible, setReplyModalVisible] = useState(false);
 
   const handleReplyPress = () => {
-    onClose();
+    onClose()
     setReplyModalVisible(true);
   };
 

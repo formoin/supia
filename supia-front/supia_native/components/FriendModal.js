@@ -1,30 +1,34 @@
-import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, {useState} from 'react';
+import {StyleSheet, View} from 'react-native';
 import ModalHeader from './Atoms/ModalHeader';
 import ModalImage from './Atoms/ModalImage';
 import ModalLevel from './Atoms/ModalLevel';
 import Green from './Atoms/Button_Green';
 import Red from './Atoms/Button_Red';
 import axios from 'axios';
-import { Server_IP } from '@env';
+import {Server_IP} from '@env';
 import loginStore from './store/useLoginStore';
-import useStore from './store/useStore'
+import useStore from './store/useStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function FriendModal({
   onClose,
   page,
   toId,
   friendDetail,
-  userDetail
+  userDetail,
+  user,
+  friend
 }) {
   const [isFriendRequested, setIsFriendRequested] = useState(false);
-  const { token } = loginStore.getState();
-  const { memberId } = useStore()
+  // const { token } = loginStore.getState();
+  const {memberId} = useStore();
 
   const sendFriendRequest = async () => {
+    const token = await AsyncStorage.getItem('key');
     const friendRequest = {
       fromId: memberId,
-      toId: toId,
+      toId: user.memberId,
     };
     try {
       const response = await axios.post(`${Server_IP}/friends`, friendRequest, {
@@ -54,7 +58,11 @@ export default function FriendModal({
   if (page === 'search' && userDetail) {
     return (
       <View style={styles.container}>
-        <ModalHeader UserName={userDetail.nickname} onClose={onClose} url={userDetail.profileImg} />
+        <ModalHeader
+          UserName={userDetail.nickname}
+          onClose={onClose}
+          url={userDetail.profileImg}
+        />
         <View style={styles.line} />
         <ModalImage uri={userDetail.thumbnail} />
         <View style={styles.modalLevelContainer}>
@@ -74,7 +82,11 @@ export default function FriendModal({
   if (page === 'friend' && friendDetail) {
     return (
       <View style={styles.container}>
-        <ModalHeader UserName={friendDetail.nickname} onClose={onClose} url={friendDetail.profileImg} />
+        <ModalHeader
+          UserName={friendDetail.nickname}
+          onClose={onClose}
+          url={friendDetail.profileImg}
+        />
         <View style={styles.line} />
         <ModalImage uri={friendDetail.thumbnail} />
         <View style={styles.modalLevelContainer}>
@@ -97,7 +109,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.10)',
     backgroundColor: '#ECEADE',
     shadowColor: 'rgba(0, 0, 0, 0.25)',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 4,
@@ -116,6 +128,6 @@ const styles = StyleSheet.create({
   },
   button: {
     marginLeft: 30,
-    marginTop: 10,
+    marginTop: 18,
   },
 });

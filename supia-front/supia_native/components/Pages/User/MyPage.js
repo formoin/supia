@@ -26,7 +26,10 @@ const MyPageScreen = ({navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [error, setError] = useState(null);
   const [loginuser, setLoginuser] = useState(null);
-  const {token} = useLoginStore.getState();
+  // const {token} = useLoginStore.getState();
+
+  const {getS3Url} = useStore();
+
 
   const {
     weeklyWalkHistory,
@@ -40,13 +43,21 @@ const MyPageScreen = ({navigation}) => {
     yearlyWalkHistory: state.yearlyWalkHistory,
   }));
 
+  const getImageUri = (thumbnail) => {
+    if (thumbnail.startsWith('file://')) {
+      return { uri: thumbnail }; // file 경로일 때
+    } else {
+      return { uri: getS3Url(thumbnail) }; // S3 경로일 때
+    }
+  };
+
   // 컴포넌트 진입 시 유저 정보+걷기 정보 fetch
   useEffect(() => {
     // 유저 정보 가져오기
     const fetchUserInfo = async () => {
       try {
         // 원래 토큰 받아노는건 이거야
-        // const token = await AsyncStorage.getItem('key');
+        const token = await AsyncStorage.getItem('key');
         if (token) {
           const response = await axios.get(
             //ContextPath
@@ -158,9 +169,7 @@ const MyPageScreen = ({navigation}) => {
             <Avatar
               size={64}
               rounded
-              source={{
-                uri: `${loginuser.profileImg}`,
-              }}>
+              source={getImageUri(loginuser.profileImg)}>
               <Avatar.Accessory
                 onPress={() => {
                   navigation.navigate('EditProfile');
@@ -169,9 +178,10 @@ const MyPageScreen = ({navigation}) => {
                 size={24}
               />
             </Avatar>
+
           </View>
           <Text style={styles.username}>{loginuser.name}</Text>
-          <Text style={styles.points}>내 포인트 {loginuser.point}</Text>
+          <Text style={styles.points}>내 포인트 {loginuser.point} P</Text>
         </View>
         <View style={{marginTop: 10, marginBottom: 30}}>
           <View style={{alignItems: 'center', justifyContent: 'center'}}>
@@ -184,8 +194,8 @@ const MyPageScreen = ({navigation}) => {
             style={{
               marginTop: 10,
               marginLeft: 10,
-              width: 60,
-              height: 60,
+              width: 50,
+              height: 50,
             }}
           />
           <View style={{marginLeft: 30}}>
@@ -307,7 +317,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     flex: 1,
-    marginLeft: 15,
     padding: 20,
   },
   points: {
@@ -435,6 +444,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#000',
   },
+    img: {
+      width: 55,
+      height: 55,
+      borderRadius: 25,
+      margin: 5
+    },
 });
 
 export default MyPageScreen;

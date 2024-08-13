@@ -8,6 +8,7 @@ import {
   Text,
   Pressable,
   ActivityIndicator,
+  Image, // 이미지 표시를 위해 추가
 } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
@@ -15,11 +16,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import UploadModal from '../UploadModal';
 import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
-import {Server_AI_IP} from '@env';
+import {Server_IP} from '@env';
 import {useNavigation} from '@react-navigation/native';
 import {useFocusEffect} from '@react-navigation/native';
 import loginStore from '../store/useLoginStore';
 import useStore from '../store/useStore';
+import ImageResizer from 'react-native-image-resizer';
 
 const CapturePage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -36,11 +38,10 @@ const CapturePage = () => {
   const device = devices ? devices.back : null;
   const {token} = loginStore.getState();
   const navigation = useNavigation();
-  const [cameraKey, setCameraKey] = useState(0);
   const {fetchLocationData} = useStore();
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [photoUri, setPhotoUri] = useState(null); // 찍은 사진의 URI를 저장할 상태 추가
 
-  // 권한 얻기
   const getCameraPermission = async () => {
     if (Platform.OS === 'android') {
       try {
@@ -59,24 +60,9 @@ const CapturePage = () => {
         console.warn(err);
       }
     } else {
-      setHasPermission(true); // iOS의 경우는 별도 권한 요청이 필요 없음
+      setHasPermission(true); // iOS의 경우 별도 권한 요청이 필요 없음
     }
   };
-
-  // const loadMemberId = async () => {
-  //   try {
-  //     const storedMemberId = await AsyncStorage.getItem('memberId');
-  //     if (storedMemberId !== null) {
-  //       setUserId(storedMemberId);
-  //     }
-  //   } catch (error) {
-  //     console.error('Failed to load userId:', error);
-  //   }
-  // };
-  // useEffect(() => {
-  //   getCameraPermission();
-  //   // loadMemberId();
-  // }, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -91,45 +77,51 @@ const CapturePage = () => {
 
   const takePictureAndUpload = async () => {
     setIsLoading(true);
+
     if (cameraRef.current) {
       try {
-        // 새로운 사진을 찍고 새로운 경로를 할당
+        // 사진 찍기
         const photo = await cameraRef.current.takePhoto({
           qualityPrioritization: 'balanced',
           quality: 100,
           format: 'png',
         });
 
-        // 로그를 통해 새로운 경로가 갱신되는지 확인
-        console.log('Photo taken:', photo.path);
-
         const newImageUri = 'file://' + photo.path;
-        console.log('New image URI:', newImageUri);
+        setPhotoUri(newImageUri); // 사진 URI 저장
 
-        // 상태 업데이트
-        setOrgUrl(photo.path);
+        // 현재 날짜와 시간 가져오기
+        const now = new Date();
+        const year = now.getFullYear().toString().slice(-2); // YY
+        const month = (now.getMonth() + 1).toString().padStart(2, '0'); // MM
+        const day = now.getDate().toString().padStart(2, '0'); // DD
+        const hour = now.getHours().toString().padStart(2, '0'); // HH
+        const minute = now.getMinutes().toString().padStart(2, '0'); // MM
 
-        // 현재 날짜와 시간 추출
-        const currentDate = new Date();
-        const year = currentDate.getFullYear().toString().slice(2); // 연도 YY
-        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // 월 MM
-        const day = currentDate.getDate().toString().padStart(2, '0'); // 일 DD
-        const date = year + month + day; // YYMMDD 형식
+        const date = `${year}${month}${day}`; // YYMMDD
+        const time = `${hour}${minute}`; // HHMM
 
-        const hours = currentDate.getHours().toString().padStart(2, '0'); // 시 HH
-        const minutes = currentDate.getMinutes().toString().padStart(2, '0'); // 분 MM
-        const time = hours + minutes; // HHMM 형식
+        // 이미지 회전
+        const rotatedImage = await ImageResizer.createResizedImage(
+          newImageUri,
+          photo.width,
+          photo.height,
+          'PNG',
+          100,
+          0, // 회전 각도
+        );
 
-        // 사진을 서버에 업로드
+        console.log('Rotated image URI:', rotatedImage.uri);
+
         const formData = new FormData();
         formData.append('file', {
-          uri: newImageUri,
+          uri: rotatedImage.uri,
           type: 'image/png',
-          name: `photo_${date}_${time}.png`, // 이름 변경하여 중복 방지
+          name: `${date}_${time}.png`,
         });
         formData.append('date', date);
         formData.append('time', time);
-        formData.append('member_id', '1');
+        formData.append('member_id', memberId);
 
         const response = await axios.post(
           'https://i11b304.p.ssafy.io/ai/process-image/',
@@ -140,20 +132,21 @@ const CapturePage = () => {
               'Content-Type': 'multipart/form-data',
               Accept: 'application/json',
             },
-            timeout: 50000,
           },
         );
 
-        console.log('Upload success', response.data);
         setDrawingImg(response.data.hand_drawing_img_url);
         setProbsName(response.data.probs_name);
         setCategory(response.data.category);
-        setModalVisible(true); // data 가지고 팝업 띄우기
+        setModalVisible(true); // 모달 띄우기
         getLocation();
       } catch (error) {
         console.error('Upload error', error);
+        if (error.response) {
+          console.log('Error details:', error.response.data);
+        }
       } finally {
-        setIsLoading(false); // 로딩 끝
+        setIsLoading(false);
       }
     }
   };
@@ -163,7 +156,6 @@ const CapturePage = () => {
   };
 
   const backtoWalk = () => {
-    // setCameraKey(prevKey => prevKey + 1);
     navigation.navigate('Walk');
   };
 
@@ -215,17 +207,13 @@ const CapturePage = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.capture}
-          onPress={takePictureAndUpload}
-        />
+        <TouchableOpacity style={styles.capture} onPress={takePictureAndUpload} />
       </View>
 
       {isLoading && (
         <View style={[StyleSheet.absoluteFill, styles.loading]}>
           <ActivityIndicator size="large" color="#0000ff" />
-          <Text style={{color: 'white'}}>스티커화 중...</Text>
-          <Text style={{color: 'white'}}>누끼 따는 중...</Text>
+          {photoUri && <Image source={{uri: photoUri}} style={styles.capturedImage} />}
         </View>
       )}
 
@@ -315,6 +303,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  capturedImage: {
+    width: 200, // 원하는 크기로 조절
+    height: 200,
   },
 });
 

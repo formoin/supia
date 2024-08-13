@@ -6,66 +6,74 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import useStore from './store/useStore';
 import loginStore from './store/useLoginStore';
+import {Server_IP} from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const Popup_Buy = ({
+  goBuy,
+  background,
+  music,
+  point,
+  id,
+  getPoint,
+  getBackground,
+  getMusic,
+  getOwnBGI,
+  getOwnBGM,
+}) => {
+  const {activeText} = useStore();
+  // const {token} = loginStore.getState();
+  const {getS3Url} = useStore();
 
-const Popup_Buy = ({ goBuy, background, music, point, id, getPoint, getBackground, getMusic, getOwnBGI, getOwnBGM }) => {
-  const { activeText } = useStore();
-  const { token } = loginStore.getState();
-  const { getS3Url } = useStore();
   const sendThemeData = async () => {
+    const token = await AsyncStorage.getItem('key');
     try {
-      const response = await axios.get(
-        'https://i11b304.p.ssafy.io/api/background/purchase/bgi',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          params: {
-            bgiId: background.id,
-          },
+      const response = await axios.get(`${Server_IP}/background/purchase/bgi`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
-      );
+        params: {
+          bgiId: background.id,
+        },
+      });
 
       if (response.status === 200) {
         getPoint();
         getBackground();
         getOwnBGI();
 
-        console.log("테마 구매 정보 저장 성공");
+        console.log('테마 구매 정보 저장 성공');
       } else {
         console.log('테마 구매 정보 저장 실패');
       }
     } catch (error) {
       console.error('테마 구매 정보 저장 중 오류 발생:', error);
       alert('포인트가 부족합니다!');
-
     }
   };
 
   const sendMusicData = async () => {
+    const token = await AsyncStorage.getItem('key');
     try {
-      const response = await axios.get(
-        'https://i11b304.p.ssafy.io/api/background/purchase/bgm',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          params: {
-            bgmId: music.id,
-          },
+      const response = await axios.get(`${Server_IP}/background/purchase/bgm`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
-      );
+        params: {
+          bgmId: music.id,
+        },
+      });
 
       if (response.status === 200) {
         getPoint();
         getMusic();
         getOwnBGM();
 
-        console.log("음악 구매 정보 저장 성공");
+        console.log('음악 구매 정보 저장 성공');
       } else {
         console.log('음악 구매 정보 저장 실패');
       }

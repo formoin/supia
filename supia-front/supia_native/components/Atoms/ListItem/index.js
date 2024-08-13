@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Text, View, Pressable, StyleSheet, Modal, Image } from 'react-native';
+import React, {useState} from 'react';
+import {Text, View, Pressable, StyleSheet, Modal, Image} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import FriendModal from '../../FriendModal';
 import NoteModal from '../../NoteModal';
@@ -7,6 +7,8 @@ import Popup from '../../Popup';
 import axios from 'axios';
 import loginStore from '../../store/useLoginStore';
 import useStore from '../../store/useStore';
+import {Server_IP} from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Label({
   url,
@@ -19,7 +21,7 @@ export default function Label({
   page,
   handleFriendChange,
   friend,
-  user
+  user,
 }) {
   const [FriendModalVisible, setFriendModalVisible] = useState(false);
   const [SearchModalVisible, setSearchModalVisible] = useState(false);
@@ -27,21 +29,21 @@ export default function Label({
   const [DeletePopupVisible, setDeletePopupVisible] = useState(false);
   const [userDetail, setUserDetail] = useState(null);
   const [friendDetail, setFriendDetail] = useState(null);
-  const { token } = loginStore.getState();
-  const { getS3Url } = useStore();
+  const {getS3Url} = useStore();
 
   const getUserDetail = async () => {
+    const token = await AsyncStorage.getItem('key');
     try {
-      const response = await axios.get(
-        'https://i11b304.p.ssafy.io/api/search/member',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
+      const response = await axios.get(`${Server_IP}/search/member`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
-      );
+        params: {
+          findId: user.memberId,
+        },
+      });
 
       if (response.status === 200) {
         console.log(response.data);
@@ -56,20 +58,18 @@ export default function Label({
   };
 
   const getFriendDetail = async () => {
+    const token = await AsyncStorage.getItem('key');
     try {
-      const response = await axios.get(
-        'https://i11b304.p.ssafy.io/api/friends/detail',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          params: {
-            friendId: friend.friendId
-          }
+      const response = await axios.get(`${Server_IP}/friends/detail`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
-      );
+        params: {
+          friendId: friend.friendId,
+        },
+      });
 
       if (response.status === 200) {
         console.log(response.data);
@@ -127,12 +127,9 @@ export default function Label({
 
   return (
     <View style={styles.container}>
-        <Pressable onPress={handleOpenUserModal}>
-          <Image
-            source={{ uri: getS3Url(url) }}
-            style={styles.image}
-          />
-        </Pressable>
+      <Pressable onPress={handleOpenUserModal}>
+      {url ? (<Image source={{uri: getS3Url(url)}} style={styles.image} />): (<Image source={{uri: url}} style={styles.image} />)}
+      </Pressable>
       <View style={styles.profile}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.content}>{content}</Text>
@@ -164,6 +161,7 @@ export default function Label({
         <View style={styles.modalBackground}>
           <FriendModal
             userDetail={userDetail}
+            user={user}
             onClose={handleCloseUserModal}
             page="search"
           />
@@ -176,7 +174,12 @@ export default function Label({
         visible={NoteModalVisible}
         onRequestClose={handleCloseNoteModal}>
         <View style={styles.modalBackground}>
-          <NoteModal onClose={handleCloseNoteModal} friend={friend} user={user} page={page} />
+          <NoteModal
+            onClose={handleCloseNoteModal}
+            friend={friend}
+            user={user}
+            page={page}
+          />
         </View>
       </Modal>
 

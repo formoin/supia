@@ -4,7 +4,7 @@ import Fontisto from 'react-native-vector-icons/Fontisto';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {StyleSheet, View, Text, Image} from 'react-native';
 
-export default function MyInfo({level, point}) {
+export default function MyInfo({level, point, distance}) {
   const getLevelInfo = level => {
     switch (level) {
       case 0:
@@ -59,7 +59,7 @@ export default function MyInfo({level, point}) {
             <Text style={styles.textstyle}>거리</Text>
           </View>
           <View style={styles.centeredText}>
-            <Text>15.6 KM</Text>
+            <Text>{distance * 0.001} KM</Text>
           </View>
         </View>
       </View>

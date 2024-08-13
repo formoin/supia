@@ -11,6 +11,7 @@ import {
   Modal,
   TouchableOpacity,
 } from 'react-native';
+import useStore from '../../store/useStore';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import axios from 'axios';
@@ -22,55 +23,42 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import {Server_IP} from '@env';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import useLoginStore from '../../store/useLoginStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const {height: windowHeight} = Dimensions.get('window');
 
 const EditPageScreen = ({navigation}) => {
-  const scrollRef = useRef(null);
   const [isPWModalVisible, setIsPWModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  // const {token} = useLoginStore.getState();
   const [isImgModalVisible, setImgModalVisible] = useState(false);
-  const [loginuser, setLoginuser] = useState({
-    member_id: '',
-    name: '확인용이에용',
-    nickname: '저두 확인용이에용',
-    profile_img: 'https://picsum.photos/200/300',
-    level: '',
-    exp: '',
-    point: '',
-  });
-
-  const [name, setName] = useState(loginuser.name);
-  const [nickname, setNickname] = useState(loginuser.nickname);
+  const [memberInfo, setMemberInfo] = useState(null);
+  const [name, setName] = useState('');
+  const [nickname, setNickname] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
   const [currentPasswordInput, setCurrentPasswordInput] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const {getS3Url} = useStore();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         const token = await AsyncStorage.getItem('key');
         if (token) {
-          const response = await axios.get(`${Server_IP}/members/my-info/`, {
+          const response = await axios.get(`${Server_IP}/members/my-info`, {
             headers: {
               Authorization: `Bearer ${token}`,
               Accept: 'application/json',
               'Content-Type': 'application/json; charset=utf-8',
             },
           });
-          const {id, name, nickname, profileImg, level, exp, point} =
-            response.data;
-          setLoginuser({
-            id,
-            name,
-            nickname,
-            profileImg,
-            level,
-            exp,
-            point,
-          });
-          setName(name);
-          setNickname(nickname);
+          if (response.status === 200) {
+            setMemberInfo(response.data.member);
+          } else {
+            console.log('홈페이지 로딩 실패');
+          }
         }
       } catch (err) {
         console.error('Failed to fetch user info', err);
@@ -88,32 +76,57 @@ const EditPageScreen = ({navigation}) => {
         console.error('ImagePicker Error: ', response.errorMessage);
       } else if (response.assets && response.assets.length > 0) {
         const selectedImageUri = response.assets[0].uri;
-        setLoginuser({...loginuser, profile_img: selectedImageUri});
+        setLoginuser({...memberInfo, thumbnail: selectedImageUri});
       }
     });
   };
 
-  const verifyCurrentPassword = () => {
-    axios
-      .post(`${Server_IP}/members/password`, {
-        currentPassword: currentPasswordInput,
-      })
-      .then(response => {
-        if (response.data.success) {
-          setIsPasswordVerified(true);
-          Alert.alert('확인 완료', '현재 비밀번호가 확인되었습니다.');
-        } else {
-          Alert.alert('오류', '현재 비밀번호가 맞지 않습니다.');
-        }
-      })
-      .catch(error => {
-        Alert.alert('오류', '비밀번호 확인에 실패했습니다.');
-        console.error(error);
-      });
+  const verifyCurrentPassword = async () => {
+    const token = await AsyncStorage.getItem('key');
+
+    try {
+      const response = await axios.post(
+        `${Server_IP}/members/verify-password`,
+        password,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        },
+      );
+
+      if (response.data.success) {
+        setIsPasswordVerified(true);
+        Alert.alert('확인 완료', '현재 비밀번호가 확인되었습니다.');
+      } else {
+        Alert.alert('오류', '현재 비밀번호가 맞지 않습니다.');
+      }
+    } catch (error) {
+      Alert.alert('오류', '비밀번호 확인에 실패했습니다.');
+      console.error(error);
+    }
+  };
+  if (!memberInfo) {
+    return (
+      <View style={styles.container}>
+        <Text>로딩 중...</Text>
+      </View>
+    );
+  }
+
+  const getImageUri = thumbnail => {
+    console.log(memberInfo.profileImg);
+    if (thumbnail.startsWith('file://')) {
+      return {uri: thumbnail}; // file 경로일 때
+    } else {
+      return {uri: getS3Url(thumbnail)}; // S3 경로일 때
+    }
   };
 
   const resetImage = () => {
-    setLoginuser({...loginuser, profile_img: null});
+    setLoginuser({...memberInfo, profileImg: null});
   };
 
   const openImgModal = () => {
@@ -124,15 +137,24 @@ const EditPageScreen = ({navigation}) => {
     setImgModalVisible(false);
   };
 
-  const ChangePassword = () => {
-    axios
-      .put(`${Server_IP}/members/change-password`, newPassword, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json; charset=utf-8',
+  const ChangePassword = async () => {
+    const token = await AsyncStorage.getItem('key');
+    await axios
+      .put(
+        `${Server_IP}/members/change-password`,
+        {
+          params: {
+            password: currentPasswordInput, // 쿼리 파라미터로 password 전달
+          },
         },
-      })
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        },
+      )
       .then(response => {
         Alert.alert('성공', '비밀번호가 업데이트되었습니다.');
       })
@@ -142,47 +164,60 @@ const EditPageScreen = ({navigation}) => {
       });
   };
 
-  const deleteUser = () => {
-    axios
-      .put(`${Server_IP}/members/delete`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-      })
-      .then(response => {
-        Alert.alert('성공', '회원 탈퇴가 이루어졌습니다.');
-        navigation.navigate('Login');
-      })
-      .catch(error => {
-        Alert.alert('오류', '회원 탈퇴에 실패했습니다.');
-        console.error(error);
-      });
+  const deleteUser = async () => {
+    console.log(Server_IP);
+    try {
+      const token = await AsyncStorage.getItem('key');
+      if (token) {
+        const response = await axios.post(
+          `${Server_IP}/members/delete`,
+          {}, // 이 부분이 요청의 본문입니다. 삭제 요청이므로 빈 객체로 설정해두었습니다.
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+            },
+          },
+        );
+
+        if (response.status === 200) {
+          Alert.alert('회원 탈퇴가 완료되었습니다.');
+          await AsyncStorage.removeItem('key');
+          navigation.navigate('Login');
+        } else {
+          console.log('홈페이지 로딩 실패');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch user info', err);
+    }
   };
 
-  const updateUserInfo = () => {
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('nickname', nickname);
-    if (loginuser.profile_img) {
-      formData.append('profileImg', {
-        uri: loginuser.profile_img,
+  const updateUserInfo = async () => {
+    const token = await AsyncStorage.getItem('key');
+
+    const profileImg = {
+        uri: memberInfo.profileImg,
         type: 'image/jpeg',
         name: 'profile.jpg',
-      });
-    }
+      }
 
-    axios
-      .put(`${Server_IP}/members/my-info`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          'Content-Type': 'multipart/form-data',
-        },
-      })
+      const formData = new FormData();
+      formData.append('name', memberInfo.name); // 이름 추가
+      formData.append('nickname', memberInfo.nickname); // 닉네임 추가
+      formData.append('profileImg', profileImg); // 프로필 이미지 추가
+
+    fetch('http://localhost:8080/api/members/my-info', {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer token',
+      },
+      body: formData,
+    })
       .then(response => {
         Alert.alert('성공', '사용자 정보가 업데이트되었습니다.');
+        AsyncStorage.removeItem('key');
+        navigation.navigate('Login');
       })
       .catch(error => {
         Alert.alert('오류', '사용자 정보 업데이트에 실패했습니다.');
@@ -199,7 +234,7 @@ const EditPageScreen = ({navigation}) => {
       <Header label="정보 수정" goto={'MyPage'} />
       <Pressable onPress={openImgModal} style={{padding: 30}}>
         <Image
-          source={{uri: loginuser.profile_img}}
+          source={getImageUri(memberInfo.profileImg)}
           style={styles.profileImage}
           onError={() => console.log('이미지 로드 실패')}
         />
@@ -210,7 +245,7 @@ const EditPageScreen = ({navigation}) => {
           <FontAwesome6 name="user" size={30} color="#8C8677" />
           <TextInput
             style={styles.textInput}
-            placeholder={loginuser.name}
+            placeholder={memberInfo.name}
             value={name}
             onChangeText={text => setName(text)}
           />
@@ -220,7 +255,7 @@ const EditPageScreen = ({navigation}) => {
           <MaterialIcons name="tag-faces" size={32} color="#8C8677" />
           <TextInput
             style={styles.textInput}
-            placeholder={loginuser.nickname}
+            placeholder={memberInfo.nickname}
             value={nickname}
             onChangeText={text => setNickname(text)}
           />
@@ -235,9 +270,34 @@ const EditPageScreen = ({navigation}) => {
         </View>
         <View style={styles.Buttons}>
           <Button_Green label="정보 수정" onPress={updateUserInfo} />
-          <Button_Red label="계정 탈퇴" onPress={deleteUser} />
+          <Button_Red
+            label="계정 탈퇴"
+            onPress={() => setDeleteModalVisible(true)}
+          />
         </View>
       </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={deleteModalVisible}
+        onRequestClose={() => setDeleteModalVisible(false)}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={{fontSize: 20, padding: 10}}>
+              정말 삭제하시겠어요?
+            </Text>
+            <Text>삭제 후에는 되돌릴 수 없습니다!</Text>
+            <View style={styles.Buttons}>
+              <Button_Red label="확인" onPress={() => deleteUser()} />
+              <Button_Green
+                label="취소"
+                onPress={() => setDeleteModalVisible(false)}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         visible={isPWModalVisible}

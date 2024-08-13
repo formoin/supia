@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Modal, TextInput } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {View, Text, StyleSheet, Modal, TextInput} from 'react-native';
 import axios from 'axios';
 import PopupHeader from '../../Atoms/PopupHeader';
 import Searchbar from '../../Organisms/SearchBar';
 import Green from '../../Atoms/Button_Green';
-import loginStore from '../../store/useLoginStore'
+import loginStore from '../../store/useLoginStore';
+import {Server_IP} from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function ReplyMessageModal({ visible, onClose, toMessage }) {
+export default function ReplyMessageModal({visible, onClose, toMessage}) {
   const [text, setText] = useState('');
   const [friendName, setFriendName] = useState('');
-  const { token } = loginStore.getState()
+  // const { token } = loginStore.getState()
 
   useEffect(() => {
     if (toMessage && toMessage.length > 0) {
@@ -18,6 +20,8 @@ export default function ReplyMessageModal({ visible, onClose, toMessage }) {
   }, [toMessage]);
 
   const sendMessage = async () => {
+    const token = await AsyncStorage.getItem('key');
+
     const Message = {
       fromMemberId: 6,
       toMemberId: 8,
@@ -25,17 +29,13 @@ export default function ReplyMessageModal({ visible, onClose, toMessage }) {
     };
 
     try {
-      const response = await axios.post(
-        'https://i11b304.p.ssafy.io/api/messages',
-        Message,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
+      const response = await axios.post(`${Server_IP}/messages`, Message, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
-      );
+      });
 
       if (response.status === 200) {
         console.log('메세지 보내기 성공');
@@ -50,7 +50,7 @@ export default function ReplyMessageModal({ visible, onClose, toMessage }) {
   const handleSend = () => {
     sendMessage();
     onClose();
-    alert('메세지가 성공적으로 전송되었습니다.')
+    alert('메세지가 성공적으로 전송되었습니다.');
   };
 
   return (

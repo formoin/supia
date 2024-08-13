@@ -7,22 +7,17 @@ import {StyleSheet, View, Text, Modal, Pressable} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {TouchableWithoutFeedback} from 'react-native';
 import useWebSocketStore from './Pages/WebRTC/SocketStore';
+import {Server_IP} from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import {
-  RTCPeerConnection,
-  RTCSessionDescription,
-  mediaDevices,
-} from 'react-native-webrtc';
-import {WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
-const ICE_SERVERS = [
-  {
-    urls: [TURN_URL],
-    username: TURN_ID,
-    credential: TURN_CREDENTIAL,
-  },
-];
-
-const Popup_Call = ({visible, onClose, onOpenPopup, friends}) => {
+const Popup_Call = ({
+  visible,
+  onClose,
+  onOpenPopup,
+  friends,
+  memberId,
+  memberName,
+}) => {
   const [userId, setUserId] = useState('');
   const [targetUserId, setTargetUserId] = useState('');
   const connect = useWebSocketStore(state => state.connect);
@@ -33,71 +28,21 @@ const Popup_Call = ({visible, onClose, onOpenPopup, friends}) => {
 
   const goCallPage = async friend => {
     setTargetUserId(friend.id); // 여기에 친구의 ID 설정
-    const ws = connect(WS_IP, token);
-    setWebSocket(ws);
-
-    ws.onmessage = async message => {
-      const data = JSON.parse(message.data);
-      if (data.type === 'authenticated') {
-        console.log('User authenticated');
-        onAuthenticated(ws, data.userId);
-
-        peerConnectionRef.current = new RTCPeerConnection({
-          iceServers: ICE_SERVERS,
-        });
-      }
-    };
-
-    const localStream = await getUserMedia();
-    localStream.getTracks().forEach(track => {
-      peerConnectionRef.current.addTrack(track, localStream);
-    });
 
     navigation.navigate('Call', {
-      isCaller: false,
+      isCaller: true,
       targetUserId: targetUserId,
-      userId: userId,
+      userId: memberId,
+      memberName: memberName,
     });
   };
 
   const handleAcceptCall = async offerUser => {
-    const ws = connect(WS_IP, token);
-    setWebSocket(ws);
-
-    ws.onmessage = async message => {
-      const data = JSON.parse(message.data);
-      if (data.type === 'authenticated') {
-        console.log('User authenticated');
-        onAuthenticated(ws, data.userId);
-
-        peerConnectionRef.current = new RTCPeerConnection({
-          iceServers: ICE_SERVERS,
-        });
-      }
-    };
-
-    const localStream = await getUserMedia();
-    localStream.getTracks().forEach(track => {
-      peerConnectionRef.current.addTrack(track, localStream);
-    });
-
     navigation.navigate('Call', {
-      isCaller: true,
+      isCaller: false,
       targetUserId: offerUser,
-      userId: userId,
-    });
-  };
-
-  const getUserMedia = () => {
-    return new Promise((resolve, reject) => {
-      mediaDevices
-        .getUserMedia({video: true, audio: true})
-        .then(stream => {
-          resolve(stream);
-        })
-        .catch(error => {
-          reject(error);
-        });
+      userId: memberId,
+      memberName: memberName,
     });
   };
 
@@ -131,7 +76,9 @@ const Popup_Call = ({visible, onClose, onOpenPopup, friends}) => {
                       onClose={onClose}
                       onOpenPopup={onOpenPopup}
                     />
-                    <Pressable onPress={() => goCallPage(friend)} style={styles.callButton}>
+                    <Pressable
+                      onPress={() => goCallPage(friend)}
+                      style={styles.callButton}>
                       <Feather name="video" size={24} />
                     </Pressable>
                   </View>
@@ -182,6 +129,6 @@ const styles = StyleSheet.create({
     width: '90%',
   },
   callButton: {
-    paddingLeft: 25
+    paddingLeft: 25,
   },
 });

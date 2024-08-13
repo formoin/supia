@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import React, {useState, useEffect} from 'react';
+import {View, StyleSheet} from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 import Header from '../Atoms/Header';
 import Searchbar from '../Organisms/SearchBar';
 import Divide from '../Divide';
 import ListItem from '../Atoms/ListItem';
 import useStore from '../store/useStore';
 import loginStore from '../store/useLoginStore';
+
 import axios from 'axios';
 
 export default function SearchScreen() {
-  const { activeText, setActiveText, resetActiveText } = useStore();
+  const {activeText, setActiveText, resetActiveText} = useStore();
   const [userData, setUserData] = useState([]);
   const [itemData, setItemData] = useState([]);
   const [searchValue, setSearchValue] = useState(''); // Searchbar의 값 상태
@@ -26,7 +27,7 @@ export default function SearchScreen() {
       setItemData([]);
       setSearchValue(''); // 검색어 초기화
       resetActiveText();
-    }, [resetActiveText])
+    }, [resetActiveText]),
   );
 
   // activeText가 변경될 때마다 데이터와 검색어를 초기화
@@ -89,7 +90,7 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   p_value: {
     padding: 20,
-    alignItems: 'center',
+    // alignItems: 'center',
   },
   container: {
     backgroundColor: '#fff',

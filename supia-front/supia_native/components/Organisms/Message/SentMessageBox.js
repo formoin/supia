@@ -1,80 +1,100 @@
-import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
 import Label from '../../Atoms/ListItem';
-import React, { useState, useCallback } from 'react';
+import React, {useState, useCallback} from 'react';
 import axios from 'axios';
 import ReadMessageModal from './ReadMessageModal';
 import moment from 'moment';
 import loginStore from '../../store/useLoginStore';
+import {Server_IP} from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function SentMessage({ edit, toMessage, onDelete, getToMessage }) {
+export default function SentMessage({edit, toMessage, onDelete, getToMessage}) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState(toMessage);
-  const { token } = loginStore.getState();
+  // const {token} = loginStore.getState();
 
-  const messageDetail = useCallback(async (messageId) => {
-    setLoading(true);
-    const url = 'https://i11b304.p.ssafy.io/api/messages/detail';
+  const messageDetail = useCallback(
+    async messageId => {
+      setLoading(true);
+      const url = `${Server_IP}/messages/detail`;
 
-    try {
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-        params: {
-          messageId: messageId,
-        },
-      });
+      const token = await AsyncStorage.getItem('key');
 
-      if (response.status === 200) {
-        setSelectedMessage(response.data);
-        console.log(response.data);
-        console.log('메시지 확인 성공');
-      } else {
-        console.log('메시지 확인 실패');
+      try {
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+          params: {
+            messageId: messageId,
+          },
+        });
+
+        if (response.status === 200) {
+          setSelectedMessage(response.data);
+          console.log(response.data);
+          console.log('메시지 확인 성공');
+        } else {
+          console.log('메시지 확인 실패');
+        }
+      } catch (error) {
+        console.error('메세지 확인 중 오류 발생:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('메세지 확인 중 오류 발생:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+    },
+    [],
+  );
 
-  const messageDelete = useCallback(async (messageId) => {
-    setLoading(true);
-    const url = 'https://i11b304.p.ssafy.io/api/messages';
+  const messageDelete = useCallback(
+    async messageId => {
+      const token = await AsyncStorage.getItem('key');
 
-    try {
-      const response = await axios.delete(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-        params: {
-          messageId: messageId,
-        },
-      });
+      setLoading(true);
+      const url = `${Server_IP}/messages`;
 
-      if (response.status === 200) {
-        console.log('메시지 삭제 성공');
-        setMessages(prevMessages => prevMessages.filter(message => message.messageId !== messageId));
-        onDelete();
-        setModalVisible(false);
-      } else {
-        console.log('메시지 삭제 실패');
+      try {
+        const response = await axios.delete(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+          params: {
+            messageId: messageId,
+          },
+        });
+
+        if (response.status === 200) {
+          console.log('메시지 삭제 성공');
+          setMessages(prevMessages =>
+            prevMessages.filter(message => message.messageId !== messageId),
+          );
+          onDelete();
+          setModalVisible(false);
+        } else {
+          console.log('메시지 삭제 실패');
+        }
+      } catch (error) {
+        console.error('메세지 삭제 중 오류 발생:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('메세지 삭제 중 오류 발생:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [token, onDelete]);
+    },
+    [onDelete],
+  );
 
-  const handlePress = (message) => {
+  const handlePress = message => {
     if (edit) {
       messageDelete(message.messageId);
     } else {
@@ -84,13 +104,17 @@ export default function SentMessage({ edit, toMessage, onDelete, getToMessage })
     }
   };
 
-  const formatSentTime = (dateString) => {
-    return dateString ? moment(dateString).format('YYYY/MM/DD HH:mm') : '정보 없음';
+  const formatSentTime = dateString => {
+    return dateString
+      ? moment(dateString).format('YYYY/MM/DD HH:mm')
+      : '정보 없음';
   };
 
-  const truncateMessage = (content) => {
+  const truncateMessage = content => {
     const firstLine = content.split('\n')[0];
-    return content.length > firstLine.length ? `${firstLine} ...더보기` : firstLine;
+    return content.length > firstLine.length
+      ? `${firstLine} ...더보기`
+      : firstLine;
   };
 
   return (
@@ -98,11 +122,13 @@ export default function SentMessage({ edit, toMessage, onDelete, getToMessage })
       {loading ? ( // 로딩 상태 표시
         <ActivityIndicator size="large" color="#0000ff" />
       ) : messages && messages.length > 0 ? (
-        messages.map((message) => (
+        messages.map(message => (
           <View key={message.messageId} style={styles.container}>
             <View style={styles.messageHeader}>
               <Text style={styles.messageText}>쪽지</Text>
-              <Text style={styles.timeText}>{formatSentTime(message.sentTime)}</Text>
+              <Text style={styles.timeText}>
+                {formatSentTime(message.sentTime)}
+              </Text>
             </View>
             <View style={styles.messageContent}>
               <Label
@@ -119,8 +145,7 @@ export default function SentMessage({ edit, toMessage, onDelete, getToMessage })
                     ? styles.readButtonGray
                     : styles.readButton,
                 ]}
-                onPress={() => handlePress(message)}
-              >
+                onPress={() => handlePress(message)}>
                 <Text style={styles.buttonText}>
                   {edit ? '삭제' : message.check ? '읽음' : '읽기'}
                 </Text>
@@ -135,10 +160,9 @@ export default function SentMessage({ edit, toMessage, onDelete, getToMessage })
       {selectedMessage && (
         <ReadMessageModal
           visible={modalVisible}
-            onClose={() => {
-              setModalVisible(false);
-              getToMessage();
-            }}
+          onClose={() => {
+            setModalVisible(false);
+          }}
           type="text2"
           toMessage={[selectedMessage]}
         />

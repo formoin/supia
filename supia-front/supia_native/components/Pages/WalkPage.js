@@ -10,7 +10,7 @@ import haversine from 'haversine';
 import {useFocusEffect} from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import axios from 'axios';
-import { KAKAO_API_KEY } from '@env';
+import {KAKAO_API_KEY, Server_IP} from '@env';
 
 export default function WalkingScreen() {
   const time = useStore(state => state.time);
@@ -63,10 +63,8 @@ export default function WalkingScreen() {
 
         const intervalId = setInterval(() => {
           if (!isMounted) return;
-          // 위도를 2m 아래로 이동
-          const newLatitude = currentLocation.latitude - 2 / 111320; // 1도는 약 111.32km
           const newLocation = {
-            latitude: newLatitude,
+            latitude: currentLocation.latitude,
             longitude: currentLocation.longitude,
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
@@ -152,14 +150,15 @@ export default function WalkingScreen() {
   };
 
   const getLocationData = async (lon, lat) => {
-    const { dong, ri, code } = await fetchLocationData(lon, lat);
+    const {dong, ri, code} = await fetchLocationData(lon, lat);
     if (code) {
       setDong(dong);
       setRi(ri);
       setCode(code);
     } else {
-        console.log('kakao 실패');
-    }}
+      console.log('kakao 실패');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -184,7 +183,7 @@ export default function WalkingScreen() {
           <IsCall callerName={callerName} onClose={handlePopupClose} />
         )}
         <View style={styles.popupContainer}>
-          <Popup_White dong={dong} ri={ri} code={code}/>
+          <Popup_White dong={dong} ri={ri} code={code} />
         </View>
         <View style={styles.bottomContainer}>
           <WalkPage_bottom

@@ -6,7 +6,7 @@ import {
   Modal,
   Text,
   TouchableWithoutFeedback,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import {launchCamera} from 'react-native-image-picker';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -18,9 +18,11 @@ import Button_Red from './Button_Red';
 import {useNavigation} from '@react-navigation/native';
 import Popup_Call from '../Popup_Call';
 import axios from 'axios';
-import { captureRef } from 'react-native-view-shot';
+import {captureRef} from 'react-native-view-shot';
 import RNFS from 'react-native-fs';
 import loginStore from '../store/useLoginStore';
+import {Server_IP} from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const WalkPage_bottom = ({onOpenPopup, distance, mapRef}) => {
   const navigation = useNavigation();
@@ -32,8 +34,8 @@ const WalkPage_bottom = ({onOpenPopup, distance, mapRef}) => {
   const walkEndTime = useStore(state => state.walkEndTime);
   const [friends, setFriends] = useState([]);
   const {items} = useStore();
-
-  const { token } = loginStore.getState()
+  const {memberId, memberName} = useStore();
+  // const { token } = loginStore.getState()
   const [modalVisible, setModalVisible] = useState(false);
   const [popupVisible, setPopupVisible] = useState(false);
   const [imageUri, setImageUri] = useState(null);
@@ -52,14 +54,15 @@ const WalkPage_bottom = ({onOpenPopup, distance, mapRef}) => {
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const seconds = date.getSeconds().toString().padStart(2, '0');
-    
+
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-};
+  };
 
   const sendWalkData = async () => {
+    const token = await AsyncStorage.getItem('key');
     const currentTime = new Date().toISOString();
     const walkData = {
-      memberId : 11, // 수정
+      memberId: memberId, // 수정
       walkStart: formatTime(walkStartTime),
       walkEnd: formatTime(currentTime),
       distance: parseFloat(distance.toFixed(2)),
@@ -67,17 +70,13 @@ const WalkPage_bottom = ({onOpenPopup, distance, mapRef}) => {
     };
 
     try {
-      const response = await axios.post(
-        'https://i11b304.p.ssafy.io/api/walk',
-        walkData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-              Accept: 'application/json',
-              'Content-Type': 'application/json; charset=utf-8',
-          }
+      const response = await axios.post(`${Server_IP}/walk`, walkData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
-      );
+      });
 
       if (response.status === 200) {
         console.log(walkData);
@@ -93,17 +92,16 @@ const WalkPage_bottom = ({onOpenPopup, distance, mapRef}) => {
   };
 
   const getFriends = async () => {
+    const token = await AsyncStorage.getItem('key');
+
     try {
-      const response = await axios.get(
-        "https://i11b304.p.ssafy.io/api/friends",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
+      const response = await axios.get(`${Server_IP}/friends`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
-      );
+      });
       setFriends(response.data);
       console.log(response.data);
       console.log('친구 리스트 불러오기 성공');
@@ -112,16 +110,14 @@ const WalkPage_bottom = ({onOpenPopup, distance, mapRef}) => {
     }
   };
 
-
-const onPressPause = useCallback(async () => {
-  resetStopwatch(); // 스톱워치 리셋
-  pauseStopwatch(); // 스톱워치 일시 정지
-  sendWalkData();
-  const currentTime = new Date().toISOString();
-  setWalkEndTime(currentTime);
-  setRouteWidth(4); // 경로 너비 설정
-  // console.log('Final Distance:', distance.toFixed(2));
-
+  const onPressPause = useCallback(async () => {
+    resetStopwatch(); // 스톱워치 리셋
+    pauseStopwatch(); // 스톱워치 일시 정지
+    sendWalkData();
+    const currentTime = new Date().toISOString();
+    setWalkEndTime(currentTime);
+    setRouteWidth(4); // 경로 너비 설정
+    // console.log('Final Distance:', distance.toFixed(2));
 
     setLoading(true); // 로딩 시작
 
@@ -140,10 +136,18 @@ const onPressPause = useCallback(async () => {
         setModalVisible(true); // 모달 표시
       }
     }, 1000); // 1초 대기
-  }, [resetStopwatch, pauseStopwatch, setWalkEndTime, setRouteWidth, distance, mapRef, setCapturedImageUri]);
+  }, [
+    resetStopwatch,
+    pauseStopwatch,
+    setWalkEndTime,
+    setRouteWidth,
+    distance,
+    mapRef,
+    setCapturedImageUri,
+  ]);
 
   const onPressUser = () => {
-    getFriends()
+    getFriends();
     setPopupVisible(true);
   };
 
@@ -215,6 +219,8 @@ const onPressPause = useCallback(async () => {
               onClose={handlePopupClose}
               onOpenPopup={onOpenPopup}
               friends={friends}
+              memberId={memberId}
+              memberName={memberName}
             />
           </View>
         </TouchableWithoutFeedback>

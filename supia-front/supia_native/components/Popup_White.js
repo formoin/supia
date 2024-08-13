@@ -1,34 +1,45 @@
 import React from 'react';
-import { FlatList, ScrollView, StyleSheet, View, Text, Image, ActivityIndicator } from 'react-native';
-import { useEffect, useState } from 'react';
-import axios from 'axios'
+import {
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
+import {useEffect, useState} from 'react';
+import axios from 'axios';
 import {Server_IP, WS_IP, TURN_URL, TURN_ID, TURN_CREDENTIAL} from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import loginStore from './store/useLoginStore';
 import useStore from './store/useStore';
 
-const Popup_White = ({ri, dong, code}) => {
+const Popup_White = ({ ri, dong, code }) => {
   const [speciesData, setSpeciesData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { token } = loginStore.getState()
-  const { getS3Url } = useStore()
+  // const { token } = loginStore.getState()
+  const {getS3Url} = useStore();
+
 
   useEffect(() => {
-    // api 받아오기
+    // API 받아오기
     const fetchSpeciesData = async () => {
+      const token = await AsyncStorage.getItem('key');
+
       try {
         const response = await axios.get(`${Server_IP}/walk`, {
           headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: 'application/json',
-              'Content-Type': 'application/json; charset=utf-8',
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
           },
           params: {
-              address: code,
+            address: code,
           },
-      });
-        console.log(code)
-        const data = response.data
-        // const data = await response.json();
+        });
+        console.log(code);
+        const data = response.data;
 
         setSpeciesData(data);
       } catch (error) {
@@ -52,13 +63,16 @@ const Popup_White = ({ri, dong, code}) => {
         <FlatList
           data={speciesData}
           keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
+          renderItem={({item}) => (
             <View style={styles.container}>
-              <Image source={{ uri: getS3Url(item.representativeImg) }} style={styles.image} />
+              <Image
+                source={{uri: getS3Url(item.representativeImg)}}
+                style={styles.image}
+              />
               <Text style={styles.p_text}>{item.speciesName}</Text>
             </View>
           )}
-          contentContainerStyle={styles.listContent}  // 리스트 스타일
+          contentContainerStyle={styles.listContent} // 리스트 스타일
         />
       ) : (
         <Text style={styles.noDataText}>발견된 자연물이 없습니다</Text>

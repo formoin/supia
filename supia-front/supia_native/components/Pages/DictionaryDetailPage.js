@@ -1,25 +1,34 @@
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Modal } from "react-native";
-import React, { useEffect, useState } from 'react';
-import Header from "../Atoms/Header";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  Modal,
+} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import Header from '../Atoms/Header';
 import Line from '../Atoms/Line';
-import Feather from "react-native-vector-icons/Feather";
-import AntDesign from "react-native-vector-icons/AntDesign";
-import SendGiftModal from "../SendGiftModal";
+import Feather from 'react-native-vector-icons/Feather';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import SendGiftModal from '../SendGiftModal';
 import Popup from '../Popup';
-import { Server_IP } from '@env';
-import axios from "axios";
-import loginStore from "../store/useLoginStore";
+import {Server_IP} from '@env';
+import axios from 'axios';
+import loginStore from '../store/useLoginStore';
 import useStore from '../store/useStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function DictionaryDetailScreen({ route }) {
-  const { id, representativeImg, speciesName } = route.params;
+export default function DictionaryDetailScreen({route}) {
+  const {id, representativeImg, speciesName} = route.params;
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [sendgiftVisible, setSendgiftVisible] = useState(false);
   const [deletetVisible, setDeletetVisible] = useState(false);
   const [speciesDetail, setSpeciesDetail] = useState(null);
-  const { token } = loginStore.getState();
+  // const { token } = loginStore.getState();
   const {getS3Url} = useStore();
-  
+
   const sendGift = () => {
     setSendgiftVisible(true);
   };
@@ -39,7 +48,9 @@ export default function DictionaryDetailScreen({ route }) {
   };
 
   // API 호출 함수
-  const fetchSpeciesDetail = async (speciesId) => {
+  const fetchSpeciesDetail = async speciesId => {
+    const token = await AsyncStorage.getItem('key');
+
     try {
       const response = await axios.get(`${Server_IP}/items/detail`, {
         headers: {
@@ -75,53 +86,78 @@ export default function DictionaryDetailScreen({ route }) {
     setSelectedItemId(null); // 초기화
   }, [route]);
 
-  const selectedItem = speciesDetail?.items?.find(item => item.id === selectedItemId);
+  const selectedItem = speciesDetail?.items?.find(
+    item => item.id === selectedItemId,
+  );
 
   return (
     <View style={styles.container}>
       <Header label="나의 자연 도감" goto="Dictionary" />
 
       <View style={styles.infoContainer}>
-        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{alignItems: 'center', justifyContent: 'center'}}>
           <Text style={styles.NameFont}>{speciesName}</Text>
-          <Image source={{ uri: getS3Url(representativeImg) }} style={styles.image} />
+          <Image
+            source={{uri: getS3Url(representativeImg)}}
+            style={styles.image}
+          />
           <View style={styles.textContainer}>
             <ScrollView>
-              <Text style={styles.InfoFont}>
-                {speciesDetail?.description}
-              </Text>
+              <Text style={styles.InfoFont}>{speciesDetail?.description}</Text>
             </ScrollView>
           </View>
-          <View style={{ marginVertical: 20 }}><Line /></View>
+          <View style={{marginVertical: 20}}>
+            <Line />
+          </View>
         </View>
         <View>
           <View style={styles.miniTitle}>
             {/* speciesDetail이 null이 아닌 경우에만 렌더링 */}
             {speciesDetail && (
-              <Text style={{ flex: 1 }}>
+              <Text style={{flex: 1}}>
                 {speciesName} ({speciesDetail.items.length})
               </Text>
             )}
             {selectedItemId !== null && (
               <TouchableOpacity style={styles.iconContainer}>
-                <AntDesign name="delete" size={24} color="#A2AA7B" onPress={deleteitem} />
-                <Feather name="gift" size={24} color="#A2AA7B" onPress={sendGift} style={{ marginHorizontal: 7 }} />
+                <AntDesign
+                  name="delete"
+                  size={24}
+                  color="#A2AA7B"
+                  onPress={deleteitem}
+                />
+                <Feather
+                  name="gift"
+                  size={24}
+                  color="#A2AA7B"
+                  onPress={sendGift}
+                  style={{marginHorizontal: 7}}
+                />
               </TouchableOpacity>
             )}
           </View>
           <ScrollView horizontal>
             {/* speciesDetail이 null이 아닌 경우에만 아이템 렌더링 */}
-            {speciesDetail?.items?.map((item) => (
+            {speciesDetail?.items?.map(item => (
               <TouchableOpacity
                 key={item.id}
                 style={[
                   styles.itemContainer,
                   selectedItemId === item.id && styles.selectedItemContainer,
                 ]}
-                onPress={() => setSelectedItemId(selectedItemId === item.id ? null : item.id)}
-              >
-                <Image source={{ uri: getS3Url(item.imgUrl) }} style={{ width: 60, height: 60, marginVertical: 4, transform: [{ rotate: '90deg' }] }} />
-                <Text style={{ fontSize: 12 }}>{item.acquireDate}</Text>
+                onPress={() =>
+                  setSelectedItemId(selectedItemId === item.id ? null : item.id)
+                }>
+                <Image
+                  source={{uri: getS3Url(item.imgUrl)}}
+                  style={{
+                    width: 60,
+                    height: 60,
+                    marginVertical: 4,
+                    transform: [{rotate: '90deg'}],
+                  }}
+                />
+                <Text style={{fontSize: 12}}>{item.acquireDate}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -132,8 +168,7 @@ export default function DictionaryDetailScreen({ route }) {
       <Modal
         transparent={true}
         visible={sendgiftVisible}
-        onRequestClose={handleCloseModal}
-      >
+        onRequestClose={handleCloseModal}>
         <View style={styles.modalBackground}>
           <SendGiftModal
             onClose={handleCloseModal}
@@ -170,7 +205,7 @@ export default function DictionaryDetailScreen({ route }) {
               fetchSpeciesDetail(id); // 업데이트된 데이터 가져오기
               setSelectedItemId(null); // 선택된 아이템 초기화
             }}
-            when='item'
+            when="item"
           />
         </View>
       </Modal>
@@ -217,7 +252,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', // 가로 방향으로 정렬
     // justifyContent: 'space-between', // 양 끝에 배치
     alignItems: 'center', // 세로 방향 중앙 정렬
-    marginBottom : 10,
+    marginBottom: 10,
   },
   iconContainer: {
     flexDirection: 'row', // 아이콘들을 가로로 정렬

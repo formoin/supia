@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, TextInput, Alert } from 'react-native';
+import React, {useState} from 'react';
+import {StyleSheet, View, TextInput, Alert} from 'react-native';
 import Button_Green from './Button_Green';
 import axios from 'axios';
 import loginStore from '../store/useLoginStore';
-import useStore from '../store/useStore'
+import useStore from '../store/useStore';
+import {Server_IP} from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function TextFrame({ friend, user, page, onClose }) {
+export default function TextFrame({friend, user, page, onClose}) {
   const [text, setText] = useState('');
-  const { token } = loginStore.getState()
-  const { memberId } = useStore();
+  // const { token } = loginStore.getState()
+  const {memberId} = useStore();
 
   const sendMessage = async () => {
-    const toMemberId = page === 'search' ? user.memberId : friend.memberId
+    const token = await AsyncStorage.getItem('key');
+
+    const toMemberId = page === 'search' ? user.memberId : friend.memberId;
     const Message = {
       fromMemberId: memberId,
       toMemberId: toMemberId,
@@ -19,7 +23,7 @@ export default function TextFrame({ friend, user, page, onClose }) {
     };
 
     try {
-      const response = await axios.post('https://i11b304.p.ssafy.io/api/messages', Message, {
+      const response = await axios.post(`${Server_IP}/messages`, Message, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
@@ -28,18 +32,18 @@ export default function TextFrame({ friend, user, page, onClose }) {
       });
 
       if (response.status === 200) {
-        console.log("메세지 보내기 성공");
+        console.log('메세지 보내기 성공');
         Alert.alert('전송 완료', '메세지가 성공적으로 전송되었습니다.');
         setText('');
         if (onClose) {
           onClose();
         }
       } else {
-        console.log("메세지 보내기 실패");
+        console.log('메세지 보내기 실패');
         Alert.alert('전송 실패', '메세지 전송에 실패했습니다.');
       }
     } catch (error) {
-      console.error("요청 중 오류 발생:", error);
+      console.error('요청 중 오류 발생:', error);
       Alert.alert('오류', '메세지 전송 중 오류가 발생했습니다.');
     }
   };

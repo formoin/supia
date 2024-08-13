@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-
+import Immersive from 'react-native-immersive';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNavBar from './components/Organisms/BottomNavBar';
 import LoginScreen from './components/Pages/User/LoginPage';
@@ -22,13 +22,20 @@ export default function App() {
     };
     checkLoginStatus();
     // useEffect 매개변수를 안넣어서 처음 마운트 될때만 기능
+    // 전체 화면 모드로 전환
+    Immersive.setImmersive(true);
+
+    return () => {
+      // 앱이 언마운트될 때 원래 상태로 복원
+      Immersive.setImmersive(false);
+    };
   }, []);
 
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
-        <Stack.Screen name="Main" component={BottomNavBar} />
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Main" component={BottomNavBar} />
         <Stack.Screen name="Regist" component={SignUpScreen} />
         {/* <Stack.Screen name="WalkRecord" component={StoreScreen} /> */}
         {/* <Stack.Screen name="Walking" component={Walking} /> */}

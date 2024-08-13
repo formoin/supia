@@ -1,12 +1,12 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Pressable, Image, ScrollView} from 'react-native';
+import {View, Text, StyleSheet, Pressable, Image, ScrollView, Dimensions} from 'react-native';
 import {useIsFocused, useFocusEffect} from '@react-navigation/native';
 import Header from '../Atoms/Header';
 import Divide from '../Divide';
 import Line from '../Atoms/Line';
 import useStore from '../store/useStore';
 import Octicons from 'react-native-vector-icons/Octicons';
-import axios from 'axios';
+const {width, height} = Dimensions.get('window');
 
 export default function BackgroundSetting({goSetting, bgiData, bgmData}) {
   const {activeText, setActiveText, resetActiveText, BGI, setBGI, BGM, setBGM} = useStore();
@@ -78,8 +78,8 @@ export default function BackgroundSetting({goSetting, bgiData, bgmData}) {
 
 const styles = StyleSheet.create({
   container: {
-    width: 362,
-    height: 408,
+    width: height*0.45,
+    height: width,
     borderRadius: 32,
     backgroundColor: '#FCFCFC',
   },

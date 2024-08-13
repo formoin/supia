@@ -4,10 +4,9 @@ import Label from '../../Atoms/ListItem';
 import GiftModal from './GiftModal';
 import moment from 'moment'
 
-export default function GiftBox({ gift }) {
+export default function GiftBox({ gifts }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGift, setSelectedGift] = useState(null); // 선택된 선물
-  const [gifts, setGifts] = useState(gift); // 선물 목록 상태
 
   const onPress = (item) => {
     setSelectedGift(item);
@@ -16,12 +15,12 @@ export default function GiftBox({ gift }) {
 
   const handleAccept = () => {
     // 선물 수락 시 처리할 로직
-    setGifts(gifts.filter(g => g.messageId !== selectedGift.messageId)); // 선물 목록에서 해당 선물 제거
+   gifts.filter(g => g.messageId !== selectedGift.messageId); // 선물 목록에서 해당 선물 제거
   };
 
   const handleRefuse = () => {
     // 선물 거절 시 처리할 로직
-    setGifts(gifts.filter(g => g.messageId !== selectedGift.messageId)); // 선물 목록에서 해당 선물 제거
+gifts.filter(g => g.messageId !== selectedGift.messageId); // 선물 목록에서 해당 선물 제거
   };
 
   const formatTime = (dateString) => {
@@ -38,7 +37,6 @@ export default function GiftBox({ gift }) {
           </View>
           <View style={styles.messageContent}>
             <Label
-              pic="infocirlceo"
               title="선물 도착"
               url={item.fromMemberImg}
               content={`${item.fromMemberNickname}님이 ${item.species}를 보내셨습니다.`}

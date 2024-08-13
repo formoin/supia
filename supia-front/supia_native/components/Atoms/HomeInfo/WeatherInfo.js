@@ -21,6 +21,7 @@ export default function WeatherInfo() {
   const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
     const requestLocationPermission = async () => {
       if (Platform.OS === 'android') {
         const granted = await PermissionsAndroid.request(
@@ -81,11 +82,15 @@ export default function WeatherInfo() {
             },
           },
         );
-        setWeather(response.data);
-        setLoading(false);
+        if (isMounted) { // 마운트 상태가 true일 때만 상태 업데이트
+          setWeather(response.data);
+          setLoading(false);
+        }
       } catch (error) {
-        setErrorMsg('위치 또는 날씨 정보를 가져오는 데 실패했습니다.');
-        setLoading(false);
+        if (isMounted) {
+          setErrorMsg('위치 또는 날씨 정보를 가져오는 데 실패했습니다.');
+          setLoading(false);
+        }
       }
     };
 
@@ -94,6 +99,10 @@ export default function WeatherInfo() {
     const today = new Date();
     const formattedDate = `${today.getMonth() + 1}월 ${today.getDate()}일`;
     setDate(formattedDate);
+
+    return () => {
+      isMounted = false; // 컴포넌트 언마운트 시 false로 설정
+    };
   }, []); // 초기 마운트 시 호출
 
   // 로딩 중인 경우

@@ -1,7 +1,7 @@
 import {create} from 'zustand';
 import axios from 'axios';
 import Sound from 'react-native-sound';
-import {KAKAO_API_KEY} from '@env';
+import {KAKAO_API_KEY, Server_IP} from '@env';
 import useLoginStore from './useLoginStore';
 
 const {token} = useLoginStore.getState();
@@ -9,7 +9,9 @@ import testWalkData from '../Pages/User/walkTest.json'; // 로컬 JSON 파일 �
 
 const useStore = create(set => ({
   memberId: null,
+  memberName: null,
   setMemberId: id => set({memberId: id}),
+  setMemberName: name => set({memberName: name}),
 
   // search
   activeText: 'text1',
@@ -100,8 +102,7 @@ const useStore = create(set => ({
   },
   forestId: null,
   setForestId: id => set(() => ({forestId: id})),
-  thumbnail: null,
-  setThumbnail: id => set(() => ({thumbnail: id})),
+
   // api로 받아온 데이터를 저장하는 함수
   setDroppedImages: images =>
     set(() => ({

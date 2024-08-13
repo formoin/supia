@@ -1,59 +1,53 @@
+// FriendScreen.js
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import Header from '../Atoms/Header';
 import Searchbar from '../Organisms/SearchBar';
 import Label from '../Atoms/ListItem';
 import Octicons from 'react-native-vector-icons/Octicons';
-import SelectOptions from '../Atoms/SelectOptions';
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import loginStore from '../store/useLoginStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Server_IP } from '@env';
 
 export default function FriendScreen() {
   const [edit, setEdit] = useState(false);
   const [friends, setFriends] = useState([]);
-  const { token } = loginStore.getState();
 
   const onPressPencil = () => {
     setEdit(!edit);
   };
 
   const getFriends = async () => {
+    const token = await AsyncStorage.getItem('key');
     try {
-      const response = await axios.get(
-        "https://i11b304.p.ssafy.io/api/friends",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
-          },
+      const response = await axios.get(`${Server_IP}/friends`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
-      );
+      });
       setFriends(response.data);
-      console.log(response.data);
-      console.log('친구 리스트 불러오기 성공');
     } catch (error) {
       console.error('친구 목록을 가져오는 데 실패했습니다:', error);
     }
   };
 
   useEffect(() => {
-    getFriends(); // 페이지가 렌더링될 때마다 실행
+    getFriends();
   }, []);
 
   const handleFriendChange = () => {
-    getFriends(); // 친구 추가/삭제 후 목록 갱신
+    getFriends();
   };
 
   return (
     <View style={styles.screen}>
       <Header label="친구 목록" />
-
       <View style={styles.container}>
         <View style={styles.searchbar}>
           <Searchbar active={true} />
         </View>
-
         <View style={styles.friendContainer}>
           <View style={styles.leftContainer}>
             <Text style={styles.text}>친구 목록 ( {friends.length} )</Text>
@@ -113,5 +107,16 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
     marginBottom: 15,
+  },
+  callButton: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  callButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });

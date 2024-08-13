@@ -3,9 +3,9 @@ import {View, Pressable, TextInput, Text, StyleSheet} from 'react-native';
 import useLoginStore from '../../store/useLoginStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_Server_IP;
-console.log(API_BASE_URL);
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {Server_IP} from '@env';
+import {createNotSupportedComponent} from 'react-native-maps/lib/decorateMapComponent';
 
 const LoginScreen = ({navigation}) => {
   const [values, setValues] = useState({
@@ -20,20 +20,20 @@ const LoginScreen = ({navigation}) => {
 
   // login logic
   const onLoginSubmit = async () => {
-    const loginMember = {
+    const loginInfo = {
       email: values.email,
       password: values.password,
     };
-
+    console.log(loginInfo);
+    console.log(Server_IP);
     try {
       // 로그인 post 요청
       const response = await axios.post(
-        `${API_BASE_URL}/member/login`,
-        loginMember,
+        `${Server_IP}/members/login`,
+        loginInfo, // 여기서 loginInfo를 바로 전달
         {
           headers: {
             Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
           },
         },
       );
@@ -44,7 +44,7 @@ const LoginScreen = ({navigation}) => {
         alert('로그인 되었습니다.');
         // 로그인 처리 및 Home으로 이동
         useLoginStore.setState({isLoggedIn: true});
-        navigation.navigate('Home');
+        navigation.navigate('Main');
       }
     } catch (error) {
       console.log('Error during login:', error.message);
@@ -74,7 +74,11 @@ const LoginScreen = ({navigation}) => {
   };
 
   return (
-    <View style={styles.loginContainer}>
+    <KeyboardAwareScrollView
+      contentContainerStyle={styles.loginContainer}
+      extraScrollHeight={20}
+      enableOnAndroid={true}
+      keyboardOpeningTime={250}>
       <Text style={{padding: 50, fontSize: 22, color: '#321C1C'}}>로그인</Text>
       <View style={styles.formBox}>
         <Text style={styles.formText}>이메일</Text>
@@ -102,50 +106,12 @@ const LoginScreen = ({navigation}) => {
             <Text>로그인</Text>
           </Pressable>
         </View>
-        <Pressable
-          onPress={() => alert('나중에 구현할게!')}
-          style={styles.textLink}>
+        {/* <Pressable onPress={() => alert('!')} style={styles.textLink}>
           <Text style={{textDecorationLine: 'underline'}}>
             비밀번호를 잊으셨나요?
           </Text>
-        </Pressable>
+        </Pressable> */}
       </View>
-
-      <Pressable
-        mode="contained"
-        onPress={() => {
-          // onSocialLoginSubmit(google);
-        }}
-        style={[
-          styles.button,
-          {width: '80%', marginTop: 30, backgroundColor: '#fff'},
-        ]}>
-        <Text>Google로 로그인하기</Text>
-      </Pressable>
-
-      <Pressable
-        mode="contained"
-        onPress={() => {
-          // onSocialLoginSubmit(kakao);
-        }}
-        style={[
-          styles.button,
-          {width: '80%', marginTop: 30, backgroundColor: '#FFEB02'},
-        ]}>
-        <Text>카카오로 로그인하기</Text>
-      </Pressable>
-
-      <Pressable
-        mode="contained"
-        onPress={() => {
-          // onSocialLoginSubmit(naver);
-        }}
-        style={[
-          styles.button,
-          {width: '80%', marginTop: 30, backgroundColor: '#27D34A'},
-        ]}>
-        <Text>네이버로 로그인하기</Text>
-      </Pressable>
 
       <Pressable
         onPress={() => {
@@ -156,7 +122,7 @@ const LoginScreen = ({navigation}) => {
         }}>
         <Text style={{color: '#B5B5B5'}}>아직 회원이 아니라면? 회원가입</Text>
       </Pressable>
-    </View>
+    </KeyboardAwareScrollView>
   );
 };
 
@@ -164,7 +130,8 @@ const styles = StyleSheet.create({
   loginContainer: {
     alignItems: 'center',
     backgroundColor: '#ECEADE',
-    height: '100%',
+    flexGrow: 1, // flexGrow를 추가하여 스크롤이 제대로 작동하도록 함
+    justifyContent: 'center', // 세로 가운데 정렬
   },
   formBox: {
     borderRadius: 8,
@@ -190,7 +157,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#A2AA7B',
     borderRadius: 8,
-    display: 'flex',
     justifyContent: 'center',
     padding: 10,
     width: '100%',
