@@ -53,7 +53,10 @@ class App extends Component {
   // 메시지 핸들러
   handleMessage(event) {
     try {
-      const data = JSON.parse(event.data); // 데이터가 JSON 문자열로 들어온다고 가정
+      const data =
+        typeof receivedData === "string"
+          ? JSON.parse(receivedData)
+          : receivedData; // 데이터가 JSON 문자열로 들어온다고 가정
       console.log("Received data from WebView:", data);
 
       // 상태 업데이트
