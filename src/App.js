@@ -1,15 +1,18 @@
-import React, { Component } from "react";
 import { OpenVidu } from "openvidu-browser";
+
 import axios from "axios";
+import React, { Component } from "react";
 import "./App.css";
 import UserVideoComponent from "./UserVideoComponent";
 
 const APPLICATION_SERVER_URL = "https://i11b304.p.ssafy.io/";
+//process.env.NODE_ENV === 'production' ? '' : 'https://demos.openvidu.io/';
 
 class App extends Component {
   constructor(props) {
     super(props);
 
+    // 초기 상태 정의
     this.state = {
       mySessionId: "SessionA",
       myUserName: "Participant" + Math.floor(Math.random() * 100),
@@ -30,46 +33,44 @@ class App extends Component {
     this.handleChangeUserName = this.handleChangeUserName.bind(this);
     this.handleMainVideoStream = this.handleMainVideoStream.bind(this);
     this.onbeforeunload = this.onbeforeunload.bind(this);
+    this.handleMessage = this.handleMessage.bind(this); // handleMessage 바인딩
   }
 
   componentDidMount() {
     window.addEventListener("beforeunload", this.onbeforeunload);
+    window.addEventListener("message", this.handleMessage); // message 이벤트 리스너 추가
 
-    // 페이지 로드 후 injectedJavaScript에서 설정된 변수를 상태에 저장
-    window.addEventListener("load", () => {
-      const isCaller = window.isCaller;
-      const targetUserId = window.targetUserId;
-      const userId = window.userId;
-      const memberName = window.memberName;
-
-      console.log("Loaded data from WebView:", {
-        isCaller,
-        targetUserId,
-        userId,
-        memberName,
-      });
-
-      this.setState(
-        {
-          isCaller,
-          targetUserId,
-          userId,
-          memberName,
-        },
-        this.joinSession
-      ); // 데이터를 받은 후 세션 참여
-    });
-
-    // 약간의 지연을 추가하여 카메라 권한 요청이 제대로 트리거되도록 함
     setTimeout(() => {
-      if (this.state.isCaller !== "") {
-        this.joinSession();
-      }
-    }, 1000); // 1초 지연
+      this.joinSession(); // 세션에 참여
+    }, 1000);
   }
 
   componentWillUnmount() {
     window.removeEventListener("beforeunload", this.onbeforeunload);
+    window.removeEventListener("message", this.handleMessage); // message 이벤트 리스너 제거
+  }
+
+  // 메시지 핸들러
+  handleMessage(event) {
+    try {
+      const data =
+        typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+      // 데이터가 JSON 문자열로 들어온다고 가정
+      console.log("Received data from WebView:", data);
+
+      // 상태 업데이트
+      this.setState({
+        isCaller: data.isCaller,
+        targetUserId: data.targetUserId,
+        userId: data.userId,
+        memberName: data.memberName,
+      });
+    } catch (error) {
+      console.error("Failed to parse message data:", error);
+    }
+  }
+  onbeforeunload(event) {
+    this.leaveSession();
   }
 
   handleChangeSessionId(e) {
@@ -119,43 +120,60 @@ class App extends Component {
 
         // --- 3) Specify the actions when events take place in the session ---
 
+        // On every new Stream received...
         mySession.on("streamCreated", (event) => {
+          // Subscribe to the Stream to receive it. Second parameter is undefined
+          // so OpenVidu doesn't create an HTML video by its own
           var subscriber = mySession.subscribe(event.stream, undefined);
           var subscribers = this.state.subscribers;
           subscribers.push(subscriber);
 
+          // Update the state with the new subscribers
           this.setState({
             subscribers: subscribers,
           });
         });
 
+        // On every Stream destroyed...
         mySession.on("streamDestroyed", (event) => {
+          // Remove the stream from 'subscribers' array
           this.deleteSubscriber(event.stream.streamManager);
         });
 
+        // On every asynchronous exception...
         mySession.on("exception", (exception) => {
           console.warn(exception);
         });
 
         // --- 4) Connect to the session with a valid user token ---
 
+        // Get a token from the OpenVidu deployment
         this.getToken().then((token) => {
+          // First param is the token got from the OpenVidu deployment. Second param can be retrieved by every user on event
+          // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
           mySession
             .connect(token, { clientData: this.state.myUserName })
             .then(async () => {
+              // --- 5) Get your own camera stream ---
+
+              // Init a publisher passing undefined as targetElement (we don't want OpenVidu to insert a video
+              // element: we will manage it on our own) and with the desired properties
               let publisher = await this.OV.initPublisherAsync(undefined, {
-                audioSource: undefined,
-                videoSource: undefined,
-                publishAudio: true,
-                publishVideo: true,
-                resolution: "640x480",
-                frameRate: 30,
-                insertMode: "APPEND",
-                mirror: false,
+                audioSource: undefined, // The source of audio. If undefined default microphone
+                videoSource: undefined, // The source of video. If undefined default webcam
+                publishAudio: true, // Whether you want to start publishing with your audio unmuted or not
+                publishVideo: true, // Whether you want to start publishing with your video enabled or not
+                resolution: "640x480", // The resolution of your video
+                frameRate: 30, // The frame rate of your video
+                insertMode: "APPEND", // How the video is inserted in the target element 'video-container'
+                mirror: false, // Whether to mirror your local video or not
               });
+
+              // --- 6) Publish your stream ---
 
               mySession.publish(publisher);
 
+              // Obtain the current video device in use
               var devices = await this.OV.getDevices();
               var videoDevices = devices.filter(
                 (device) => device.kind === "videoinput"
@@ -168,6 +186,7 @@ class App extends Component {
                 (device) => device.deviceId === currentVideoDeviceId
               );
 
+              // Set the main video in the page to display our webcam and store our Publisher
               this.setState({
                 currentVideoDevice: currentVideoDevice,
                 mainStreamManager: publisher,
@@ -187,12 +206,15 @@ class App extends Component {
   }
 
   leaveSession() {
+    // --- 7) Leave the session by calling 'disconnect' method over the Session object ---
+
     const mySession = this.state.session;
 
     if (mySession) {
       mySession.disconnect();
     }
 
+    // Empty all properties...
     this.OV = null;
     this.setState({
       session: undefined,
@@ -217,6 +239,8 @@ class App extends Component {
         );
 
         if (newVideoDevice.length > 0) {
+          // Creating a new publisher with specific videoSource
+          // In mobile devices the default and first camera is the front one
           var newPublisher = this.OV.initPublisher(undefined, {
             videoSource: newVideoDevice[0].deviceId,
             publishAudio: true,
@@ -224,6 +248,7 @@ class App extends Component {
             mirror: true,
           });
 
+          //newPublisher.once("accessAllowed", () => {
           await this.state.session.unpublish(this.state.mainStreamManager);
 
           await this.state.session.publish(newPublisher);
@@ -346,6 +371,21 @@ class App extends Component {
     );
   }
 
+  /**
+   * --------------------------------------------
+   * GETTING A TOKEN FROM YOUR APPLICATION SERVER
+   * --------------------------------------------
+   * The methods below request the creation of a Session and a Token to
+   * your application server. This keeps your OpenVidu deployment secure.
+   *
+   * In this sample code, there is no user control at all. Anybody could
+   * access your application server endpoints! In a real production
+   * environment, your application server must identify the user to allow
+   * access to the endpoints.
+   *
+   * Visit https://docs.openvidu.io/en/stable/application-server to learn
+   * more about the integration of OpenVidu in your application server.
+   */
   async getToken() {
     const sessionId = await this.createSession(this.state.mySessionId);
     return await this.createToken(sessionId);
@@ -359,7 +399,7 @@ class App extends Component {
         headers: { "Content-Type": "application/json" },
       }
     );
-    return response.data;
+    return response.data; // The sessionId
   }
 
   async createToken(sessionId) {
@@ -373,7 +413,7 @@ class App extends Component {
         headers: { "Content-Type": "application/json" },
       }
     );
-    return response.data;
+    return response.data; // The token
   }
 }
 
