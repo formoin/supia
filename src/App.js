@@ -59,6 +59,9 @@ class App extends Component {
           userId,
           memberName,
         });
+
+        // 데이터가 정상적으로 로드되었을 때 세션을 시작
+        this.joinSession();
       } else {
         // 데이터가 아직 준비되지 않은 경우 100ms 후 다시 시도
         setTimeout(checkDataAndSetState, 100);
@@ -334,21 +337,6 @@ class App extends Component {
         {this.state.session !== undefined ? (
           <div id="session">
             <div id="session-header">
-              <h1 id="session-title">{mySessionId}</h1>
-              <label
-                id="member-name-label"
-                style={{ marginRight: "20px", fontWeight: "bold" }}
-              >
-                Member Name: {memberName == "false" ? "폴스야" : "트루야"}
-                {/* 추가된 부분 */}
-              </label>
-              <input
-                className="btn btn-large btn-danger"
-                type="button"
-                id="buttonLeaveSession"
-                onClick={this.leaveSession}
-                value="Leave session"
-              />
               <input
                 className="btn btn-large btn-success"
                 type="button"
