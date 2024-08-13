@@ -12,7 +12,7 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    // These properties are in the state's component in order to re-render the HTML whenever their values change
+    // 초기 상태 정의
     this.state = {
       mySessionId: "SessionA",
       myUserName: "Participant" + Math.floor(Math.random() * 100),
@@ -25,6 +25,7 @@ class App extends Component {
       userId: "",
       memberName: "",
     };
+
     this.joinSession = this.joinSession.bind(this);
     this.leaveSession = this.leaveSession.bind(this);
     this.switchCamera = this.switchCamera.bind(this);
@@ -32,40 +33,40 @@ class App extends Component {
     this.handleChangeUserName = this.handleChangeUserName.bind(this);
     this.handleMainVideoStream = this.handleMainVideoStream.bind(this);
     this.onbeforeunload = this.onbeforeunload.bind(this);
+    this.handleMessage = this.handleMessage.bind(this); // handleMessage 바인딩
   }
 
   componentDidMount() {
     window.addEventListener("beforeunload", this.onbeforeunload);
-    window.addEventListener("message", this.handleMessage);
-    // 약간의 지연을 추가하여 카메라 권한 요청이 제대로 트리거되도록 함
+    window.addEventListener("message", this.handleMessage); // message 이벤트 리스너 추가
+
     setTimeout(() => {
-      this.joinSession();
-    }, 1000); // 1초 지연
+      this.joinSession(); // 세션에 참여
+    }, 1000);
   }
 
   componentWillUnmount() {
     window.removeEventListener("beforeunload", this.onbeforeunload);
-    window.removeEventListener("message", this.handleMessage);
+    window.removeEventListener("message", this.handleMessage); // message 이벤트 리스너 제거
   }
 
-  handleMessage = (event) => {
+  // 메시지 핸들러
+  handleMessage(event) {
     try {
-      const data = JSON.parse(event.data);
+      const data = JSON.parse(event.data); // 데이터가 JSON 문자열로 들어온다고 가정
       console.log("Received data from WebView:", data);
 
+      // 상태 업데이트
       this.setState({
         isCaller: data.isCaller,
         targetUserId: data.targetUserId,
         userId: data.userId,
         memberName: data.memberName,
       });
-
-      // 추가적으로 필요한 작업 수행 가능
     } catch (error) {
       console.error("Failed to parse message data:", error);
     }
-  };
-
+  }
   onbeforeunload(event) {
     this.leaveSession();
   }
