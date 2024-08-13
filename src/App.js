@@ -164,7 +164,7 @@ class App extends Component {
           // First param is the token got from the OpenVidu deployment. Second param can be retrieved by every user on event
           // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
           mySession
-            .connect(token, { clientData: this.state.myUserName })
+            .connect(token, { clientData: this.state.memberName })
             .then(async () => {
               // --- 5) Get your own camera stream ---
 
