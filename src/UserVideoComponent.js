@@ -4,13 +4,9 @@ import "./UserVideo.css";
 
 export default class UserVideoComponent extends Component {
   getNicknameTag() {
-    try {
-      return JSON.parse(this.props.streamManager.stream.connection.data)
-        .clientData;
-    } catch (error) {
-      console.error("Error parsing clientData:", error);
-      return "Unknown";
-    }
+    // Gets the nickName of the user
+    return JSON.parse(this.props.streamManager.stream.connection.data)
+      .clientData;
   }
 
   render() {
