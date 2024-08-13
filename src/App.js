@@ -69,6 +69,9 @@ class App extends Component {
     };
 
     checkDataAndSetState();
+    setTimeout(() => {
+      this.joinSession();
+    }, 1000); // 1초 지연
   }
 
   componentWillUnmount() {
