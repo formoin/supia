@@ -33,7 +33,6 @@ class App extends Component {
 
   componentDidMount() {
     window.addEventListener("beforeunload", this.onbeforeunload);
-    joinSession();
   }
 
   componentWillUnmount() {
