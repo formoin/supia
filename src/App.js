@@ -70,6 +70,7 @@ class App extends Component {
 
     checkDataAndSetState();
     setTimeout(() => {
+      //Join Session 실행
       this.joinSession();
     }, 1000); // 1초 지연
   }
@@ -157,6 +158,7 @@ class App extends Component {
         // --- 4) Connect to the session with a valid user token ---
 
         // Get a token from the OpenVidu deployment
+        // getToken 실행
         this.getToken().then((token) => {
           // First param is the token got from the OpenVidu deployment. Second param can be retrieved by every user on event
           // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
@@ -332,12 +334,6 @@ class App extends Component {
           <div id="session">
             <div id="session-header">
               <h1 id="session-title">{SessionId}</h1>
-              <label
-                id="member-name-label"
-                style={{ marginRight: "20px", fontWeight: "bold" }}
-              >
-                Member Name: {memberName} {/* 추가된 부분 */}
-              </label>
               <input
                 className="btn btn-large btn-danger"
                 type="button"
@@ -405,6 +401,8 @@ class App extends Component {
    * more about the integration of OpenVidu in your application server.
    */
   async getToken() {
+    // isCaller가 true면 통화를 건 userId를 session Id로
+    // false 면 통화를 건 targetUserId를 session Id로
     if (this.state.isCaller) {
       const sessionId = await this.createSession(this.state.userId);
       return await this.createToken(sessionId);
