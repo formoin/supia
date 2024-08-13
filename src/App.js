@@ -20,6 +20,10 @@ class App extends Component {
       mainStreamManager: undefined, // Main video of the page. Will be the 'publisher' or one of the 'subscribers'
       publisher: undefined,
       subscribers: [],
+      isCaller: false,
+      targetUserId: "",
+      userId: "",
+      memberName: "",
     };
 
     this.joinSession = this.joinSession.bind(this);
@@ -33,7 +37,25 @@ class App extends Component {
 
   componentDidMount() {
     window.addEventListener("beforeunload", this.onbeforeunload);
+    window.addEventListener("load", () => {
+      const isCaller = window.isCaller;
+      const targetUserId = window.targetUserId;
+      const userId = window.userId;
+      const memberName = window.memberName;
+      console.log("Loaded data from WebView:", {
+        isCaller,
+        targetUserId,
+        userId,
+        memberName,
+      });
 
+      this.setState({
+        isCaller,
+        targetUserId,
+        userId,
+        memberName,
+      });
+    });
     // 약간의 지연을 추가하여 카메라 권한 요청이 제대로 트리거되도록 함
     setTimeout(() => {
       this.joinSession();
@@ -242,6 +264,7 @@ class App extends Component {
   render() {
     const mySessionId = this.state.mySessionId;
     const myUserName = this.state.myUserName;
+    const memberName = this.state.memberName; // 추가
 
     return (
       <div className="container">
@@ -295,6 +318,12 @@ class App extends Component {
           <div id="session">
             <div id="session-header">
               <h1 id="session-title">{mySessionId}</h1>
+              <label
+                id="member-name-label"
+                style={{ marginRight: "20px", fontWeight: "bold" }}
+              >
+                Member Name: {memberName} {/* 추가된 부분 */}
+              </label>
               <input
                 className="btn btn-large btn-danger"
                 type="button"
