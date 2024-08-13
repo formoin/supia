@@ -12,18 +12,14 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    // 초기 상태 정의
+    // These properties are in the state's component in order to re-render the HTML whenever their values change
     this.state = {
       mySessionId: "SessionA",
       myUserName: "Participant" + Math.floor(Math.random() * 100),
       session: undefined,
-      mainStreamManager: undefined,
+      mainStreamManager: undefined, // Main video of the page. Will be the 'publisher' or one of the 'subscribers'
       publisher: undefined,
       subscribers: [],
-      isCaller: false,
-      targetUserId: "",
-      userId: "",
-      memberName: "",
     };
 
     this.joinSession = this.joinSession.bind(this);
@@ -33,46 +29,23 @@ class App extends Component {
     this.handleChangeUserName = this.handleChangeUserName.bind(this);
     this.handleMainVideoStream = this.handleMainVideoStream.bind(this);
     this.onbeforeunload = this.onbeforeunload.bind(this);
-    this.handleMessage = this.handleMessage.bind(this); // handleMessage 바인딩
   }
+
   componentDidMount() {
     window.addEventListener("beforeunload", this.onbeforeunload);
 
-    // 페이지 로드 후 injectedJavaScript에서 설정된 변수를 상태에 저장
-    window.addEventListener("load", () => {
-      const isCaller = window.isCaller;
-      const targetUserId = window.targetUserId;
-      const userId = window.userId;
-      const memberName = window.memberName;
-
-      console.log("Loaded data from WebView:", {
-        isCaller,
-        targetUserId,
-        userId,
-        memberName,
-      });
-
-      this.setState(
-        {
-          isCaller,
-          targetUserId,
-          userId,
-          memberName,
-        },
-        this.joinSession
-      ); // 데이터를 받은 후 세션 참여
-    });
-
     // 약간의 지연을 추가하여 카메라 권한 요청이 제대로 트리거되도록 함
     setTimeout(() => {
-      if (this.state.isCaller !== "") {
-        this.joinSession();
-      }
+      this.joinSession();
     }, 1000); // 1초 지연
   }
 
   componentWillUnmount() {
     window.removeEventListener("beforeunload", this.onbeforeunload);
+  }
+
+  onbeforeunload(event) {
+    this.leaveSession();
   }
 
   handleChangeSessionId(e) {
@@ -322,12 +295,6 @@ class App extends Component {
           <div id="session">
             <div id="session-header">
               <h1 id="session-title">{mySessionId}</h1>
-              <label
-                id="member-name-label"
-                style={{ marginRight: "20px", fontWeight: "bold" }}
-              >
-                Member Name: {this.state.memberName}
-              </label>
               <input
                 className="btn btn-large btn-danger"
                 type="button"
@@ -342,7 +309,6 @@ class App extends Component {
                 onClick={this.switchCamera}
                 value="Switch Camera"
               />
-              <label>Participant: {}</label>
             </div>
 
             {this.state.mainStreamManager !== undefined ? (
