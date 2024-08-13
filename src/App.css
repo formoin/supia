@@ -1,3 +1,34 @@
 .stream-container {
-	padding: 0;
+  padding: 0;
+}
+
+#session-header {
+  position: fixed;
+  bottom: 20px; /* 화면 아래에서 20px 위에 위치 */
+  right: 20px; /* 화면 오른쪽에서 20px 왼쪽에 위치 */
+  z-index: 1000; /* 다른 요소들 위에 나타나도록 z-index를 높게 설정 */
+}
+
+#buttonSwitchCamera {
+  padding: 10px 20px;
+  background-color: #28a745; /* 버튼의 배경색 */
+  color: white; /* 버튼의 텍스트 색상 */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#buttonSwitchCamera:hover {
+  background-color: #218838; /* 호버 시 배경색 */
+}
+
+.btn {
+  background-color: white; /* 예: 녹색 배경 */
+  color: black;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 30px;
 }

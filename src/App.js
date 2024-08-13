@@ -2,6 +2,7 @@ import { OpenVidu } from "openvidu-browser";
 
 import axios from "axios";
 import React, { Component } from "react";
+import { FiRefreshCw } from "react-icons/fi";
 import "./App.css";
 import UserVideoComponent from "./UserVideoComponent";
 
@@ -67,7 +68,6 @@ class App extends Component {
         setTimeout(checkDataAndSetState, 100);
       }
     };
-
     // 데이터 받기 완료
     checkDataAndSetState();
     setTimeout(() => {
@@ -280,6 +280,7 @@ class App extends Component {
 
   render() {
     const mySessionId =
+      // 돌려 놓기
       this.state.isCaller == "false"
         ? this.state.targetUserId
         : this.state.userId;
@@ -336,16 +337,6 @@ class App extends Component {
 
         {this.state.session !== undefined ? (
           <div id="session">
-            <div id="session-header">
-              <input
-                className="btn btn-large btn-success"
-                type="button"
-                id="buttonSwitchCamera"
-                onClick={this.switchCamera}
-                value="Switch Camera"
-              />
-            </div>
-
             {this.state.mainStreamManager !== undefined ? (
               <div id="main-video" className="col-md-6">
                 <UserVideoComponent
@@ -377,6 +368,11 @@ class App extends Component {
             </div>
           </div>
         ) : null}
+        <div id="session-header">
+          <button className="btn" type="button" onClick={this.switchCamera}>
+            <FiRefreshCw />
+          </button>
+        </div>
       </div>
     );
   }
