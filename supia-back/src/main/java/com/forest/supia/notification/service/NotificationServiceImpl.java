@@ -2,10 +2,6 @@ package com.forest.supia.notification.service;
 
 import com.forest.supia.exception.CustomException;
 import com.forest.supia.exception.ExceptionResponse;
-import com.forest.supia.member.entity.Member;
-import com.forest.supia.member.repository.MemberRepository;
-import com.forest.supia.notification.controller.NotificationController;
-import com.forest.supia.notification.dto.ConnectedResponseDto;
 import com.forest.supia.notification.repository.EmitterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,11 +19,23 @@ public class NotificationServiceImpl implements NotificationService {
 
         SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
         emitterRepository.save(memberId, sseEmitter);
-
+        System.out.println("subscribe: " + memberId);
 
         sseEmitter.onCompletion(()-> emitterRepository.deleteById(memberId));
         sseEmitter.onTimeout(() -> emitterRepository.deleteById(memberId));
         sseEmitter.onError((e) -> emitterRepository.deleteById(memberId));
+
+        try {
+            sseEmitter.send(SseEmitter.event()
+                    .id(String.valueOf(memberId))
+                    .name("test")
+                    .data("test")
+                    .comment("test"));
+        } catch (IOException e) {
+            emitterRepository.deleteById(memberId);
+            sseEmitter.completeWithError(e);
+            throw new ExceptionResponse(CustomException.FAIL_SEND_NOTIFICATION_EXCEPTION);
+        }
 
 
         return sseEmitter;
