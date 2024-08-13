@@ -161,7 +161,7 @@ class App extends Component {
           // First param is the token got from the OpenVidu deployment. Second param can be retrieved by every user on event
           // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
           mySession
-            .connect(token, { clientData: this.state.myUserName })
+            .connect(token, { clientData: this.state.memberName })
             .then(async () => {
               // --- 5) Get your own camera stream ---
 
@@ -275,7 +275,7 @@ class App extends Component {
 
   render() {
     const mySessionId = this.state.mySessionId;
-    const myUserName = this.state.myUserName;
+    const userId = this.state.userId;
     const memberName = this.state.memberName; // 추가
 
     return (
@@ -330,12 +330,7 @@ class App extends Component {
           <div id="session">
             <div id="session-header">
               <h1 id="session-title">{mySessionId}</h1>
-              <label
-                id="member-name-label"
-                style={{ marginRight: "20px", fontWeight: "bold" }}
-              >
-                Member Name: {memberName} {/* 추가된 부분 */}
-              </label>
+
               <input
                 className="btn btn-large btn-danger"
                 type="button"
@@ -403,8 +398,15 @@ class App extends Component {
    * more about the integration of OpenVidu in your application server.
    */
   async getToken() {
-    const sessionId = await this.createSession(this.state.mySessionId);
-    return await this.createToken(sessionId);
+    if (this.state.isCaller) {
+      const sessionId = await this.createSession(this.state.userId);
+      return await this.createToken(sessionId);
+    } else {
+      const sessionId = await this.createSession(
+        this.state.targetUserId ? this.state.targetUserId : "SessionA"
+      );
+      return await this.createToken(sessionId);
+    }
   }
 
   async createSession(sessionId) {
