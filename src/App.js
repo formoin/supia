@@ -35,42 +35,44 @@ class App extends Component {
     this.onbeforeunload = this.onbeforeunload.bind(this);
     this.handleMessage = this.handleMessage.bind(this); // handleMessage 바인딩
   }
-
   componentDidMount() {
     window.addEventListener("beforeunload", this.onbeforeunload);
-    window.addEventListener("message", this.handleMessage); // message 이벤트 리스너 추가
 
+    // 페이지 로드 후 injectedJavaScript에서 설정된 변수를 상태에 저장
+    window.addEventListener("load", () => {
+      const isCaller = window.isCaller;
+      const targetUserId = window.targetUserId;
+      const userId = window.userId;
+      const memberName = window.memberName;
+
+      console.log("Loaded data from WebView:", {
+        isCaller,
+        targetUserId,
+        userId,
+        memberName,
+      });
+
+      this.setState(
+        {
+          isCaller,
+          targetUserId,
+          userId,
+          memberName,
+        },
+        this.joinSession
+      ); // 데이터를 받은 후 세션 참여
+    });
+
+    // 약간의 지연을 추가하여 카메라 권한 요청이 제대로 트리거되도록 함
     setTimeout(() => {
-      this.joinSession(); // 세션에 참여
-    }, 1000);
+      if (this.state.isCaller !== "") {
+        this.joinSession();
+      }
+    }, 1000); // 1초 지연
   }
 
   componentWillUnmount() {
     window.removeEventListener("beforeunload", this.onbeforeunload);
-    window.removeEventListener("message", this.handleMessage); // message 이벤트 리스너 제거
-  }
-
-  // 메시지 핸들러
-  handleMessage(event) {
-    try {
-      const data =
-        typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-      // 데이터가 JSON 문자열로 들어온다고 가정
-      console.log("Received data from WebView:", data);
-
-      // 상태 업데이트
-      this.setState({
-        isCaller: data.isCaller,
-        targetUserId: data.targetUserId,
-        userId: data.userId,
-        memberName: data.memberName,
-      });
-    } catch (error) {
-      console.error("Failed to parse message data:", error);
-    }
-  }
-  onbeforeunload(event) {
-    this.leaveSession();
   }
 
   handleChangeSessionId(e) {
@@ -320,6 +322,12 @@ class App extends Component {
           <div id="session">
             <div id="session-header">
               <h1 id="session-title">{mySessionId}</h1>
+              <label
+                id="member-name-label"
+                style={{ marginRight: "20px", fontWeight: "bold" }}
+              >
+                Member Name: {this.state.memberName}
+              </label>
               <input
                 className="btn btn-large btn-danger"
                 type="button"
@@ -334,6 +342,7 @@ class App extends Component {
                 onClick={this.switchCamera}
                 value="Switch Camera"
               />
+              <label>Participant: {}</label>
             </div>
 
             {this.state.mainStreamManager !== undefined ? (
