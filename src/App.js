@@ -330,7 +330,12 @@ class App extends Component {
           <div id="session">
             <div id="session-header">
               <h1 id="session-title">{mySessionId}</h1>
-
+              <label
+                id="member-name-label"
+                style={{ marginRight: "20px", fontWeight: "bold" }}
+              >
+                Member Name: {memberName} {/* 추가된 부분 */}
+              </label>
               <input
                 className="btn btn-large btn-danger"
                 type="button"
