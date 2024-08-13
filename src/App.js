@@ -68,6 +68,7 @@ class App extends Component {
       }
     };
 
+    // 데이터 받기 완료
     checkDataAndSetState();
     setTimeout(() => {
       //Join Session 실행
@@ -336,7 +337,8 @@ class App extends Component {
                 id="member-name-label"
                 style={{ marginRight: "20px", fontWeight: "bold" }}
               >
-                Member Name: {memberName} {/* 추가된 부분 */}
+                Member Name: {memberName ? "트루야" : "폴스야"}
+                {/* 추가된 부분 */}
               </label>
               <input
                 className="btn btn-large btn-danger"
@@ -405,8 +407,9 @@ class App extends Component {
    * more about the integration of OpenVidu in your application server.
    */
   async getToken() {
+    // sessionId는 전화를 건 사람인 경우 userId로, 전화를 받는 사람인 경우 targetUserId로 해준다
     const sessionId = await this.createSession(this.state.mySessionId);
-    return await this.createToken(sessionId);
+    return await this.createToken(sessionId); // create toiken으로 token을 던져 준다
   }
 
   async createSession(sessionId) {
