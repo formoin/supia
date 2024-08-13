@@ -277,7 +277,10 @@ class App extends Component {
   }
 
   render() {
-    const mySessionId = this.state.mySessionId;
+    const mySessionId =
+      this.state.isCaller == "false"
+        ? this.state.targetUserId
+        : this.state.userId;
     const myUserName = this.state.myUserName;
     const memberName = this.state.memberName; // 추가
 
@@ -408,8 +411,13 @@ class App extends Component {
    */
   async getToken() {
     // sessionId는 전화를 건 사람인 경우 userId로, 전화를 받는 사람인 경우 targetUserId로 해준다
-    const sessionId = await this.createSession(this.state.mySessionId);
-    return await this.createToken(sessionId); // create toiken으로 token을 던져 준다
+    if (this.state.isCaller == "false") {
+      const sessionId = await this.createSession(this.state.targetUserId);
+      return await this.createToken(sessionId); // create toiken으로 token을 던져 준다
+    } else {
+      const sessionId = await this.createSession(this.state.userId);
+      return await this.createToken(sessionId);
+    }
   }
 
   async createSession(sessionId) {
