@@ -33,6 +33,11 @@ class App extends Component {
 
   componentDidMount() {
     window.addEventListener("beforeunload", this.onbeforeunload);
+
+    // 약간의 지연을 추가하여 카메라 권한 요청이 제대로 트리거되도록 함
+    setTimeout(() => {
+      this.joinSession();
+    }, 1000); // 1초 지연
   }
 
   componentWillUnmount() {
