@@ -16,7 +16,7 @@ app = FastAPI()
 
 # Load models
 seg_model = SAM("./model/sam_b.pt")
-cls_model = YOLO("./model/best.pt")
+cls_model = YOLO("./model/bestv2.pt")
 
 # Set AWS S3
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -24,6 +24,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_S3_BUCKET_NAME = os.getenv("AWS_S3_BUCKET_NAME")
 AWS_REGION = os.getenv("AWS_REGION")
 AWS_S3_URL = f"https://{AWS_S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com"
+
 
 s3_client = boto3.client(
     "s3",
@@ -36,13 +37,19 @@ temp_image_path = "./img/input/temp_image.png"
 output_image_path = r"illustrated.png"
 
 species_dict = {
-    "동물": {"bird": "새", "cat": "고양이", "dog": "강아지"},
+    "동물": {
+        "bird": "새",
+        "cat": "고양이",
+        "dog": "강아지",
+        "frog": "개구리",
+        "snail": "달팽이",
+    },
     "곤충": {
         "butterfly": "나비",
         "dragonfly": "잠자리",
         "grasshopper": "메뚜기",
         "ladybird": "무당벌레",
-        "mosquito": "모기",
+        "stag_beetle": "사슴벌레",
     },
     "식물": {
         "daisy": "데이지",
@@ -50,6 +57,10 @@ species_dict = {
         "rose": "장미",
         "sunflower": "해바라기",
         "tulip": "튤립",
+        "basil": "바질",
+        "cactus": "선인장",
+        "marigold": "메리골드",
+        "surfinia": "사피니아",
     },
 }
 
@@ -155,7 +166,7 @@ async def process_image(
         )
 
         s3_file_name = (
-            f"item/illustrated/{member_id}_{date}_{time}_{category}_{probs_name}.png"
+            f"item/illustrated/{member_id}_{date}_{time}_{category}_{probs_name_kr}.png"
         )
 
         s3_client.upload_file(output_image_path, AWS_S3_BUCKET_NAME, s3_file_name)
