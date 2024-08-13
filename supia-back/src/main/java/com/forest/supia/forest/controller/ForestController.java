@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/forest")
@@ -32,9 +33,10 @@ public class ForestController {
 
 
     @PostMapping
-    public ResponseEntity<?> setItemToForest(@RequestBody ForestSettingRequest forestSettingRequest) throws Exception {
-
-        forestService.setItemForest(forestSettingRequest);
+    public ResponseEntity<?> setItemToForest(@RequestPart ForestSettingRequest forestSettingRequest, @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail) throws Exception {
+        System.out.println(forestSettingRequest.getForestId());
+        System.out.println(forestSettingRequest.getBgm());
+        forestService.setItemForest(forestSettingRequest, thumbnail);
         
         return ResponseEntity.ok("숲 아이템 저장 성공");
     }

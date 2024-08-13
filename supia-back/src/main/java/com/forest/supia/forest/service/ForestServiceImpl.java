@@ -1,5 +1,7 @@
 package com.forest.supia.forest.service;
 
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.forest.supia.background.entity.Bgi;
 import com.forest.supia.background.entity.Bgm;
 import com.forest.supia.background.repository.BgiRepository;
@@ -17,9 +19,10 @@ import com.forest.supia.member.repository.MemberRepository;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.rmi.NoSuchObjectException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +37,13 @@ public class ForestServiceImpl implements ForestService{
     private final MemberRepository memberRepository;
     private final BgiRepository bgiRepository;
     private final BgmRepository bgmRepository;
+    private final AmazonS3Client amazonS3Client;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
+
+    @Value("${cloud.aws.s3.bucket.url}")
+    private String url;
 
     @Override
     public ForestResponse getForest(long memberId) {
@@ -70,11 +80,19 @@ public class ForestServiceImpl implements ForestService{
 
     @Override
     @Transactional
-    public void setItemForest(ForestSettingRequest forestSettingRequest) throws Exception {
+    public void setItemForest(ForestSettingRequest forestSettingRequest, MultipartFile thumbnail) throws Exception {
+        System.out.println("start find forest");
         Forest forest = forestRepository.findById(forestSettingRequest.getForestId()).orElseThrow(() -> new InvalidParameterException("Cannot find forest"));
-
+        System.out.println(forest);
         // 숲 썸네일, 테마 설정
-        forest.setThumbnail(forestSettingRequest.getThumbnail());
+        String fileName = "forest_thumbnail/" + forestSettingRequest.getForestId() + ".png";
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(thumbnail.getContentType());
+        metadata.setContentLength(thumbnail.getSize());
+        amazonS3Client.putObject(bucket, fileName, thumbnail.getInputStream(), metadata);
+
+        String fileUrl = url + "/" + fileName;
+        forest.setThumbnail(fileUrl);
         forest.setTheme(forestSettingRequest.getBgm(), forestSettingRequest.getBgi());
         forestRepository.save(forest);
         
