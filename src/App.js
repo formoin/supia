@@ -70,6 +70,7 @@ class App extends Component {
 
     checkDataAndSetState();
     setTimeout(() => {
+      //Join Session 실행
       this.joinSession();
     }, 1000); // 1초 지연
   }
@@ -157,11 +158,12 @@ class App extends Component {
         // --- 4) Connect to the session with a valid user token ---
 
         // Get a token from the OpenVidu deployment
+        // getToken 실행
         this.getToken().then((token) => {
           // First param is the token got from the OpenVidu deployment. Second param can be retrieved by every user on event
           // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
           mySession
-            .connect(token, { clientData: this.state.memberName })
+            .connect(token, { clientData: this.state.myUserName })
             .then(async () => {
               // --- 5) Get your own camera stream ---
 
@@ -275,7 +277,7 @@ class App extends Component {
 
   render() {
     const mySessionId = this.state.mySessionId;
-    const userId = this.state.userId;
+    const myUserName = this.state.myUserName;
     const memberName = this.state.memberName; // 추가
 
     return (
@@ -403,13 +405,8 @@ class App extends Component {
    * more about the integration of OpenVidu in your application server.
    */
   async getToken() {
-    if (this.state.isCaller) {
-      const sessionId = await this.createSession(this.state.userId);
-      return await this.createToken(sessionId);
-    } else {
-      const sessionId = await this.createSession(this.state.targetUserId);
-      return await this.createToken(sessionId);
-    }
+    const sessionId = await this.createSession(this.state.mySessionId);
+    return await this.createToken(sessionId);
   }
 
   async createSession(sessionId) {
