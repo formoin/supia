@@ -17,11 +17,14 @@ class App extends Component {
       mySessionId: "SessionA",
       myUserName: "Participant" + Math.floor(Math.random() * 100),
       session: undefined,
-      mainStreamManager: undefined, // Main video of the page. Will be the 'publisher' or one of the 'subscribers'
+      mainStreamManager: undefined,
       publisher: undefined,
       subscribers: [],
+      isCaller: false,
+      targetUserId: "",
+      userId: "",
+      memberName: "",
     };
-
     this.joinSession = this.joinSession.bind(this);
     this.leaveSession = this.leaveSession.bind(this);
     this.switchCamera = this.switchCamera.bind(this);
@@ -33,7 +36,7 @@ class App extends Component {
 
   componentDidMount() {
     window.addEventListener("beforeunload", this.onbeforeunload);
-
+    window.addEventListener("message", this.handleMessage);
     // 약간의 지연을 추가하여 카메라 권한 요청이 제대로 트리거되도록 함
     setTimeout(() => {
       this.joinSession();
@@ -42,7 +45,26 @@ class App extends Component {
 
   componentWillUnmount() {
     window.removeEventListener("beforeunload", this.onbeforeunload);
+    window.removeEventListener("message", this.handleMessage);
   }
+
+  handleMessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      console.log("Received data from WebView:", data);
+
+      this.setState({
+        isCaller: data.isCaller,
+        targetUserId: data.targetUserId,
+        userId: data.userId,
+        memberName: data.memberName,
+      });
+
+      // 추가적으로 필요한 작업 수행 가능
+    } catch (error) {
+      console.error("Failed to parse message data:", error);
+    }
+  };
 
   onbeforeunload(event) {
     this.leaveSession();
