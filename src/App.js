@@ -59,9 +59,6 @@ class App extends Component {
           userId,
           memberName,
         });
-
-        // 데이터가 정상적으로 로드되었을 때 세션을 시작
-        this.joinSession();
       } else {
         // 데이터가 아직 준비되지 않은 경우 100ms 후 다시 시도
         setTimeout(checkDataAndSetState, 100);
