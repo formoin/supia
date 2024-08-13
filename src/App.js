@@ -337,7 +337,7 @@ class App extends Component {
                 id="member-name-label"
                 style={{ marginRight: "20px", fontWeight: "bold" }}
               >
-                Member Name: {memberName ? "트루야" : "폴스야"}
+                Member Name: {memberName == "false" ? "폴스야" : "트루야"}
                 {/* 추가된 부분 */}
               </label>
               <input
