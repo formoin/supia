@@ -16,7 +16,7 @@ app = FastAPI()
 
 # Load models
 seg_model = SAM("./model/sam_b.pt")
-cls_model = YOLO("./model/bestv2.pt")
+cls_model = YOLO("./model/19cls.pt")
 
 # Set AWS S3
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
