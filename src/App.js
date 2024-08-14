@@ -3,6 +3,7 @@ import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
 import React, { Component } from "react";
 import { FiRefreshCw } from "react-icons/fi";
+import CallEndIcon from "@mui/icons-material/CallEnd";
 import "./App.css";
 import UserVideoComponent from "./UserVideoComponent";
 import html2canvas from "html2canvas";
@@ -39,7 +40,7 @@ class App extends Component {
 
   componentDidMount() {
     window.addEventListener("beforeunload", this.onbeforeunload);
-    window.leaveSession = this.leaveSession.bind(this);
+
     // 데이터가 유효한지 확인하기 위해 타이밍 문제를 해결
     const checkDataAndSetState = () => {
       const targetUserId = window.targetUserId;
@@ -79,9 +80,6 @@ class App extends Component {
 
   componentWillUnmount() {
     window.removeEventListener("beforeunload", this.onbeforeunload);
-
-    delete window.leaveSession;
-    this.leaveSession();
   }
 
   onbeforeunload(event) {
@@ -246,6 +244,11 @@ class App extends Component {
       mySession.disconnect();
     }
 
+    // Notify the React Native WebView to unmount
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage("leaveSession");
+    }
+
     // Empty all properties...
     this.OV = null;
     this.setState({
@@ -382,16 +385,23 @@ class App extends Component {
             </div>
           </div>
         ) : null}
-        <div id="session-header">
-          <button className="btn" type="button" onClick={this.switchCamera}>
-            <FiRefreshCw />
+        <div id="session-footer">
+          <button className="btn" id="CallEnd" onclick={this.leaveSession}>
+            <CallEndIcon />
           </button>
           <button
             className="btn"
+            id="Capture"
             type="button"
             onClick={this.onClickDownloadButton}
+          ></button>
+          <button
+            className="btn"
+            id="switchCamera"
+            type="button"
+            onClick={this.switchCamera}
           >
-            캡처
+            <FiRefreshCw />
           </button>
         </div>
       </div>

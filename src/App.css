@@ -63,7 +63,6 @@
 #CallEnd {
   width: 60px; /* 좌측 버튼의 크기 */
   height: 60px;
-  background-color: #f44336; /* 빨간색 배경 (통화 종료) */
 }
 
 #Capture {
@@ -76,12 +75,16 @@
 #switchCamera {
   width: 60px; /* 우측 버튼의 크기 */
   height: 60px;
-  background-color: #4caf50; /* 녹색 배경 (카메라 전환) */
 }
 
-#CallEnd svg,
+#CallEnd svg {
+  width: 24px;
+  height: 24px;
+  color: #f44336; /* 빨간색 아이콘 */
+}
+
 #switchCamera svg {
   width: 24px;
   height: 24px;
-  color: white; /* 아이콘 색상 */
+  color: #4caf50; /* 초록색 아이콘 */
 }
