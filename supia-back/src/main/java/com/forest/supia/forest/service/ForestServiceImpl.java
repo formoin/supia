@@ -80,19 +80,24 @@ public class ForestServiceImpl implements ForestService{
 
     @Override
     @Transactional
-    public void setItemForest(ForestSettingRequest forestSettingRequest, MultipartFile thumbnail) throws Exception {
-        System.out.println("start find forest");
-        Forest forest = forestRepository.findById(forestSettingRequest.getForestId()).orElseThrow(() -> new InvalidParameterException("Cannot find forest"));
-        System.out.println(forest);
+    public String setFileToUrl(long memberId, MultipartFile thumbnail) throws Exception {
+
         // 숲 썸네일, 테마 설정
-        String fileName = "forest_thumbnail/" + forestSettingRequest.getForestId() + ".png";
+        String fileName = "forest_thumbnail/" + memberId + ".png";
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(thumbnail.getContentType());
         metadata.setContentLength(thumbnail.getSize());
         amazonS3Client.putObject(bucket, fileName, thumbnail.getInputStream(), metadata);
 
         String fileUrl = url + "/" + fileName;
-        forest.setThumbnail(fileUrl);
+        return fileUrl;
+    }
+    @Override
+    @Transactional
+    public void setItemForest(ForestSettingRequest forestSettingRequest)  {
+
+        Forest forest = forestRepository.findById(forestSettingRequest.getForestId()).orElseThrow(() -> new InvalidParameterException("Cannot find forest"));
+        forest.setThumbnail(forest.getThumbnail());
         forest.setTheme(forestSettingRequest.getBgm(), forestSettingRequest.getBgi());
         forestRepository.save(forest);
         

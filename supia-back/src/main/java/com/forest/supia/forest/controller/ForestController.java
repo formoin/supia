@@ -32,12 +32,18 @@ public class ForestController {
     }
 
 
-    @PostMapping
-    public ResponseEntity<?> setItemToForest(@RequestPart ForestSettingRequest forestSettingRequest, @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail) throws Exception {
-        System.out.println(forestSettingRequest.getForestId());
-        System.out.println(forestSettingRequest.getBgm());
-        forestService.setItemForest(forestSettingRequest, thumbnail);
+    @PostMapping("/url")
+    public ResponseEntity<?> setFileToUrl(@RequestHeader("Authorization") String token, @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail) throws Exception {
+        long memberId = jwtUtil.extractMemberId(token);
+        String s3Url = forestService.setFileToUrl(memberId, thumbnail);
         
+        return ResponseEntity.ok(s3Url);
+    }
+
+    @PostMapping
+    public ResponseEntity<?> setItemToForest(@RequestBody ForestSettingRequest forestSettingRequest) throws Exception {
+        forestService.setItemForest(forestSettingRequest);
+
         return ResponseEntity.ok("숲 아이템 저장 성공");
     }
 

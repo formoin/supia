@@ -29,7 +29,7 @@ public class OpenviduController {
 
 
 	public OpenviduController(@Value("${OPENVIDU_URL}") String OPENVIDU_URL,
-                              @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET) {
+                              @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET){
         this.openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
 	}
 

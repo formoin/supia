@@ -13,6 +13,7 @@ public class OpenviduService {
     private final NotificationService notificationService;
     private final MemberRepository memberRepository;
 
+
     public void sendNotification(long fromMemberId, long toMemberId) {
         String fromMember = memberRepository.findById(fromMemberId).orElseThrow(()->new ExceptionResponse(CustomException.NOT_FOUND_MEMBER_EXCEPTION)).getName();
         notificationService.sendToClient(toMemberId, fromMember, "SSE", "call");
