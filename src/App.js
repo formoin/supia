@@ -21,7 +21,6 @@ class App extends Component {
       mainStreamManager: undefined, // Main video of the page. Will be the 'publisher' or one of the 'subscribers'
       publisher: undefined,
       subscribers: [],
-      isCaller: false,
       targetUserId: "",
       userId: "",
       memberName: "",
@@ -41,21 +40,18 @@ class App extends Component {
 
     // 데이터가 유효한지 확인하기 위해 타이밍 문제를 해결
     const checkDataAndSetState = () => {
-      const isCaller = window.isCaller;
       const targetUserId = window.targetUserId;
       const userId = window.userId;
       const memberName = window.memberName;
 
-      if (isCaller !== undefined && targetUserId && userId && memberName) {
+      if (targetUserId !== undefined && targetUserId && userId && memberName) {
         console.log("Loaded data from WebView:", {
-          isCaller,
           targetUserId,
           userId,
           memberName,
         });
 
         this.setState({
-          isCaller,
           targetUserId,
           userId,
           memberName,
@@ -279,11 +275,7 @@ class App extends Component {
   }
 
   render() {
-    const mySessionId =
-      // 돌려 놓기
-      this.state.isCaller == "false"
-        ? this.state.targetUserId
-        : this.state.userId;
+    const mySessionId = this.state.targetUserId;
     const myUserName = this.state.myUserName;
     const memberName = this.state.memberName; // 추가
 
@@ -400,7 +392,11 @@ class App extends Component {
   async createSession(sessionId) {
     const response = await axios.post(
       APPLICATION_SERVER_URL + "api/openvidu/sessions",
-      { customSessionId: sessionId },
+      {
+        customSessionId: sessionId,
+        fromUserId: this.state.userId, // 전화 거는 사람 ID
+        toUserId: this.state.targetUserId, // 전화 받는 사람 ID
+      },
       {
         headers: { "Content-Type": "application/json" },
       }
