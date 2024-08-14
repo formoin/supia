@@ -48,6 +48,7 @@ public class OpenviduController {
 //		System.out.println(params.get("memberId"));
 		long fromMemberId = Long.valueOf((String) params.get("fromUserId"));
 		long toMemberId = Long.valueOf((String) params.get("toUserId"));
+		System.out.println("Openvidu Message Send" + "from member id: " + fromMemberId + " to member id: " + toMemberId);
 		openviduService.sendNotification(fromMemberId, toMemberId);
 		return new ResponseEntity<>(session.getSessionId(), HttpStatus.OK);
 	}
