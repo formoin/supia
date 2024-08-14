@@ -124,7 +124,7 @@ public class FriendServiceImpl implements FriendService {
         friend.beFriend(friend);
         //toMember: 친구 신청 받은 사람
         //fromMember: 친구 신청 보낸 사람. 지금 친구 수락 알람 받을 사람.
-        Message reply = Message.createMessage(message.getToMember(), message.getFromMember(), 3, message.getToMember().getName()+"님이 친구 요청을 수락하셨습니다.");
+        Message reply = Message.createMessage(message.getToMember(), message.getFromMember(), 4, message.getToMember().getName()+"님이 친구 요청을 수락하셨습니다.");
         messageRepository.save(reply);
         int body = messageRepository.findByToMemberAndCategoryGreaterThanAndIsCheck(message.getFromMember(), 1, false).orElse(new ArrayList<>()).size();
         notificationService.notifyMessage(message.getFromMember().getId(), body, "SSE", "alarm");
