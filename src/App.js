@@ -341,28 +341,17 @@ class App extends Component {
               <div id="main-video" className="col-md-6">
                 <UserVideoComponent
                   streamManager={this.state.mainStreamManager}
+                  isMain={true} // 메인 화면 표시
                 />
               </div>
             ) : null}
             <div id="video-container" className="col-md-6">
-              {this.state.publisher !== undefined ? (
-                <div
-                  className="stream-container col-md-6 col-xs-6"
-                  onClick={() =>
-                    this.handleMainVideoStream(this.state.publisher)
-                  }
-                >
-                  <UserVideoComponent streamManager={this.state.publisher} />
-                </div>
-              ) : null}
               {this.state.subscribers.map((sub, i) => (
-                <div
-                  key={sub.id}
-                  className="stream-container col-md-6 col-xs-6"
-                  onClick={() => this.handleMainVideoStream(sub)}
-                >
-                  <span>{sub.id}</span>
-                  <UserVideoComponent streamManager={sub} />
+                <div key={sub.id}>
+                  <UserVideoComponent
+                    streamManager={sub}
+                    isMain={false} // 작은 화면 표시
+                  />
                 </div>
               ))}
             </div>
