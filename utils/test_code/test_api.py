@@ -3,7 +3,7 @@ import base64
 
 url = "http://localhost:8000/ai/process-image/"
 
-image_path = "../../img/input/rose.PNG"
+image_path = "../../img/input/rose_test.PNG"
 
 with open(image_path, "rb") as image_file:
     files = {"file": image_file}

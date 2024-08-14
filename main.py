@@ -16,6 +16,7 @@ app = FastAPI()
 
 # Load models
 seg_model = SAM("./model/sam_b.pt")
+# cls_model = YOLO("./model/bestv2.pt")
 cls_model = YOLO("./model/19cls.pt")
 # cls_model = YOLO("./model/train2.pt")
 
@@ -117,7 +118,7 @@ async def process_image(
         category = None
         probs_name_kr = None
 
-        if probs_conf < 0.7:
+        if probs_conf < 0.8:
             category = "기타"
             probs_name_kr = "unknown"
         else:
