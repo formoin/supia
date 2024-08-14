@@ -124,6 +124,7 @@ class App extends Component {
 
     html2canvas(target).then((canvas) => {
       const dataURL = canvas.toDataURL("image/png");
+      alert("사진 뽑았어!!." + dataURL);
 
       // 이미지 데이터를 React Native로 전달
       window.ReactNativeWebView.postMessage(dataURL);
