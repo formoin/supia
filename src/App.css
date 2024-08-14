@@ -30,7 +30,7 @@
   background-color: white; /* 버튼의 배경색 */
   color: black; /* 버튼의 텍스트 색상 */
   border: none;
-  padding: 10px 20px;
+  padding: 20px;
   font-size: 16px;
   cursor: pointer;
   border-radius: 50px; /* 모서리를 둥글게 */
