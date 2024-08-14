@@ -3,7 +3,7 @@ import base64
 
 url = "https://stirring-dodo-bursting.ngrok-free.app/ai/process-image/"
 
-image_path = "../../img/input/sunflower.PNG"
+image_path = "../../img/input/surfinia1.PNG"
 
 with open(image_path, "rb") as image_file:
     files = {"file": image_file}

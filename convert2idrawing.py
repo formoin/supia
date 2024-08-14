@@ -3,6 +3,7 @@ import numpy as np
 import os
 from sklearn.cluster import KMeans
 from matplotlib import cm
+import cv2
 
 # Set the maximum number of CPU cores to use
 os.environ["LOKY_MAX_CPU_COUNT"] = "4"
@@ -61,8 +62,15 @@ def simplify_colors(image):
         .reshape(img_array.shape)
         .astype(np.uint8)
     )
-    
+
     # Convert numpy array to image
     return Image.fromarray(clustered_img_array, "RGBA")
 
-     
+
+new_image = cv2.imread("./img/input/pink.PNG")
+image_rgb = cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB)
+# Illustration
+hand_drawing_img = color_hand_drawing(image_rgb)
+
+# Save hand-drawing image to file
+hand_drawing_img.save("./img/output/pink.PNG")

@@ -16,9 +16,8 @@ app = FastAPI()
 
 # Load models
 seg_model = SAM("./model/sam_b.pt")
-# cls_model = YOLO("./model/bestv2.pt")
-cls_model = YOLO("./model/19cls.pt")
-# cls_model = YOLO("./model/train2.pt")
+cls_model = YOLO("./model/cls-x.pt")
+
 # Set AWS S3
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -130,6 +129,7 @@ async def process_image(
             if category is None or probs_name_kr is None:
                 raise HTTPException(status_code=400, detail="Unrecognized species name")
 
+        # Segmentation
         results = seg_model.predict(
             temp_image_path,
             points=[center_x, center_y],

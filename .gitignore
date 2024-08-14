@@ -1,5 +1,5 @@
-# *.jpg
-# *.png
-# *.jpeg
+*.jpg
+*.png
+*.jpeg
 *.csv
 .env
