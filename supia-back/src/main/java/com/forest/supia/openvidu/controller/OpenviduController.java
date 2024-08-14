@@ -1,6 +1,8 @@
 package com.forest.supia.openvidu.controller;
 
+import com.forest.supia.openvidu.service.OpenviduService;
 import io.openvidu.java.client.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/openvidu")
+@RequiredArgsConstructor
 public class OpenviduController {
 
 	@Value("${OPENVIDU_URL}")
@@ -19,10 +22,13 @@ public class OpenviduController {
 	private String OPENVIDU_SECRET;
 
 	private OpenVidu openvidu;
+	private OpenviduService openviduService;
+
 
 	public OpenviduController(@Value("${OPENVIDU_URL}") String OPENVIDU_URL,
-					  @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET) {
-		this.openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
+                              @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET, OpenviduService openviduService) {
+        this.openviduService = openviduService;
+        this.openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
 	}
 
 	/**
@@ -36,6 +42,11 @@ public class OpenviduController {
 		System.out.println("openvidu session call");
 		SessionProperties properties = SessionProperties.fromJson(params).build();
 		Session session = openvidu.createSession(properties);
+
+//		System.out.println(params.get("memberId"));
+		long fromMemberId = Long.valueOf((String) params.get("fromUserId"));
+		long toMemberId = Long.valueOf((String) params.get("toMemberId"));
+		openviduService.sendNotification(fromMemberId, toMemberId);
 		return new ResponseEntity<>(session.getSessionId(), HttpStatus.OK);
 	}
 
