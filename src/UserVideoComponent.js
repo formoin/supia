@@ -11,10 +11,9 @@ export default class UserVideoComponent extends Component {
 
   render() {
     return (
-      <div className={this.props.isMain ? "streamcomponent" : "small-video"}>
-        {/* 작은 화면과 메인 화면을 구분 */}
+      <div>
         {this.props.streamManager !== undefined ? (
-          <div>
+          <div className="streamcomponent">
             <OpenViduVideoComponent streamManager={this.props.streamManager} />
             <div>
               <p>{this.getNicknameTag()}</p>
