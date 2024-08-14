@@ -98,7 +98,7 @@ public class ForestServiceImpl implements ForestService{
     public void setItemForest(ForestSettingRequest forestSettingRequest)  {
 
         Forest forest = forestRepository.findById(forestSettingRequest.getForestId()).orElseThrow(() -> new InvalidParameterException("Cannot find forest"));
-        forest.setThumbnail(forest.getThumbnail());
+        forest.setThumbnail(forestSettingRequest.getThumbnail());
         forest.setTheme(forestSettingRequest.getBgm(), forestSettingRequest.getBgi());
         forestRepository.save(forest);
         
