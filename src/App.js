@@ -5,6 +5,7 @@ import React, { Component } from "react";
 import { FiRefreshCw } from "react-icons/fi";
 import "./App.css";
 import UserVideoComponent from "./UserVideoComponent";
+import html2canvas from "html2canvas";
 
 const APPLICATION_SERVER_URL = "https://i11b304.p.ssafy.io/";
 //process.env.NODE_ENV === 'production' ? '' : 'https://demos.openvidu.io/';
@@ -113,6 +114,20 @@ class App extends Component {
         subscribers: subscribers,
       });
     }
+  }
+
+  onClickDownloadButton() {
+    const target = document.getElementById("main-video");
+    if (!target) {
+      return alert("사진 저장에 실패했습니다.");
+    }
+
+    html2canvas(target).then((canvas) => {
+      const dataURL = canvas.toDataURL("image/png");
+
+      // 이미지 데이터를 React Native로 전달
+      window.ReactNativeWebView.postMessage(dataURL);
+    });
   }
 
   joinSession() {
@@ -366,6 +381,13 @@ class App extends Component {
         ) : null}
         <div id="session-header">
           <button className="btn" type="button" onClick={this.switchCamera}>
+            <FiRefreshCw />
+          </button>
+          <button
+            className="btn"
+            type="button"
+            onClick={this.onClickDownloadButton}
+          >
             <FiRefreshCw />
           </button>
         </div>
