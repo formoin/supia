@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 public class OpenviduService {
     private final NotificationService notificationService;
     private final MemberRepository memberRepository;
-    private final ExceptionResponse exceptionResponse;
 
     public void sendNotification(long fromMemberId, long toMemberId) {
         String fromMember = memberRepository.findById(fromMemberId).orElseThrow(()->new ExceptionResponse(CustomException.NOT_FOUND_MEMBER_EXCEPTION)).getName();

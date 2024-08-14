@@ -3,6 +3,7 @@ package com.forest.supia.openvidu.controller;
 import com.forest.supia.openvidu.service.OpenviduService;
 import io.openvidu.java.client.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +23,12 @@ public class OpenviduController {
 	private String OPENVIDU_SECRET;
 
 	private OpenVidu openvidu;
+	@Autowired
 	private OpenviduService openviduService;
 
 
 	public OpenviduController(@Value("${OPENVIDU_URL}") String OPENVIDU_URL,
-                              @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET, OpenviduService openviduService) {
-        this.openviduService = openviduService;
+                              @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET) {
         this.openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
 	}
 
