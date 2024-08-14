@@ -36,3 +36,16 @@
   border-radius: 50px; /* 모서리를 둥글게 */
   z-index: 2000; /* native 컴포넌트보다 위에 나타나도록 z-index를 높게 설정 */
 }
+
+.pictureIcon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  position: fixed;
+  bottom: 40px;
+  right: 50%;
+  background-color: white;
+  position: absolute;
+  border-color: "black";
+  border-width: 1;
+}

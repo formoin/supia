@@ -118,14 +118,13 @@ class App extends Component {
 
   onClickDownloadButton() {
     const target = document.getElementById("main-video");
+
     if (!target) {
       return alert("사진 저장에 실패했습니다.");
     }
 
     html2canvas(target).then((canvas) => {
       const dataURL = canvas.toDataURL("image/png");
-      alert("사진 뽑았어!!." + dataURL);
-
       // 이미지 데이터를 React Native로 전달
       window.ReactNativeWebView.postMessage(dataURL);
     });
@@ -385,12 +384,10 @@ class App extends Component {
             <FiRefreshCw />
           </button>
           <button
-            className="btn"
+            className="pictureIcon"
             type="button"
             onClick={this.onClickDownloadButton}
-          >
-            <FiRefreshCw />
-          </button>
+          />
         </div>
       </div>
     );
