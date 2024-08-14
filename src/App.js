@@ -3,7 +3,6 @@ import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
 import React, { Component } from "react";
 import { FiRefreshCw } from "react-icons/fi";
-import CallEndIcon from "@mui/icons-material/CallEnd";
 import "./App.css";
 import UserVideoComponent from "./UserVideoComponent";
 import html2canvas from "html2canvas";
@@ -384,7 +383,6 @@ class App extends Component {
         ) : null}
         <div id="session-footer">
           <button className="btn" id="CallEnd" onclick={this.leaveSession}>
-            <CallEndIcon />
           </button>
           <button
             className="btn"
