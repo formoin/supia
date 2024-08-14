@@ -41,7 +41,7 @@ public class MessageServiceImpl implements MessageService{
         try {
             messageRepository.save(message);
 
-            int body = messageRepository.findByToMemberAndCategoryAndIsCheck(toMember, 1, false).orElse(new ArrayList<>()).size();
+            int body = messageRepository.findByToMemberAndCategoryAndIsCheckAndToMemberDelete(toMember, 1, false, false).orElse(new ArrayList<>()).size();
             notificationService.notifyMessage(toMember.getId(), body, "SSE", "message");
         }
         catch (PersistenceException e) {
