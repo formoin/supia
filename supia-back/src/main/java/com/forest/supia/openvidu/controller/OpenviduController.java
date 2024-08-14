@@ -23,6 +23,7 @@ public class OpenviduController {
 	private String OPENVIDU_SECRET;
 
 	private OpenVidu openvidu;
+
 	@Autowired
 	private OpenviduService openviduService;
 
@@ -46,7 +47,7 @@ public class OpenviduController {
 
 //		System.out.println(params.get("memberId"));
 		long fromMemberId = Long.valueOf((String) params.get("fromUserId"));
-		long toMemberId = Long.valueOf((String) params.get("toMemberId"));
+		long toMemberId = Long.valueOf((String) params.get("toUserId"));
 		openviduService.sendNotification(fromMemberId, toMemberId);
 		return new ResponseEntity<>(session.getSessionId(), HttpStatus.OK);
 	}

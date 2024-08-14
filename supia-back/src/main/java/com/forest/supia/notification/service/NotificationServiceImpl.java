@@ -25,15 +25,19 @@ public class NotificationServiceImpl implements NotificationService {
         System.out.println(emitterRepository.get(memberId));
         System.out.println("======================");
 
-        sseEmitter.onCompletion(()-> emitterRepository.deleteById(memberId));
-        sseEmitter.onTimeout(() -> emitterRepository.deleteById(memberId));
-        sseEmitter.onError((e) -> emitterRepository.deleteById(memberId));
+        sseEmitter.onCompletion(()-> {
+            emitterRepository.deleteById(memberId);
+            System.out.println("complete: " + memberId);
+        });
+        sseEmitter.onTimeout(() -> {
+            emitterRepository.deleteById(memberId);
+            System.out.println("timeout: " + memberId);
+        });
+        sseEmitter.onError((e) -> {
+            emitterRepository.deleteById(memberId);
+            System.out.println("error: " + memberId);
+        });
 
-        System.out.println(emitterRepository.size());
-        System.out.println(emitterRepository.get(memberId));
-        SseEmitter sm = emitterRepository.get(memberId);
-        System.out.println(sm.toString());
-        System.out.println("======================");
 
         try {
             sseEmitter.send(SseEmitter.event()
