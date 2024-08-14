@@ -21,6 +21,7 @@ class App extends Component {
       mainStreamManager: undefined, // Main video of the page. Will be the 'publisher' or one of the 'subscribers'
       publisher: undefined,
       subscribers: [],
+      enterSession: "",
       targetUserId: "",
       userId: "",
       memberName: "",
@@ -43,18 +44,21 @@ class App extends Component {
       const targetUserId = window.targetUserId;
       const userId = window.userId;
       const memberName = window.memberName;
+      const enterSession = window.enterSession;
 
-      if (targetUserId !== undefined && targetUserId && userId && memberName) {
+      if (enterSession !== undefined && targetUserId && userId && memberName) {
         console.log("Loaded data from WebView:", {
           targetUserId,
           userId,
           memberName,
+          enterSession,
         });
 
         this.setState({
           targetUserId,
           userId,
           memberName,
+          enterSession,
         });
 
         // 데이터가 정상적으로 로드되었을 때 세션을 시작
@@ -121,7 +125,7 @@ class App extends Component {
     this.setState(
       {
         session: this.OV.initSession(),
-        mySessionId: this.state.userId || mySessionId,
+        mySessionId: this.state.enterSession || mySessionId,
         myUserName: this.state.memberName || myUserName,
       },
       () => {
@@ -275,7 +279,7 @@ class App extends Component {
   }
 
   render() {
-    const mySessionId = this.state.targetUserId;
+    const mySessionId = this.state.enterSession;
     const myUserName = this.state.myUserName;
     const memberName = this.state.memberName; // 추가
 
