@@ -8,7 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ForestService {
     ForestResponse getForest(long memberId);
 
-    void setItemForest(ForestSettingRequest forestSettingRequest, MultipartFile thumbnail) throws Exception;
+    String setFileToUrl(long memberId, MultipartFile thumbnail) throws Exception;
+    void setItemForest(ForestSettingRequest forestSettingRequest);
     void updateSoundForest(ForestItemSoundRequest forestItemSoundRequest);
 
     void deleteItemForest(long forestItemId);

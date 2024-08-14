@@ -27,8 +27,10 @@ public class OpenviduController {
 
 	public OpenviduController(@Value("${OPENVIDU_URL}") String OPENVIDU_URL,
                               @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET, OpenviduService openviduService) {
-        this.openviduService = openviduService;
+
+		this.openviduService = openviduService;
         this.openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
+
 	}
 
 	/**
