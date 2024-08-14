@@ -20,4 +20,6 @@ public class MemberInfoResponse {
     private int point;
     private int visit;
     private boolean isActive;
+    private long unreadMessage;
+    private long isCheckAlarm;
 }
