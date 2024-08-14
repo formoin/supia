@@ -16,6 +16,7 @@ import com.forest.supia.member.dto.MemberInfoResponse;
 import com.forest.supia.member.dto.SignUpDto;
 import com.forest.supia.member.entity.Member;
 import com.forest.supia.member.repository.MemberRepository;
+import com.forest.supia.message.repository.MessageRepository;
 import com.forest.supia.walk.repository.WalkRepository;
 import io.jsonwebtoken.io.IOException;
 import jakarta.transaction.Transactional;
@@ -25,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,6 +55,10 @@ public class MemberService {
 
     @Autowired
     private ItemRepository itemRepository;
+
+
+    @Autowired
+    private MessageRepository messageRepository;
 
 
     @Autowired
@@ -199,6 +205,11 @@ public class MemberService {
 
     public MemberInfoResponse updateMemberInfoResponse(Member member) {
         MemberInfoResponse memberInfo = new MemberInfoResponse();
+
+        int unread = messageRepository.findByToMemberAndCategoryAndIsCheckAndToMemberDelete(member, 1, false, false).orElse(new ArrayList<>()).size();
+        int uncheck = messageRepository.findByToMemberAndCategoryGreaterThanAndIsCheck(member, 1, false).orElse(new ArrayList<>()).size();
+
+
         memberInfo.setEmail(member.getEmail());
         memberInfo.setId(member.getId());
         memberInfo.setLevel(member.getLevel());
@@ -210,6 +221,8 @@ public class MemberService {
         memberInfo.setVisit(member.getVisit());
         memberInfo.setActive(member.isActive());
         memberInfo.setThumbnail(member.getForest().getThumbnail());
+        memberInfo.setIsCheckAlarm(uncheck);
+        memberInfo.setUnreadMessage(unread);
         return memberInfo;
     }
 
