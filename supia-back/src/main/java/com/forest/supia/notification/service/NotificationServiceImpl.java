@@ -19,7 +19,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
         emitterRepository.save(memberId, sseEmitter);
-        
+
         System.out.println("subscribe: " + memberId);
         System.out.println(emitterRepository.size());
         System.out.println(emitterRepository.get(memberId));
@@ -28,6 +28,10 @@ public class NotificationServiceImpl implements NotificationService {
         sseEmitter.onCompletion(()-> emitterRepository.deleteById(memberId));
         sseEmitter.onTimeout(() -> emitterRepository.deleteById(memberId));
         sseEmitter.onError((e) -> emitterRepository.deleteById(memberId));
+
+        System.out.println(emitterRepository.size());
+        System.out.println(emitterRepository.get(memberId));
+        System.out.println("======================");
 
         try {
             sseEmitter.send(SseEmitter.event()
