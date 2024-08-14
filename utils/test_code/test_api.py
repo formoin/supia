@@ -1,9 +1,9 @@
 import requests
 import base64
 
-url = "http://localhost:8000/ai/process-image/"
+url = "https://stirring-dodo-bursting.ngrok-free.app/ai/process-image/"
 
-image_path = "../../img/input/rose_test.PNG"
+image_path = "../../img/input/sunflower.PNG"
 
 with open(image_path, "rb") as image_file:
     files = {"file": image_file}
