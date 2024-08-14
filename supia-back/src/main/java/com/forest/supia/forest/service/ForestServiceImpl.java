@@ -82,8 +82,9 @@ public class ForestServiceImpl implements ForestService{
     @Transactional
     public String setFileToUrl(long memberId, MultipartFile thumbnail) throws Exception {
 
+        Forest forest = forestRepository.findByMember_Id(memberId);
         // 숲 썸네일, 테마 설정
-        String fileName = "forest_thumbnail/" + memberId + ".png";
+        String fileName = "forest_thumbnail/" + forest.getId() + ".png";
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(thumbnail.getContentType());
         metadata.setContentLength(thumbnail.getSize());
