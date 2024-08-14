@@ -16,7 +16,8 @@ app = FastAPI()
 
 # Load models
 seg_model = SAM("./model/sam_b.pt")
-cls_model = YOLO("./model/19cls.pt")
+# cls_model = YOLO("./model/19cls.pt")
+cls_model = YOLO("./model/train2.pt")
 
 # Set AWS S3
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -116,7 +117,7 @@ async def process_image(
         category = None
         probs_name_kr = None
 
-        if probs_conf < 0.8:
+        if probs_conf < 0.7:
             category = "기타"
             probs_name_kr = "unknown"
         else:
@@ -130,7 +131,14 @@ async def process_image(
                 raise HTTPException(status_code=400, detail="Unrecognized species name")
 
         # Segment the image
-        results = seg_model.predict(temp_image_path, bboxes=[x1, y1, x2, y2])
+        # results = seg_model.predict(
+        #     temp_image_path, bboxes=[x1 + 5, y1 + 5, x2 - 5, y2 - 5]
+        # )
+        results = seg_model.predict(
+            temp_image_path,
+            points=[center_x, center_y],
+            bboxes=[x1 + 5, y1 + 5, x2 - 5, y2 - 5],
+        )
         # Extract mask coordinates
         mask_coords = results[0].masks[0].xy[0]
 
