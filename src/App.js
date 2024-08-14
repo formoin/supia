@@ -39,7 +39,7 @@ class App extends Component {
 
   componentDidMount() {
     window.addEventListener("beforeunload", this.onbeforeunload);
-
+    window.leaveSession = this.leaveSession.bind(this);
     // 데이터가 유효한지 확인하기 위해 타이밍 문제를 해결
     const checkDataAndSetState = () => {
       const targetUserId = window.targetUserId;
@@ -79,6 +79,9 @@ class App extends Component {
 
   componentWillUnmount() {
     window.removeEventListener("beforeunload", this.onbeforeunload);
+
+    delete window.leaveSession;
+    this.leaveSession();
   }
 
   onbeforeunload(event) {
@@ -384,10 +387,12 @@ class App extends Component {
             <FiRefreshCw />
           </button>
           <button
-            className="pictureIcon"
+            className="btn"
             type="button"
             onClick={this.onClickDownloadButton}
-          />
+          >
+            캡처
+          </button>
         </div>
       </div>
     );
