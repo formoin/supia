@@ -26,7 +26,7 @@
 .btn {
   position: fixed; /* 버튼을 고정하여 위치 지정 */
   bottom: 40px; /* 화면의 아래에서 40px 위로 위치 (이전 100px에서 수정) */
-  right: 120px; /* 화면의 오른쪽에서 120px 왼쪽으로 위치 (이전 60px에서 수정) */
+  right: 80px; /* 화면의 오른쪽에서 120px 왼쪽으로 위치 (이전 60px에서 수정) */
   background-color: white; /* 버튼의 배경색 */
   color: black; /* 버튼의 텍스트 색상 */
   border: none;
