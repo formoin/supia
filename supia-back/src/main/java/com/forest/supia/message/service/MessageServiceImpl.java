@@ -140,7 +140,7 @@ public class MessageServiceImpl implements MessageService{
     @Override
     public List<MessageResponse> getNotificationBox(long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new ExceptionResponse(CustomException.NOT_FOUND_MEMBER_EXCEPTION));
-        List<Message> messages = messageRepository.findByToMemberAndCategory(member, 3).orElse(new ArrayList<>());
+        List<Message> messages = messageRepository.findByToMemberAndCategoryGreaterThan(member, 2).orElse(new ArrayList<>());
 
         List<MessageResponse> messageResponses = new ArrayList<>();
         for(Message message : messages) {
