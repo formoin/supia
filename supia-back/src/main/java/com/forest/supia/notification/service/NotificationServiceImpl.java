@@ -31,6 +31,8 @@ public class NotificationServiceImpl implements NotificationService {
 
         System.out.println(emitterRepository.size());
         System.out.println(emitterRepository.get(memberId));
+        SseEmitter sm = emitterRepository.get(memberId);
+        System.out.println(sm.toString());
         System.out.println("======================");
 
         try {
