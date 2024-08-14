@@ -20,7 +20,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     Optional<List<Message>> findByToMemberAndCategory(Member member, int category);
 
-    Optional<List<Message>> findByToMemberAndCategoryAndIsCheck(Member member, int category, boolean isCheck);
+    Optional<List<Message>> findByToMemberAndCategoryAndIsCheckAndToMemberDelete(Member member, int category, boolean isCheck, boolean toMemberDelete);
 
     Optional<List<Message>> findByToMemberAndCategoryGreaterThanAndIsCheck(Member member, int category, boolean isCheck);
 }
