@@ -279,8 +279,15 @@ class App extends Component {
         if (newVideoDevice.length > 0) {
           // Creating a new publisher with specific videoSource
           // In mobile devices the default and first camera is the front one
+          var currentVideoDeviceId = publisher.stream
+                .getMediaStream()
+                .getVideoTracks()[1]
+                .getSettings().deviceId;
+          var currentVideoDevice = videoDevices.find(
+                (device) => device.deviceId === currentVideoDeviceId
+                );
           var newPublisher = this.OV.initPublisher(undefined, {
-            videoSource: newVideoDevice[0].deviceId,
+            videoSource: currentVideoDeviceId,
             publishAudio: true,
             publishVideo: true,
             mirror: true,
@@ -292,7 +299,7 @@ class App extends Component {
 
           await this.state.session.publish(newPublisher);
           this.setState({
-            currentVideoDevice: newVideoDevice[0],
+            currentVideoDevice: currentVideoDevice,
             mainStreamManager: newPublisher,
             publisher: newPublisher,
           });
