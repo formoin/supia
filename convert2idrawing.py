@@ -65,12 +65,3 @@ def simplify_colors(image):
 
     # Convert numpy array to image
     return Image.fromarray(clustered_img_array, "RGBA")
-
-
-new_image = cv2.imread("./img/input/pink.PNG")
-image_rgb = cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB)
-# Illustration
-hand_drawing_img = color_hand_drawing(image_rgb)
-
-# Save hand-drawing image to file
-hand_drawing_img.save("./img/output/pink.PNG")
