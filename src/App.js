@@ -22,6 +22,8 @@ class App extends Component {
       mainStreamManager: undefined, // Main video of the page. Will be the 'publisher' or one of the 'subscribers'
       publisher: undefined,
       subscribers: [],
+      // custom
+      // 리액트 네이티브에서 받아올 변수 설정
       //   enterSession: "",
       //   targetUserId: "",
       //   userId: "",
@@ -40,7 +42,8 @@ class App extends Component {
   componentDidMount() {
     window.addEventListener("beforeunload", this.onbeforeunload);
 
-    // 맨 처음 전역 변수 받음
+    // custom
+    // 맨 처음 전역 변수를 리액트 네이티브로 부터 받아옴
     // const checkDataAndSetState = () => {
     //   const targetUserId = window.targetUserId;
     //   const userId = window.userId;
@@ -77,6 +80,8 @@ class App extends Component {
     this.leaveSession();
   }
 
+  // custom
+  // 촬영 버튼 클릭 시 메인 이미지(큰 이미지) 찍어서 리액트 네이티브에 보냄
   onClickDownloadButton() {
     const target = document.getElementById("main-video");
     if (!target) {
@@ -132,7 +137,8 @@ class App extends Component {
     this.setState(
       {
         session: this.OV.initSession(),
-        // userId로 방을 만들거야
+        // custom
+        // 통화할 방과 유저 이름을 정함. 여기서는 통화 건 사람의 userId를 세션 아이디로 잡는다
         // mySessionId: this.state.enterSession || mySessionId,
         // myUserName: this.state.memberName || myUserName,
       },
@@ -231,14 +237,14 @@ class App extends Component {
 
     const mySession = this.state.session;
 
-    if (window.ReactNativeWebView) {
-      window.ReactNativeWebView.postMessage("leaveSession");
-    } else {
-      alert("네이티브가 없어");
-    }
-
     if (mySession) {
       mySession.disconnect();
+    }
+
+    // custom
+    // 세션 종료 시 리액트 네이티브의 페이지에서 벗어날 수 있게 설정
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage("leaveSession");
     }
 
     // Empty all properties...
@@ -347,6 +353,9 @@ class App extends Component {
           <div id="session">
             <div id="session-header">
               <h1 id="session-title"></h1>
+              {/* custom
+                통화 종료, 캡쳐, 화면 전환 버튼
+              */}
               <input
                 className="btn btn-large btn-danger"
                 type="button"
@@ -428,7 +437,11 @@ class App extends Component {
   async createSession(sessionId) {
     const response = await axios.post(
       APPLICATION_SERVER_URL + "api/openvidu/sessions",
-      { customSessionId: sessionId },
+      {
+        customSessionId: sessionId,
+        fromUserId: this.state.userId, // 전화 거는 사람 ID
+        toUserId: this.state.targetUserId, // 전화 받는 사람 ID
+      },
       {
         headers: { "Content-Type": "application/json" },
       }
