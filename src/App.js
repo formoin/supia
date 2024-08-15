@@ -235,6 +235,7 @@ class App extends Component {
   }
 
   leaveSession() {
+    alert("leaveSession 시작");
     // --- 7) Leave the session by calling 'disconnect' method over the Session object ---
 
     const mySession = this.state.session;
@@ -385,17 +386,23 @@ class App extends Component {
           </div>
         ) : null}
         <div id="session-header">
-          <button className="btn" id="CallEnd" onclick={this.leaveSession}>
+          <input
+            tyoe="button"
+            className="btn"
+            id="CallEnd"
+            onclick={this.leaveSession}
+          >
             종료
+          </input>
+
+          <button className="btn" type="button" onClick={this.switchCamera}>
+            <FiRefreshCw />
           </button>
-             <button
+          <button
             className="btn"
             type="button"
             onClick={this.onClickDownloadButton}
           >
-            <FiRefreshCw />
-          </button>
-           <button className="btn" type="button" onClick={this.switchCamera}>
             <FiRefreshCw />
           </button>
         </div>
