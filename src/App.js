@@ -385,14 +385,17 @@ class App extends Component {
           </div>
         ) : null}
         <div id="session-header">
-          <button className="btn" type="button" onClick={this.switchCamera}>
-            <FiRefreshCw />
+          <button className="btn" id="CallEnd" onclick={this.leaveSession}>
+            종료
           </button>
-          <button
+             <button
             className="btn"
             type="button"
             onClick={this.onClickDownloadButton}
           >
+            <FiRefreshCw />
+          </button>
+           <button className="btn" type="button" onClick={this.switchCamera}>
             <FiRefreshCw />
           </button>
         </div>
