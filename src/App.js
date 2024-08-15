@@ -118,7 +118,6 @@ class App extends Component {
 
   onClickDownloadButton() {
     const target = document.getElementById("main-video");
-
     if (!target) {
       return alert("사진 저장에 실패했습니다.");
     }
@@ -239,6 +238,11 @@ class App extends Component {
     // --- 7) Leave the session by calling 'disconnect' method over the Session object ---
 
     const mySession = this.state.session;
+
+    // Notify the React Native WebView to unmount
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage("leaveSession");
+    }
 
     if (mySession) {
       mySession.disconnect();
@@ -385,10 +389,12 @@ class App extends Component {
             <FiRefreshCw />
           </button>
           <button
-            className="pictureIcon"
+            className="btn"
             type="button"
             onClick={this.onClickDownloadButton}
-          />
+          >
+            <FiRefreshCw />
+          </button>
         </div>
       </div>
     );
