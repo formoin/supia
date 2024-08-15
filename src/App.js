@@ -262,14 +262,17 @@ class App extends Component {
   async switchCamera() {
     try {
       const devices = await this.OV.getDevices();
+      console.log("divices : "+devices);
       var videoDevices = devices.filter(
         (device) => device.kind === "videoinput"
       );
+      console.log("videoinput videoDevices : "+videoDevices);
 
       if (videoDevices && videoDevices.length > 1) {
         var newVideoDevice = videoDevices.filter(
           (device) => device.deviceId !== this.state.currentVideoDevice.deviceId
         );
+        console.log("newVideoDevice : "+newVideoDevice);
 
         if (newVideoDevice.length > 0) {
           // Creating a new publisher with specific videoSource
@@ -280,8 +283,9 @@ class App extends Component {
             publishVideo: true,
             mirror: true,
           });
-
+          console.log("newPublisher : "+newPublisher);
           //newPublisher.once("accessAllowed", () => {
+          console.log("mainStreamManager : "+this.state.mainStreamManager);
           await this.state.session.unpublish(this.state.mainStreamManager);
 
           await this.state.session.publish(newPublisher);
