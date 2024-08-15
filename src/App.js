@@ -69,10 +69,8 @@ class App extends Component {
     };
     // 데이터 받기 완료
     checkDataAndSetState();
-    setTimeout(() => {
-      //Join Session 실행
-      this.joinSession();
-    }, 500); // 1초 지연
+    //Join Session 실행
+    this.joinSession();
   }
 
   componentWillUnmount() {
