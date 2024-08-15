@@ -235,15 +235,9 @@ class App extends Component {
   }
 
   leaveSession() {
-    alert("leaveSession 시작");
     // --- 7) Leave the session by calling 'disconnect' method over the Session object ---
 
     const mySession = this.state.session;
-
-    // Notify the React Native WebView to unmount
-    if (window.ReactNativeWebView) {
-      window.ReactNativeWebView.postMessage("leaveSession");
-    }
 
     if (mySession) {
       mySession.disconnect();
@@ -386,15 +380,6 @@ class App extends Component {
           </div>
         ) : null}
         <div id="session-header">
-          <input
-            tyoe="button"
-            className="btn"
-            id="CallEnd"
-            onclick={this.leaveSession}
-          >
-            종료
-          </input>
-
           <button className="btn" type="button" onClick={this.switchCamera}>
             <FiRefreshCw />
           </button>
@@ -403,7 +388,7 @@ class App extends Component {
             type="button"
             onClick={this.onClickDownloadButton}
           >
-            <FiRefreshCw />
+            캡쳐
           </button>
         </div>
       </div>
