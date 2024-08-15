@@ -102,9 +102,7 @@ public class FriendServiceImpl implements FriendService {
         Friend friend = Friend.createFriend(fromMember, toMember);
         Friend check = friendRepository.findByFromMemberAndToMember(fromMember, toMember).orElse(null);
 
-        int body = messageRepository.findByToMemberAndCategoryGreaterThanAndIsCheck(toMember, 1, false).orElse(new ArrayList<>()).size();
 
-        notificationService.notifyMessage(toMember.getId(), body, "SSE", "alarm");
 
         if(check == null) {
             messageRepository.save(message);
@@ -113,6 +111,10 @@ public class FriendServiceImpl implements FriendService {
         else {
             throw new ExceptionResponse(CustomException.DUPLICATED_FRIEND_REQUEST_EXCEPTION);
         }
+
+        int body = messageRepository.findByToMemberAndCategoryGreaterThanAndIsCheck(toMember, 1, false).orElse(new ArrayList<>()).size();
+
+        notificationService.notifyMessage(toMember.getId(), body, "SSE", "alarm");
 
     }
 
