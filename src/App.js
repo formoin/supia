@@ -205,6 +205,8 @@ class App extends Component {
               var videoDevices = devices.filter(
                 (device) => device.kind === "videoinput"
               );
+              console.log("비디오 디바이스 수 : "+videoDevices.length);
+              console.log("videoDevices : "+ videoDevices);
               var currentVideoDeviceId = publisher.stream
                 .getMediaStream()
                 .getVideoTracks()[0]
