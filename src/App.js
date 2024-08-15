@@ -2,7 +2,6 @@ import { OpenVidu } from "openvidu-browser";
 
 import axios from "axios";
 import React, { Component } from "react";
-import { FiRefreshCw } from "react-icons/fi";
 import "./App.css";
 import UserVideoComponent from "./UserVideoComponent";
 import html2canvas from "html2canvas";
@@ -10,6 +9,7 @@ import html2canvas from "html2canvas";
 const APPLICATION_SERVER_URL = "https://i11b304.p.ssafy.io/";
 //process.env.NODE_ENV === 'production' ? '' : 'https://demos.openvidu.io/';
 
+// 맨 처음 코드
 class App extends Component {
   constructor(props) {
     super(props);
@@ -22,10 +22,10 @@ class App extends Component {
       mainStreamManager: undefined, // Main video of the page. Will be the 'publisher' or one of the 'subscribers'
       publisher: undefined,
       subscribers: [],
-      enterSession: "",
-      targetUserId: "",
-      userId: "",
-      memberName: "",
+      //   enterSession: "",
+      //   targetUserId: "",
+      //   userId: "",
+      //   memberName: "",
     };
 
     this.joinSession = this.joinSession.bind(this);
@@ -40,41 +40,33 @@ class App extends Component {
   componentDidMount() {
     window.addEventListener("beforeunload", this.onbeforeunload);
 
-    // 데이터가 유효한지 확인하기 위해 타이밍 문제를 해결
-    const checkDataAndSetState = () => {
-      const targetUserId = window.targetUserId;
-      const userId = window.userId;
-      const memberName = window.memberName;
-      const enterSession = window.enterSession;
+    // 맨 처음 전역 변수 받음
+    // const checkDataAndSetState = () => {
+    //   const targetUserId = window.targetUserId;
+    //   const userId = window.userId;
+    //   const memberName = window.memberName;
+    //   const enterSession = window.enterSession;
 
-      if (enterSession !== undefined && targetUserId && userId && memberName) {
-        console.log("Loaded data from WebView:", {
-          targetUserId,
-          userId,
-          memberName,
-          enterSession,
-        });
+    //   if (enterSession !== undefined && targetUserId && userId && memberName) {
+    //     this.setState({
+    //       targetUserId,
+    //       userId,
+    //       memberName,
+    //       enterSession,
+    //     });
 
-        this.setState({
-          targetUserId,
-          userId,
-          memberName,
-          enterSession,
-        });
-
-        // 데이터가 정상적으로 로드되었을 때 세션을 시작
-        this.joinSession();
-      } else {
-        // 데이터가 아직 준비되지 않은 경우 100ms 후 다시 시도
-        setTimeout(checkDataAndSetState, 100);
-      }
-    };
-    // 데이터 받기 완료
-    checkDataAndSetState();
-    setTimeout(() => {
-      //Join Session 실행
-      this.joinSession();
-    }, 1000); // 1초 지연
+    //     // 데이터가 정상적으로 로드되었을 때 세션을 시작
+    //       // setTimeout(() => {
+    //   //Join Session 실행
+    //   this.joinSession();
+    // }, 1000); // 1초 지연
+    //   } else {
+    //     // 데이터가 아직 준비되지 않은 경우 100ms 후 다시 시도
+    //     setTimeout(checkDataAndSetState, 100);
+    //   }
+    // };
+    // // 데이터 받기 완료
+    // checkDataAndSetState();
   }
 
   componentWillUnmount() {
@@ -83,6 +75,20 @@ class App extends Component {
 
   onbeforeunload(event) {
     this.leaveSession();
+  }
+
+  onClickDownloadButton() {
+    const target = document.getElementById("main-video");
+    if (!target) {
+      return alert("사진 저장에 실패했습니다.");
+    }
+
+    html2canvas(target).then((canvas) => {
+      const dataURL = canvas.toDataURL("image/png");
+
+      // 이미지 데이터를 React Native로 전달
+      window.ReactNativeWebView.postMessage(dataURL);
+    });
   }
 
   handleChangeSessionId(e) {
@@ -116,20 +122,6 @@ class App extends Component {
     }
   }
 
-  onClickDownloadButton() {
-    const target = document.getElementById("main-video");
-    if (!target) {
-      return alert("사진 저장에 실패했습니다.");
-    }
-
-    html2canvas(target).then((canvas) => {
-      const dataURL = canvas.toDataURL("image/png");
-
-      // 이미지 데이터를 React Native로 전달
-      window.ReactNativeWebView.postMessage(dataURL);
-    });
-  }
-
   joinSession() {
     // --- 1) Get an OpenVidu object ---
 
@@ -140,8 +132,9 @@ class App extends Component {
     this.setState(
       {
         session: this.OV.initSession(),
-        mySessionId: this.state.enterSession || mySessionId,
-        myUserName: this.state.memberName || myUserName,
+        // userId로 방을 만들거야
+        // mySessionId: this.state.enterSession || mySessionId,
+        // myUserName: this.state.memberName || myUserName,
       },
       () => {
         var mySession = this.state.session;
@@ -176,7 +169,6 @@ class App extends Component {
         // --- 4) Connect to the session with a valid user token ---
 
         // Get a token from the OpenVidu deployment
-        // getToken 실행
         this.getToken().then((token) => {
           // First param is the token got from the OpenVidu deployment. Second param can be retrieved by every user on event
           // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
@@ -235,14 +227,14 @@ class App extends Component {
   }
 
   leaveSession() {
-    alert("leaveSession 시작");
     // --- 7) Leave the session by calling 'disconnect' method over the Session object ---
 
     const mySession = this.state.session;
 
-    // Notify the React Native WebView to unmount
     if (window.ReactNativeWebView) {
       window.ReactNativeWebView.postMessage("leaveSession");
+    } else {
+      alert("네이티브가 없어");
     }
 
     if (mySession) {
@@ -300,9 +292,8 @@ class App extends Component {
   }
 
   render() {
-    const mySessionId = this.state.enterSession;
+    const mySessionId = this.state.mySessionId;
     const myUserName = this.state.myUserName;
-    const memberName = this.state.memberName; // 추가
 
     return (
       <div className="container">
@@ -354,6 +345,31 @@ class App extends Component {
 
         {this.state.session !== undefined ? (
           <div id="session">
+            <div id="session-header">
+              <h1 id="session-title"></h1>
+              <input
+                className="btn btn-large btn-danger"
+                type="button"
+                id="buttonLeaveSession"
+                onClick={this.leaveSession}
+                value="통화 종료"
+              />
+              <input
+                className="btn btn-large btn-primary"
+                type="button"
+                id="buttonCapture"
+                onClick={this.onClickDownloadButton}
+                value="캡쳐!"
+              />
+              <input
+                className="btn btn-large btn-success"
+                type="button"
+                id="buttonSwitchCamera"
+                onClick={this.switchCamera}
+                value="화면 전환"
+              />
+            </div>
+
             {this.state.mainStreamManager !== undefined ? (
               <div id="main-video" className="col-md-6">
                 <UserVideoComponent
@@ -385,27 +401,6 @@ class App extends Component {
             </div>
           </div>
         ) : null}
-        <div id="session-header">
-          <input
-            tyoe="button"
-            className="btn"
-            id="CallEnd"
-            onclick={this.leaveSession}
-          >
-            종료
-          </input>
-
-          <button className="btn" type="button" onClick={this.switchCamera}>
-            <FiRefreshCw />
-          </button>
-          <button
-            className="btn"
-            type="button"
-            onClick={this.onClickDownloadButton}
-          >
-            <FiRefreshCw />
-          </button>
-        </div>
       </div>
     );
   }
@@ -433,11 +428,7 @@ class App extends Component {
   async createSession(sessionId) {
     const response = await axios.post(
       APPLICATION_SERVER_URL + "api/openvidu/sessions",
-      {
-        customSessionId: sessionId,
-        fromUserId: this.state.userId, // 전화 거는 사람 ID
-        toUserId: this.state.targetUserId, // 전화 받는 사람 ID
-      },
+      { customSessionId: sessionId },
       {
         headers: { "Content-Type": "application/json" },
       }

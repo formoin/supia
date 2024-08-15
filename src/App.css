@@ -3,15 +3,48 @@
 }
 
 #session-header {
+  display: flex;
   position: fixed;
-  bottom: 20px; /* 화면 아래에서 20px 위에 위치 */
-  right: 20px; /* 화면 오른쪽에서 20px 왼쪽에 위치 */
-  z-index: 1000; /* 다른 요소들 위에 나타나도록 z-index를 높게 설정 */
+  right: 5%;
+  bottom: 3%; /* 화면 하단에 고정 */
+  width: 100%; /* 버튼들이 전체 너비를 차지하도록 */
+  justify-content: space-between; /* 버튼 사이에 공간을 균등하게 배분 */
+  gap: 10px; /* 버튼 사이에 간격 추가 */
 }
 
 #buttonSwitchCamera {
   padding: 10px 20px;
   background-color: #28a745; /* 버튼의 배경색 */
+  color: white; /* 버튼의 텍스트 색상 */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#buttonSwitchCamera {
+  padding: 10px 20px;
+  background-color: #28a745; /* 버튼의 배경색 */
+  color: white; /* 버튼의 텍스트 색상 */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#buttonCapture {
+  padding: 10px 20px;
+  background-color: #ffffff; /* 버튼의 배경색 */
+  color: black; /* 버튼의 텍스트 색상 */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#buttonLeaveSession {
+  padding: 10px 20px;
+  background-color: #f44336; /* 버튼의 배경색 */
   color: white; /* 버튼의 텍스트 색상 */
   border: none;
   border-radius: 5px;
@@ -45,7 +78,6 @@
   bottom: 40px;
   right: 50%;
   background-color: white;
-  position: absolute;
   border-color: "black";
   border-width: 1;
 }
