@@ -281,7 +281,7 @@ class App extends Component {
           // In mobile devices the default and first camera is the front one
 
           var newPublisher = this.OV.initPublisher(undefined, {
-            videoSource: newVideoDevice[1].deviceId,
+            videoSource: newVideoDevice[2].deviceId,
             publishAudio: true,
             publishVideo: true,
             mirror: true,
@@ -293,7 +293,7 @@ class App extends Component {
 
           await this.state.session.publish(newPublisher);
           this.setState({
-            currentVideoDevice: newVideoDevice[1],
+            currentVideoDevice: newVideoDevice[2],
             mainStreamManager: newPublisher,
             publisher: newPublisher,
           });
