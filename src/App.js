@@ -24,10 +24,10 @@ class App extends Component {
       subscribers: [],
       // custom
       // 리액트 네이티브에서 받아올 변수 설정
-      //   enterSession: "",
-      //   targetUserId: "",
-      //   userId: "",
-      //   memberName: "",
+      enterSession: "",
+      targetUserId: "",
+      userId: "",
+      memberName: "",
     };
 
     this.joinSession = this.joinSession.bind(this);
@@ -44,32 +44,32 @@ class App extends Component {
 
     // custom
     // 맨 처음 전역 변수를 리액트 네이티브로 부터 받아옴
-    // const checkDataAndSetState = () => {
-    //   const targetUserId = window.targetUserId;
-    //   const userId = window.userId;
-    //   const memberName = window.memberName;
-    //   const enterSession = window.enterSession;
+    const checkDataAndSetState = () => {
+      const targetUserId = window.targetUserId;
+      const userId = window.userId;
+      const memberName = window.memberName;
+      const enterSession = window.enterSession;
 
-    //   if (enterSession !== undefined && targetUserId && userId && memberName) {
-    //     this.setState({
-    //       targetUserId,
-    //       userId,
-    //       memberName,
-    //       enterSession,
-    //     });
+      if (enterSession !== undefined && targetUserId && userId && memberName) {
+        this.setState({
+          targetUserId,
+          userId,
+          memberName,
+          enterSession,
+        });
 
-    //     // 데이터가 정상적으로 로드되었을 때 세션을 시작
-    //       // setTimeout(() => {
-    //   //Join Session 실행
-    //   this.joinSession();
-    // }, 1000); // 1초 지연
-    //   } else {
-    //     // 데이터가 아직 준비되지 않은 경우 100ms 후 다시 시도
-    //     setTimeout(checkDataAndSetState, 100);
-    //   }
-    // };
-    // // 데이터 받기 완료
-    // checkDataAndSetState();
+        // 데이터가 정상적으로 로드되었을 때 세션을 시작
+        setTimeout(() => {
+          //Join Session 실행
+          this.joinSession();
+        }, 1000); // 1초 지연
+      } else {
+        // 데이터가 아직 준비되지 않은 경우 100ms 후 다시 시도
+        setTimeout(checkDataAndSetState, 100);
+      }
+    };
+    // 데이터 받기 완료
+    checkDataAndSetState();
   }
 
   componentWillUnmount() {
@@ -139,8 +139,8 @@ class App extends Component {
         session: this.OV.initSession(),
         // custom
         // 통화할 방과 유저 이름을 정함. 여기서는 통화 건 사람의 userId를 세션 아이디로 잡는다
-        // mySessionId: this.state.enterSession || mySessionId,
-        // myUserName: this.state.memberName || myUserName,
+        mySessionId: this.state.enterSession || mySessionId,
+        myUserName: this.state.memberName || myUserName,
       },
       () => {
         var mySession = this.state.session;
