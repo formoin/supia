@@ -1,4 +1,3 @@
-// FriendScreen.js
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import Header from '../Atoms/Header';
@@ -8,6 +7,7 @@ import Octicons from 'react-native-vector-icons/Octicons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Server_IP } from '@env';
+import Line from '../Atoms/Line';
 
 export default function FriendScreen() {
   const [edit, setEdit] = useState(false);
@@ -45,9 +45,9 @@ export default function FriendScreen() {
     <View style={styles.screen}>
       <Header label="친구 목록" />
       <View style={styles.container}>
-        <View style={styles.searchbar}>
-          <Searchbar active={true} />
-        </View>
+        {/* <View style={styles.searchbar}> */}
+          {/* <Searchbar active={true} /> */}
+        {/* </View> */}
         <View style={styles.friendContainer}>
           <View style={styles.leftContainer}>
             <Text style={styles.text}>친구 목록 ( {friends.length} )</Text>
@@ -55,6 +55,9 @@ export default function FriendScreen() {
               <Octicons name="pencil" size={16} style={styles.icon} />
             </Pressable>
           </View>
+        </View>
+        <View style={styles.line}>
+          <Line />
         </View>
         {friends.map(friend => (
           <Label
@@ -88,7 +91,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     paddingHorizontal: 30,
-    marginBottom: 20,
+    marginBottom: 11,
   },
   leftContainer: {
     flexDirection: 'row',
@@ -118,5 +121,9 @@ const styles = StyleSheet.create({
   callButtonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  line: {
+    width:'95%',
+    marginBottom:11,
   },
 });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   View,
   Text,
@@ -6,29 +6,31 @@ import {
   StyleSheet,
   Image,
   ActivityIndicator,
-  Button,  // 추가
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/Ionicons';
 import Octicons from 'react-native-vector-icons/Octicons';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import WeatherInfo from '../Atoms/HomeInfo/WeatherInfo';
 import MyInfo from '../Atoms/HomeInfo/MyInfo';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import axios from 'axios';
 import loginStore from '../store/useLoginStore';
 import useStore from '../store/useStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Server_IP } from '@env';
-import EventSource from 'react-native-event-source';
-
+import {Server_IP} from '@env';
+import EventSource from 'react-native-sse';
+import LoadingScreen from './LoadingPage';
+import CallModal from '../CallModal';
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [memberInfo, setMemberInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const {token} = loginStore.getState();
-  const [hasUnread, setHasUnread] = useState(true); // 안 읽은 알람이 있는지 여부
-  const [unreadCount, setUnreadCount] = useState(1); // 안 읽은 메세지의 수
+  const [hasUnread, setHasUnread] = useState(false); // 알림 여부
+  const [unreadCount, setUnreadCount] = useState(0); // 안 읽은 메시지 수
+  const [modalVisible, setModalVisible] = useState(false); // Call 모달
+  const eventSourceRef = useRef(null); // SSE 요청 객체
+  const [callFriend, setCallFriend] = useState(null); // 전화 연결
   const {
     getS3Url,
     weeklyWalkHistory,
@@ -44,10 +46,16 @@ export default function HomeScreen() {
     setMemberId: state.setMemberId,
     memberName: state.memberName,
     setMemberName: state.setMemberName,
+    fetchWalkHistory: state.fetchWalkHistory,
+    weeklyWalkHistory: state.weeklyWalkHistory,
   }));
+  useEffect(() => {
+    if (callFriend) {
+      setModalVisible(true);
+    }
+  }, [callFriend]);
 
-  // 주간 총 산책 거리 계산
-  const calWalkData = (datas) => {
+  const calWalkData = datas => {
     if (!datas || datas.length === 0) {
       return 0;
     }
@@ -67,12 +75,12 @@ export default function HomeScreen() {
   };
 
   const goAlarm = () => {
+    setHasUnread(false);
     navigation.navigate('Alarm');
   };
 
   const getInfo = async () => {
     const token = await AsyncStorage.getItem('key');
-
     try {
       const response = await axios.get(`${Server_IP}/members/my-info`, {
         headers: {
@@ -83,41 +91,50 @@ export default function HomeScreen() {
       });
 
       if (response.status === 200) {
+        //console.log(token)
         console.log(response.data.member);
         setMemberInfo(response.data.member);
         setMemberId(response.data.member.id);
         setMemberName(response.data.member.name);
-        console.log('홈페이지 로딩 성공');
-        const id = response.data.member.id
+        setUnreadCount(response.data.member.unreadMessage);
 
-        const es = new EventSource(`${Server_IP}/notification/subscribe/${id}`);
-        console.log(es)
+        // isCheckAlarm 값이 0보다 크면 true로 설정
 
-        es.addEventListener("message", (event) => {
-          console.log("New message event:", event.data);
-        });
+        if (!eventSourceRef.current) {
+          setHasUnread(response.data.member.isCheckAlarm > 0);
 
-        es.addEventListener("alarm", (event) => {
-          console.log("New alarm event:", event.data);
-        });
+          const es = new EventSource(
+            `${Server_IP}/notification/subscribe/${response.data.member.id}`,
+          );
 
-        es.addEventListener("error", (event) => {
-          if (event.type === "error") {
-            console.error("Connection error:", event.message);
-          } else if (event.type === "exception") {
-            console.error("Error:", event.message, event.error);
-          }
-        });
+          es.addEventListener('message', event => {
+            console.log('New message event:', event.data);
+            setUnreadCount(event.data); // 정수로 변환하여 설정
+          });
 
-        es.addEventListener("close", (event) => {
-          console.log("Close SSE connection.");
-        });
+          es.addEventListener('alarm', event => {
+            console.log('New alarm event:', event.data);
+            setHasUnread(event.data > 0); // 알람 데이터가 0보다 크면 true로 설정
+          });
 
-      } else {
-        console.log('홈페이지 로딩 실패');
+          es.addEventListener('call', event => {
+            const data = JSON.parse(event.data);
+            setCallFriend(data);
+          });
+
+          es.addEventListener('error', event => {
+            console.error('SSE Error:', event.message);
+          });
+
+          es.addEventListener('close', () => {
+            console.log('SSE Connection closed.');
+          });
+
+          eventSourceRef.current = es;
+        }
       }
     } catch (error) {
-      console.error('홈페이지 요청 중 오류 발생:', error);
+      console.error('Error fetching member info:', error);
     } finally {
       setLoading(false);
     }
@@ -126,7 +143,8 @@ export default function HomeScreen() {
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       setLoading(true);
-      await getInfo();;
+      await getInfo();
+      fetchWalkHistory();
     });
 
     return () => {
@@ -136,8 +154,8 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text>로딩 . . .</Text>
+      <View style={{flex: 1}}>
+        <LoadingScreen />
       </View>
     );
   }
@@ -145,16 +163,17 @@ export default function HomeScreen() {
   if (!memberInfo) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>member info 로딩 . . .</Text>
+        <Text>Member info loading . . .</Text>
       </View>
     );
   }
 
-  const getImageUri = (thumbnail) => {
+  const getImageUri = thumbnail => {
+    const timestamp = Date.now();
     if (thumbnail.startsWith('file://')) {
-      return { uri: thumbnail }; // file 경로일 때
+      return {uri: thumbnail}; // File path
     } else {
-      return { uri: getS3Url(thumbnail) }; // S3 경로일 때
+      return {uri: getS3Url(thumbnail + `?timestamp=${timestamp}`)}; // S3 경로일 때
     }
   };
 
@@ -163,10 +182,23 @@ export default function HomeScreen() {
       <View style={styles.Headcontainer}>
         <View style={styles.textContainer}>
           <Text style={styles.hello}>Hello {memberInfo.nickname}</Text>
-          <Text style={styles.bagga}>반갑습니다 {memberInfo.name}님</Text>
+          <Text style={styles.bagga}>Welcome {memberInfo.name}!</Text>
+          {callFriend && (
+            <CallModal
+              modalVisible={modalVisible}
+              setModalVisible={setModalVisible}
+              friend={callFriend}
+              friendId={callFriend.memberId}
+              friendName={callFriend.name}
+              friendNickName={callFriend.nickname}
+              friendProfileImg={callFriend.profileImg}
+            />
+          )}
         </View>
         <View style={styles.topRight}>
-          <Pressable style={{ marginRight: 8 }} onPress={() => navigation.navigate('Search')}>
+          <Pressable
+            style={{marginRight: 8}}
+            onPress={() => navigation.navigate('Search')}>
             <Feather name="search" size={25} color="#8C8677" />
           </Pressable>
           <Pressable style={{marginRight: 10}} onPress={goAlarm}>
@@ -177,7 +209,7 @@ export default function HomeScreen() {
             />
             {hasUnread && <View style={styles.badge} />}
           </Pressable>
-          <Pressable style={{ marginRight: 10 }} onPress={goMessage}>
+          <Pressable style={{marginRight: 10}} onPress={goMessage}>
             <Octicons name="mail" size={25} color="#8C8677" />
             {unreadCount > 0 && (
               <View style={styles.badgeContainer}>
@@ -198,7 +230,7 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.foryou}>
-        <Text style={styles.bagga}>For you</Text>
+        <Text style={styles.bagga}>For Me</Text>
       </View>
 
       <View style={styles.info}>
@@ -213,7 +245,6 @@ export default function HomeScreen() {
       <Pressable style={styles.slideHandleContainer} onPress={goDictionary}>
         <View style={styles.slideHandle} />
       </Pressable>
-
     </View>
   );
 }
@@ -321,10 +352,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
 });
-

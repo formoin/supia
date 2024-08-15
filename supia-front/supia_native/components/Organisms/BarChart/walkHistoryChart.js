@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 import {BarChart} from 'react-native-gifted-charts';
+import useStore from '../../store/useStore';
 
 const CustomButton = ({title, isSelected, onPress}) => {
   return (
@@ -12,54 +13,79 @@ const CustomButton = ({title, isSelected, onPress}) => {
   );
 };
 
-const ActivityChart = ({
-  weeklyWalkHistory,
-  monthlyWalkHistory,
-  yearlyWalkHistory,
-}) => {
+const ActivityChart = () => {
+  // useStore에서 데이터 가져오기
+  const {
+    weeklyWalkHistory,
+    monthlyWalkHistory,
+    yearlyWalkHistory,
+    fetchWalkHistory,
+  } = useStore(state => ({
+    weeklyWalkHistory: state.weeklyWalkHistory,
+    monthlyWalkHistory: state.monthlyWalkHistory,
+    yearlyWalkHistory: state.yearlyWalkHistory,
+    fetchWalkHistory: state.fetchWalkHistory,
+  }));
+
   const [view, setView] = useState('week');
   const [data, setData] = useState([]);
 
-  // 데이터를 chart에 넣기 위해 label,value 쌍으로 수정
-  // 주, 월, 년 다르게 설정...
   const ValidateWeekData = datas => {
     const dataset = [];
-    // 요일 배열 (일요일이 0부터 시작)
     const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
+
+    if (!datas) {
+      for (let i = 0; i < 7; i++) {
+        dataset.push({
+          value: 0,
+          label: daysOfWeek[i],
+        });
+      }
+      return dataset;
+    }
+
     for (let i = 0; i < datas.length; i++) {
-      // walkDate를 Date 객체로 변환
       const date = new Date(datas[i].walkDate);
       dataset.push({
-        value: datas[i].totalDistance, // totalDistance 사용
-        label: daysOfWeek[date.getDay()], // 요일로 변환
+        value: datas[i].totalDistance / 1000,
+        label: daysOfWeek[date.getDay()],
       });
     }
+
     for (let i = datas.length; i < 7; i++) {
       dataset.push({
-        value: 0, // totalDistance 사용
-        label: daysOfWeek[date.getDay()], // 요일로 변환
+        value: 0,
+        label: daysOfWeek[i],
       });
     }
+
     return dataset;
-    // 반대로 나오는 경우 : return dataset.reverse();
   };
 
   const ValidateMonthData = datas => {
     const dataset = [];
 
-    // 실제 데이터 있는 부분 처리
+    if (!datas) {
+      for (let i = 0; i < 31; i++) {
+        dataset.push({
+          value: 0,
+          label: (i + 1) % 7 === 0 ? (i + 1).toString() : null,
+        });
+      }
+      return dataset;
+    }
+
     for (let i = 0; i < datas.length; i++) {
       dataset.push({
-        value: datas[i].totalDistance,
-        label: null, // 7, 14, 21, 28일에만 label 추가
+        value: datas[i].totalDistance / 1000,
+        label: (i + 1) % 7 === 0 ? (i + 1).toString() : null,
       });
     }
 
-    // 데이터가 없는 나머지 부분 처리
     for (let i = datas.length; i < 31; i++) {
       dataset.push({
         value: 0,
-        label: null, // 7, 14, 21, 28일에만 label 추가
+        label: (i + 1) % 7 === 0 ? (i + 1).toString() : null,
       });
     }
 
@@ -68,64 +94,67 @@ const ActivityChart = ({
 
   const ValidateYearData = datas => {
     const dataset = [];
-    // 요일 배열 (일요일이 0부터 시작)
     const monthsOfYear = [
       'Jan',
-      'Fab',
+      'Feb',
       'Mar',
       'Apr',
       'May',
       'Jun',
       'Jul',
       'Aug',
-      'Nov',
-      'Oct',
       'Sep',
+      'Oct',
+      'Nov',
       'Dec',
     ];
-    // 역시 자바스크립트...
-    const startMonth = datas[0].month.slice(-2) - 0;
-    const endMonth = datas[datas.length - 1].month.slice(-2) - 0;
 
-    for (let i = 0; i < endMonth - 1; i++) {
+    // 데이터가 없으면 기본 값으로 채움
+    if (!datas || datas.length === 0) {
+      for (let i = 0; i < 12; i++) {
+        dataset.push({
+          value: 0,
+          label: monthsOfYear[i],
+        });
+      }
+      return dataset;
+    }
+
+    // 데이터의 month를 키로 하는 맵 생성
+    const dataMap = datas.reduce((acc, item) => {
+      const monthIndex = parseInt(item.month.split('-')[1], 10) - 1;
+      acc[monthIndex] = item.totalDistance / 1000; // 거리 값을 킬로미터로 변환
+      return acc;
+    }, {});
+
+    // 모든 월을 데이터로 채움
+    for (let i = 0; i < 12; i++) {
       dataset.push({
-        value: 0, // totalDistance 사용
-        label: i + 1,
+        value: dataMap[i] || 0, // 데이터가 없으면 0으로 채움
+        label: monthsOfYear[i],
       });
     }
 
-    for (let i = startMonth; i >= endMonth; i--) {
-      dataset.push({
-        value: datas[i - endMonth].totalDistance, // totalDistance 사용
-        label: i + 1,
-      });
-    }
-
-    for (let i = startMonth; i < 12; i++) {
-      dataset.push({
-        value: 0, // totalDistance 사용
-        label: i + 1,
-      });
-    }
     return dataset;
-    // 반대로 나오는 경우 : return dataset.reverse();
   };
 
+  // 컴포넌트가 마운트될 때 데이터를 가져옴
   useEffect(() => {
-    // 초기에는 1주일 데이터를 표시
-    setData(ValidateWeekData(weeklyWalkHistory));
+    fetchWalkHistory(); // 데이터 가져오기
   }, []);
+
+  // weeklyWalkHistory 데이터가 변경될 때 데이터 설정
+  useEffect(() => {
+    setData(ValidateWeekData(weeklyWalkHistory));
+  }, [weeklyWalkHistory]);
 
   const showData = text => {
     setView(text);
     if (text === 'week') {
-      // 최근 데이터로부터 1주일 데이터
       setData(ValidateWeekData(weeklyWalkHistory));
     } else if (text === 'month') {
-      // 한달 치
       setData(ValidateMonthData(monthlyWalkHistory));
     } else {
-      // 월 단위 기록
       setData(ValidateYearData(yearlyWalkHistory));
     }
   };

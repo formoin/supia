@@ -1,49 +1,38 @@
-import React, {useState, useRef} from 'react';
+import React from 'react';
 import Searchbar from './Organisms/SearchBar';
 import Octicons from 'react-native-vector-icons/Octicons';
 import Label from './Atoms/ListItem';
 import Feather from 'react-native-vector-icons/Feather';
-import {StyleSheet, View, Text, Modal, Pressable} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Modal,
+  Pressable,
+  ScrollView,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {TouchableWithoutFeedback} from 'react-native';
-import useWebSocketStore from './Pages/WebRTC/SocketStore';
-import {Server_IP} from '@env';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Popup_Call = ({
-  visible,
-  onClose,
-  onOpenPopup,
-  friends,
-  memberId,
-  memberName,
-}) => {
-  const [userId, setUserId] = useState('');
-  const [targetUserId, setTargetUserId] = useState('');
-  const connect = useWebSocketStore(state => state.connect);
-  const setWebSocket = useWebSocketStore(state => state.setWebSocket);
-  const peerConnectionRef = useRef(null);
-
+const Popup_Call = ({visible, onClose, friends, memberId, memberName}) => {
   const navigation = useNavigation();
 
   const goCallPage = async friend => {
-    setTargetUserId(friend.id); // 여기에 친구의 ID 설정
+    onClose();
+    try {
+      // 비즈니스 로직 실행 (예: API 호출)
+      // await someApiCall(friend);
 
-    navigation.navigate('Call', {
-      isCaller: true,
-      targetUserId: targetUserId,
-      userId: memberId,
-      memberName: memberName,
-    });
-  };
-
-  const handleAcceptCall = async offerUser => {
-    navigation.navigate('Call', {
-      isCaller: false,
-      targetUserId: offerUser,
-      userId: memberId,
-      memberName: memberName,
-    });
+      // 네비게이션 로직
+      navigation.navigate('Call', {
+        isCaller: true,
+        targetUserId: friend.memberId,
+        userId: memberId,
+        memberName: memberName,
+      });
+    } catch (error) {
+      console.error('Failed to start call:', error);
+    }
   };
 
   if (!visible) return null;
@@ -56,36 +45,36 @@ const Popup_Call = ({
       onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.modalBackground}>
-          <TouchableWithoutFeedback>
-            <View style={styles.modalContainer}>
-              <View style={styles.titleRow}>
-                <Text style={styles.modalTitle}>연락처</Text>
-                <Pressable onPress={onClose}>
-                  <Octicons name="x" size={30} />
-                </Pressable>
-              </View>
-              <Searchbar active={true} />
-              {friends.map(friend => (
-                <View key={friend.id}>
-                  <View style={styles.callOptionsRow}>
-                    <Label
-                      title={friend.nickname}
-                      content={friend.name}
-                      url={friend.profileImg}
-                      name="phone-call"
-                      onClose={onClose}
-                      onOpenPopup={onOpenPopup}
-                    />
-                    <Pressable
-                      onPress={() => goCallPage(friend)}
-                      style={styles.callButton}>
-                      <Feather name="video" size={24} />
-                    </Pressable>
-                  </View>
-                </View>
-              ))}
+          <View style={styles.modalContainer}>
+            <View style={styles.titleRow}>
+              <Text style={styles.modalTitle}>연락처 ({friends.length})</Text>
+              <Pressable onPress={onClose}>
+                <Octicons name="x" size={30} />
+              </Pressable>
             </View>
-          </TouchableWithoutFeedback>
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+              {friends.length > 0 ? (
+                friends.map(friend => (
+                  <View key={friend.memberId} style={styles.friendItem}>
+                    <View style={styles.callOptionsRow}>
+                      <Label
+                        title={friend.nickname}
+                        content={friend.name}
+                        url={friend.profileImg}
+                        name="video"
+                        onClose={onClose}
+                      />
+                      <Pressable
+                        onPress={() => goCallPage(friend)}
+                        style={styles.callButton}></Pressable>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.noFriendsText}>No friends available</Text>
+              )}
+            </ScrollView>
+          </View>
         </View>
       </TouchableWithoutFeedback>
     </Modal>
@@ -120,15 +109,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  scrollContainer: {
+    alignItems: 'center',
+  },
   callOptionsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginRight: 10,
     marginTop: 10,
-    width: '90%',
   },
   callButton: {
     paddingLeft: 25,
+  },
+  noFriendsText: {
+    fontSize: 16,
+    color: 'gray',
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  friendItem: {
+    width: '95%',
+    alignItems: 'center',
   },
 });

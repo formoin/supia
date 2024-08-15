@@ -17,7 +17,7 @@ export default function Card({representativeImg, speciesName, mini, setShowStick
   }
   return (
       <TouchableOpacity onPress={onPress} style={styles.container}>
-        <Image source={{ uri: getS3Url(representativeImg)}} style={{ width: 110, height: 110, marginVertical: 4 }}/>
+        <Image source={{ uri: getS3Url(representativeImg)}} style={{ width: 80, height: 80, marginVertical: 15 }}/>
         <Text style={{ fontSize: 16 }}>{speciesName}</Text>
       </TouchableOpacity>
 

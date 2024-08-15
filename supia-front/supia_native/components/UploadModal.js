@@ -71,15 +71,17 @@ export default function UploadModal({
         </Text>
       ) : (
         <View style={{flexDirection: 'column'}}>
-          <Text style={styles.contentFailText}>인식 실패!</Text>
+          <Text style={styles.contentFailText}>
+            새로운 자연물을 발견하셨군요!
+          </Text>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <TextInput
               onChangeText={onChangeUnknownValue}
               value={unknownValue}
-              placeholder="직접 이름을 설정해주세요"
+              placeholder="직접 이름을 설정해보세요."
               style={styles.textInput}
             />
-            <AntDesign name="edit" size={14} />
+            <AntDesign name="edit" size={14} style={{paddingBottom: 15}} />
           </View>
         </View>
       )}
@@ -144,13 +146,16 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     lineHeight: 26,
     textAlign: 'center',
+    marginTop: 8,
   },
   buttonContainer: {
-    flexDirection: 'row', // 가로로 배치
-    justifyContent: 'center', // 중앙 정렬
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   textInput: {
     color: 'grey',
+    marginLeft: 50,
+    marginBottom: 20,
   },
 });

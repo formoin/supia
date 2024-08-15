@@ -24,6 +24,7 @@ import Sound from 'react-native-sound';
 import {Server_IP} from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImageResizer from 'react-native-image-resizer';
+import LoadingScreen from './LoadingPage';
 
 const {width, height} = Dimensions.get('window');
 
@@ -190,14 +191,14 @@ export default function MyForestScreen() {
       });
       if (response.status === 200) {
         console.log('아이템 배치 저장 성공');
-        setDroppedImages([])
+        setDroppedImages([]);
       } else {
         console.log('아이템 배치 저장 실패');
       }
     } catch (error) {
       console.error('아이템 배치 요청 중 실패', error);
     }
-    setBGM(null)
+    setBGM(null);
     navigation.navigate('Home');
   };
 
@@ -209,8 +210,16 @@ export default function MyForestScreen() {
       if (CaptureRef.current) {
         const uri = await CaptureRef.current.capture();
         console.log('Capture complete...', uri);
-        const rotatedImage = await ImageResizer.createResizedImage(uri, 1450, 720, 'JPEG', 100, 270);
-        handleSave(rotatedImage.uri);
+        const rotatedImage = await ImageResizer.createResizedImage(
+          uri,
+          1450,
+          720,
+          'JPEG',
+          100,
+          270,
+        );
+        const thumbnailUrl = await thumbnailS3(rotatedImage.uri);
+        handleSave(thumbnailUrl);
       } else {
         console.log('Ref 렌더링 오류');
       }
@@ -220,8 +229,44 @@ export default function MyForestScreen() {
     // navigation.navigate('Home');
   };
 
+  const thumbnailS3 = async imageUri => {
+    const token = await AsyncStorage.getItem('key');
+    try {
+      const formData = new FormData();
+      const now = new Date();
+      const year = now.getFullYear().toString().slice(-2);
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const day = now.getDate().toString().padStart(2, '0');
+      const hour = now.getHours().toString().padStart(2, '0');
+      const minute = now.getMinutes().toString().padStart(2, '0');
+      const date = `${year}${month}${day}`;
+      const time = `${hour}${minute}`;
+
+      formData.append('thumbnail', {
+        uri: imageUri,
+        type: 'image/png',
+        name: `${date}_${time}.png`,
+      });
+      // formData.append('forestId', forestId);
+
+      const response = await axios.post(`${Server_IP}/forest/url`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+        },
+      });
+
+      console.log('Upload s3 successful:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading thumbnail:', error);
+    }
+  };
+
   const handleCloseandNOSavePopup = async () => {
     setSavePopupVisible(false); // 팝업 닫기
+    setBGM(null);
     navigation.navigate('Home');
   };
 
@@ -230,7 +275,6 @@ export default function MyForestScreen() {
   };
 
   const goHome = () => {
-    setBGM(null)
     handleOpenSavePopup();
     // navigation.navigate("Home");
   };
@@ -264,64 +308,64 @@ export default function MyForestScreen() {
 
   useEffect(() => {
     const handleSound = () => {
-        if (soundRef.current) {
-            // 이전 사운드를 정리
-            soundRef.current.stop(() => {
-                // release를 호출하기 전에 null 체크
-                if (soundRef.current) {
-                    soundRef.current.release();
-                    soundRef.current = null;
-                }
+      if (soundRef.current) {
+        // 이전 사운드를 정리
+        soundRef.current.stop(() => {
+          // release를 호출하기 전에 null 체크
+          if (soundRef.current) {
+            soundRef.current.release();
+            soundRef.current = null;
+          }
 
-                // 새로운 사운드가 있으면 재생
-                if (BGM) {
-                    loadAndPlaySound();
-                }
-            });
-        } else if (BGM) {
-            // 현재 사운드가 없고 BGM이 있을 때 새로운 사운드 객체 생성
+          // 새로운 사운드가 있으면 재생
+          if (BGM) {
             loadAndPlaySound();
-        }
+          }
+        });
+      } else if (BGM) {
+        // 현재 사운드가 없고 BGM이 있을 때 새로운 사운드 객체 생성
+        loadAndPlaySound();
+      }
     };
 
     const loadAndPlaySound = () => {
-        const sound = new Sound(BGM, null, (error) => {
-            if (error) {
-                console.log('Failed to load the sound', error);
-                return;
-            }
-            sound.play((success) => {
-                if (success) {
-                    console.log('Sound played successfully');
-                } else {
-                    console.log('Playback failed');
-                }
-                // release를 호출하기 전에 null 체크
-                if (soundRef.current) {
-                    soundRef.current.release();
-                    soundRef.current = null;
-                }
-            });
+      const sound = new Sound(BGM, null, error => {
+        if (error) {
+          console.log('Failed to load the sound', error);
+          return;
+        }
+        sound.play(success => {
+          if (success) {
+            console.log('Sound played successfully');
+          } else {
+            console.log('Playback failed');
+          }
+          // release를 호출하기 전에 null 체크
+          if (soundRef.current) {
+            soundRef.current.release();
+            soundRef.current = null;
+          }
         });
+      });
 
-        soundRef.current = sound;
+      soundRef.current = sound;
     };
 
     handleSound();
 
     // 컴포넌트 언마운트 시 사운드 정리
     return () => {
-        if (soundRef.current) {
-            soundRef.current.stop(() => {
-                // release를 호출하기 전에 null 체크
-                if (soundRef.current) {
-                    soundRef.current.release();
-                    soundRef.current = null;
-                }
-            });
-        }
+      if (soundRef.current) {
+        soundRef.current.stop(() => {
+          // release를 호출하기 전에 null 체크
+          if (soundRef.current) {
+            soundRef.current.release();
+            soundRef.current = null;
+          }
+        });
+      }
     };
-}, [BGM]);
+  }, [BGM]);
 
   // 아이템 소리
   const soundRefs = useRef({});
@@ -429,7 +473,7 @@ export default function MyForestScreen() {
           </ImageBackground>
         </ViewShot>
       ) : (
-        <Text>숲을 로딩 중입니다...</Text>
+        <LoadingScreen />
       )}
 
       <Pressable
@@ -442,13 +486,17 @@ export default function MyForestScreen() {
         style={styles.iconContainer}
         // onPress={goHome}
         visible={isButtonVisible}>
-        <Feather name="home" style={styles.homeicon} onPress={goHome}/>
+        <Feather name="home" style={styles.homeicon} onPress={goHome} />
       </Pressable>
       <Pressable
         style={styles.iconContainer}
         // onPress={goDictionary}
         visible={isButtonVisible}>
-        <Feather name="sidebar" style={styles.sideicon} onPress={goDictionary}/>
+        <Feather
+          name="sidebar"
+          style={styles.sideicon}
+          onPress={goDictionary}
+        />
       </Pressable>
 
       <Modal
@@ -541,9 +589,9 @@ const styles = StyleSheet.create({
   },
   modalBackground: {
     position: 'absolute',
-    bottom:width*0,
+    bottom: width * 0,
     right: 0,
-    left:0,
+    left: 0,
     // backgroundColor:'black',
   },
   modalContainer: {
@@ -556,10 +604,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sticker: {
-    width: 200,
-    height: 200,
+    width: 100,
+    height: 100,
     position: 'absolute',
-    transform: [{rotate: '90deg'}],
+    // transform: [{rotate: '90deg'}],
   },
   popupBackground: {
     justifyContent: 'center', // 수직 중앙 정렬

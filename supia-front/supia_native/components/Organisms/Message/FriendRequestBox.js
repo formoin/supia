@@ -1,25 +1,25 @@
-import {View, Text, StyleSheet, Pressable} from 'react-native';
+import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import Label from '../../Atoms/ListItem';
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import ReadMessageModal from './ReadMessageModal';
-import loginStore from '../../store/useLoginStore';
 import moment from 'moment';
-import {Server_IP} from '@env';
+import { Server_IP } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function FriendRequestBox({friends, getFriends}) {
+const { width, height } = Dimensions.get('window');
+
+export default function FriendRequestBox({ friends, getFriends }) {
   const [friend, setFriend] = useState(friends);
   const [modalVisible, setModalVisible] = useState(false);
-  // const { token } = loginStore.getState();
 
-  const formatTime = dateString => {
+  const formatTime = (dateString) => {
     return dateString
       ? moment(dateString).format('YYYY/MM/DD HH:mm')
       : '시간 정보 없음';
   };
 
-  const handleAccept = async messageId => {
+  const handleAccept = async (messageId) => {
     const token = await AsyncStorage.getItem('key');
 
     try {
@@ -29,11 +29,12 @@ export default function FriendRequestBox({friends, getFriends}) {
           Accept: 'application/json',
           'Content-Type': 'application/json; charset=utf-8',
         },
-        params: {messageId},
+        params: { messageId },
       });
       if (response.status === 200) {
         console.log('친구 요청 수락 성공');
         alert('친구 요청을 수락했습니다.');
+        getFriends()
         removeFriendItem(messageId);
       } else {
         console.log('친구 요청 수락 실패');
@@ -43,7 +44,7 @@ export default function FriendRequestBox({friends, getFriends}) {
     }
   };
 
-  const handleDelete = async messageId => {
+  const handleDelete = async (messageId) => {
     const token = await AsyncStorage.getItem('key');
 
     try {
@@ -53,11 +54,12 @@ export default function FriendRequestBox({friends, getFriends}) {
           Accept: 'application/json',
           'Content-Type': 'application/json; charset=utf-8',
         },
-        params: {messageId},
+        params: { messageId },
       });
       if (response.status === 200) {
         console.log('친구 요청 거절 성공');
         alert('친구 요청을 거절했습니다.');
+        getFriends()
         removeFriendItem(messageId);
       } else {
         console.log('친구 요청 거절 실패');
@@ -67,40 +69,36 @@ export default function FriendRequestBox({friends, getFriends}) {
     }
   };
 
-  const removeFriendItem = messageId => {
-    setFriend(prevFriend =>
-      prevFriend.filter(item => item.messageId !== messageId),
+  const removeFriendItem = (messageId) => {
+    setFriend((prevFriend) =>
+      prevFriend.filter((item) => item.messageId !== messageId)
     );
   };
 
-  //  if (!friends || friends.length === 0) {
-  //    return <Text>친구 요청이 없습니다.</Text>;
-  //  }
-
   return (
     <View>
-      {friends.map(friendItem => (
+      {friends.map((friendItem) => (
         <View key={friendItem.messageId} style={styles.container}>
           <View style={styles.messageHeader}>
             <Text style={styles.messageText}>시스템</Text>
-            <Text style={styles.timeText}>
-              {formatTime(friendItem.sentTime)}
-            </Text>
+            <Text style={styles.timeText}>{formatTime(friendItem.sentTime)}</Text>
           </View>
           <View style={styles.messageContent}>
             <Label
-              title={friendItem.fromMemberNickname || '제목 없음'}
-              content={friendItem.content || '내용이 없습니다.'}
-              url={friendItem.fromMemberImg || '기본 이미지 URL'}
+              title={friendItem.fromMemberNickname}
+              content={friendItem.content}
+              url={friendItem.fromMemberImg}
             />
             <Pressable
               style={styles.green}
-              onPress={() => handleAccept(friendItem.messageId)}>
+              onPress={() => handleAccept(friendItem.messageId)}
+            >
               <Text style={styles.buttonText}>수락</Text>
             </Pressable>
             <Pressable
               style={styles.red}
-              onPress={() => handleDelete(friendItem.messageId)}>
+              onPress={() => handleDelete(friendItem.messageId)}
+            >
               <Text style={styles.buttonText}>거절</Text>
             </Pressable>
           </View>
@@ -118,52 +116,53 @@ export default function FriendRequestBox({friends, getFriends}) {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20,
+    marginTop: height * 0.02, // 2% of screen height
     width: '100%',
-    height: 100,
+    height: height * 0.12, // 12% of screen height
   },
   messageHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingHorizontal: width * 0.04, // 4% of screen width
+    paddingVertical: height * 0.01, // 1% of screen height
   },
   messageContent: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginLeft: 20,
+    alignItems: 'center',
+    paddingHorizontal: width * 0.04, // 4% of screen width
+    paddingVertical: height * 0.01, // 1% of screen height
+    marginLeft: width * 0.05, // 5% of screen width
   },
   messageText: {
-    fontSize: 16,
+    fontSize: width * 0.04, // 4% of screen width
   },
   timeText: {
-    fontSize: 16,
+    fontSize: width * 0.04, // 4% of screen width
     color: 'gray',
   },
   green: {
-    width: 45,
-    height: 35,
+    width: width * 0.12, // 12% of screen width
+    height: height * 0.045, // 4.5% of screen height
     backgroundColor: '#A2AA7B',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
-    marginTop: 10,
-    marginRight: 50,
+    marginTop: height * 0.01, // 1% of screen height
+    marginRight: width * 0.12, // 12% of screen width
   },
   red: {
-    width: 45,
-    height: 35,
+    width: width * 0.12, // 12% of screen width
+    height: height * 0.045, // 4.5% of screen height
     backgroundColor: '#C28C7E',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
-    marginTop: 10,
-    marginRight: 10,
+    marginTop: height * 0.01, // 1% of screen height
+    marginRight: width * 0.015, // 1.5% of screen width
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: width * 0.025, // 2.5% of screen width
   },
 });

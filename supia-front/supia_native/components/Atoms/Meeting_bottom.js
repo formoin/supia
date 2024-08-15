@@ -1,76 +1,35 @@
-import {StyleSheet, View, Pressable, Text} from 'react-native';
-import Entypo from 'react-native-vector-icons/Entypo';
+import React from 'react';
+import {StyleSheet, View, Pressable} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import Feather from 'react-native-vector-icons/Feather';
-import {useState} from 'react';
-import {useNavigation} from '@react-navigation/native';
 
-export default function WalkPage_bottom({captureScreen}) {
-  const [refresh, setRefresh] = useState(false);
-  const navigation = useNavigation();
-
-  const onPressEnd = () => {
-    navigation.navigate('Walk');
-    // navigation.goback();
-  };
-  const onTakePicture = () => {
-    captureScreen();
-  };
-  const onPressRefresh = () => {
-    setRefresh(true);
-    alert('refresh');
-  };
+export default function MeetingPage_bottom({onPressEnd, onTakePicture}) {
   return (
-    <View style={[styles.buttonContainer]}>
-      <View style={[styles.button]}>
-        <Pressable onPress={onPressEnd}>
-          <MaterialIcons
-            name="call-end"
-            size={30}
-            color="red"
-            style={styles.whiteIcon}
-          />
-        </Pressable>
-        <View style={styles.iconWithCircle}>
-          <View style={styles.bg} />
-          <Pressable onPress={onTakePicture} style={styles.pictureIcon} />
-        </View>
-        <Pressable onPress={onPressRefresh}>
-          <Feather
-            name="refresh-cw"
-            size={30}
-            color="#A2AA7B"
-            style={styles.whiteIcon}
-          />
-        </Pressable>
+    <View style={[styles.container]}>
+      <Pressable onPress={onPressEnd} style={styles.callEndButton}>
+        <MaterialIcons name="call-end" size={30} color="red" />
+      </Pressable>
+      <View style={styles.iconWithCircle}>
+        <View style={styles.bg} />
+        <Pressable onPress={onTakePicture} style={styles.pictureIcon} />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  buttonContainer: {
+  container: {
     width: '100%',
     height: 58,
-    alignItems: 'center',
-    justifyContent: 'center',
     margin: 15,
+    position: 'relative', // 버튼들이 절대 위치를 가질 수 있도록 설정
   },
-  button: {
-    borderRadius: 10,
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    opacity: 1,
-  },
-  whiteIcon: {
-    paddingRight: 8,
+  callEndButton: {
+    position: 'absolute',
+    left: 85, // 왼쪽 구석에 위치
+    bottom: 6, // 아래 구석에 위치
+    padding: 5,
     borderRadius: 50,
     backgroundColor: '#fff',
-    paddingLeft: 9,
-    paddingVertical: 9,
   },
   pictureIcon: {
     width: 60,
@@ -89,9 +48,12 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   iconWithCircle: {
-    position: 'relative', // 컨테이너가 relative
-    alignItems: 'center', // 수직 정렬을 위해 추가
+    position: 'absolute',
+    bottom: 30,
+    alignSelf: 'center', // 중앙에 위치하도록 설정
+    alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 80,
+    borderWidth: 1, // 테두리 두께 설정
+    borderRadius: 50, // 테두리도 둥글게 설정
   },
 });

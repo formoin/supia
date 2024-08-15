@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, StyleSheet, Pressable, ActivityIndicator} from 'react-native';
+import {View, StyleSheet, Pressable, ActivityIndicator,ScrollView} from 'react-native';
 import {useIsFocused, useFocusEffect} from '@react-navigation/native';
 import Header from '../Atoms/Header';
 import SentMessage from '../Organisms/Message/SentMessageBox';
@@ -104,6 +104,7 @@ export default function MessageScreen() {
           <Octicons name="pencil" size={16} />
         </Pressable>
       </View>
+    <ScrollView contentContainerStyle={styles.scrollViewContainer}>
       <View style={styles.boxContainer}>
         {isLoading ? (
           <ActivityIndicator size="large" color="#A2AA7B" />
@@ -121,6 +122,7 @@ export default function MessageScreen() {
           />
         )}
       </View>
+    </ScrollView>
     </View>
   );
 }
@@ -139,5 +141,9 @@ const styles = StyleSheet.create({
   },
   boxContainer: {
     alignItems: 'center',
+  },
+  scrollViewContainer: {
+    flexGrow: 1,
+    paddingBottom: 250
   },
 });

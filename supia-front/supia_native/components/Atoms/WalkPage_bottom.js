@@ -268,7 +268,6 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     backgroundColor: 'rgba(162, 170, 123, 0.8)',
     position: 'absolute',
-    zIndex: -1,
     opacity: 0.8,
   },
   iconWithCircle: {

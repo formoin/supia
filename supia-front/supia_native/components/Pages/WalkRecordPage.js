@@ -31,7 +31,7 @@ export default function WalkRecordScreen() {
   return (
     <View style={styles.container}>
       <Header label="산책 기록 확인" />
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <ScrollView contentContainerStyle={{flexGrow: 1}} >
         <View style={styles.middleContainer}>
           <Line style={styles.lineTopSpacing} />
           <View style={styles.textContainer}>
@@ -90,8 +90,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
-    marginTop: 40,
-    marginBottom: 40,
+    marginTop: 20,
+    marginBottom: 20,
   },
   text: {
     fontSize: 20,
@@ -121,7 +121,8 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   lineSpacing: {
-    marginTop: 10,
+    width:'100%',
+    // marginTop: 10,
   },
   itemHeader: {
     fontSize: 18,
@@ -146,6 +147,7 @@ const styles = StyleSheet.create({
   points: {
     fontSize: 18,
     marginTop: 20,
+    marginBottom:50
   },
   item: { // 새로운 스타일 추가
     marginRight: 20, // 아이템 간격 조정

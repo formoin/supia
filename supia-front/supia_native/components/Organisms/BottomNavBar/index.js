@@ -20,6 +20,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import {useNavigation} from '@react-navigation/native';
 import useStore from '../../store/useStore';
+import Webview from '../../Pages/WebView';
 
 const BottomTab = createBottomTabNavigator();
 
@@ -147,7 +148,7 @@ function BottomNav() {
       />
       <BottomTab.Screen
         name="Call"
-        component={CallScreen}
+        component={Webview}
         options={{
           tabBarButton: () => null,
           tabBarStyle: {

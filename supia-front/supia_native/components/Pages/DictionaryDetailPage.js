@@ -16,7 +16,6 @@ import SendGiftModal from '../SendGiftModal';
 import Popup from '../Popup';
 import {Server_IP} from '@env';
 import axios from 'axios';
-import loginStore from '../store/useLoginStore';
 import useStore from '../store/useStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -26,7 +25,6 @@ export default function DictionaryDetailScreen({route}) {
   const [sendgiftVisible, setSendgiftVisible] = useState(false);
   const [deletetVisible, setDeletetVisible] = useState(false);
   const [speciesDetail, setSpeciesDetail] = useState(null);
-  // const { token } = loginStore.getState();
   const {getS3Url} = useStore();
 
   const sendGift = () => {
@@ -47,7 +45,6 @@ export default function DictionaryDetailScreen({route}) {
     setSelectedItemId(null);
   };
 
-  // API 호출 함수
   const fetchSpeciesDetail = async speciesId => {
     const token = await AsyncStorage.getItem('key');
 
@@ -63,7 +60,7 @@ export default function DictionaryDetailScreen({route}) {
         },
       });
       if (response.status === 200) {
-        console.log('도감 상세 성공:', response.data); // API 응답 데이터 콘솔에 출력
+        console.log('도감 상세 성공:', response.data);
         setSpeciesDetail(response.data);
       }
     } catch (error) {
@@ -79,11 +76,11 @@ export default function DictionaryDetailScreen({route}) {
   };
 
   useEffect(() => {
-    fetchSpeciesDetail(id); // speciesName으로 API 호출
+    fetchSpeciesDetail(id);
   }, [id]);
 
   useEffect(() => {
-    setSelectedItemId(null); // 초기화
+    setSelectedItemId(null);
   }, [route]);
 
   const selectedItem = speciesDetail?.items?.find(
@@ -91,30 +88,26 @@ export default function DictionaryDetailScreen({route}) {
   );
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Header label="나의 자연 도감" goto="Dictionary" />
-
-      <View style={styles.infoContainer}>
-        <View style={{alignItems: 'center', justifyContent: 'center'}}>
-          <Text style={styles.NameFont}>{speciesName}</Text>
-          <Image
-            source={{uri: getS3Url(representativeImg)}}
-            style={styles.image}
-          />
-          <View style={styles.textContainer}>
-            <ScrollView>
-              <Text style={styles.InfoFont}>{speciesDetail?.description}</Text>
-            </ScrollView>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.infoContainer}>
+          <View style={styles.centeredContent}>
+            <Text style={styles.NameFont}>{speciesName}</Text>
+            <Image
+              source={{uri: getS3Url(representativeImg)}}
+              style={styles.image}
+            />
+            <View style={styles.textContainer}>
+              <Text style={styles.InfoFont}>
+                {speciesDetail?.description}
+              </Text>
+              <Line />
+            </View>
           </View>
-          <View style={{marginVertical: 20}}>
-            <Line />
-          </View>
-        </View>
-        <View>
           <View style={styles.miniTitle}>
-            {/* speciesDetail이 null이 아닌 경우에만 렌더링 */}
             {speciesDetail && (
-              <Text style={{flex: 1}}>
+              <Text style={{flex: 1, paddingTop: 15, paddingLeft: 10}}>
                 {speciesName} ({speciesDetail.items.length})
               </Text>
             )}
@@ -137,7 +130,6 @@ export default function DictionaryDetailScreen({route}) {
             )}
           </View>
           <ScrollView horizontal>
-            {/* speciesDetail이 null이 아닌 경우에만 아이템 렌더링 */}
             {speciesDetail?.items?.map(item => (
               <TouchableOpacity
                 key={item.id}
@@ -146,25 +138,21 @@ export default function DictionaryDetailScreen({route}) {
                   selectedItemId === item.id && styles.selectedItemContainer,
                 ]}
                 onPress={() =>
-                  setSelectedItemId(selectedItemId === item.id ? null : item.id)
+                  setSelectedItemId(
+                    selectedItemId === item.id ? null : item.id,
+                  )
                 }>
                 <Image
                   source={{uri: getS3Url(item.imgUrl)}}
-                  style={{
-                    width: 60,
-                    height: 60,
-                    marginVertical: 4,
-                    transform: [{rotate: '90deg'}],
-                  }}
+                  style={styles.itemImage}
                 />
-                <Text style={{fontSize: 12}}>{item.acquireDate}</Text>
+                <Text style={styles.itemDate}>{item.acquireDate}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
-      </View>
+      </ScrollView>
 
-      {/* 아이템 선물 */}
       <Modal
         transparent={true}
         visible={sendgiftVisible}
@@ -179,14 +167,13 @@ export default function DictionaryDetailScreen({route}) {
             itemId={selectedItem?.id}
             onGiftSuccess={() => {
               handleCloseModal();
-              fetchSpeciesDetail(id); // 업데이트된 데이터 가져오기
-              setSelectedItemId(null); // 선택된 아이템 초기화
+              fetchSpeciesDetail(id);
+              setSelectedItemId(null);
             }}
           />
         </View>
       </Modal>
 
-      {/* 아이템 삭제 */}
       <Modal
         transparent={true}
         visible={deletetVisible}
@@ -202,14 +189,14 @@ export default function DictionaryDetailScreen({route}) {
             itemid={selectedItem?.id}
             onDeleteSuccess={() => {
               handleClosePopup();
-              fetchSpeciesDetail(id); // 업데이트된 데이터 가져오기
-              setSelectedItemId(null); // 선택된 아이템 초기화
+              fetchSpeciesDetail(id);
+              setSelectedItemId(null);
             }}
             when="item"
           />
         </View>
       </Modal>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -217,18 +204,21 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
     flex: 1,
-    alignItems: 'center',
   },
   scrollViewContent: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 20, // Header와 겹치지 않도록 padding을 추가
+    paddingTop: 20,
   },
   infoContainer: {
     width: '90%',
-    alignItems: 'center',
     marginTop: 10,
+    marginBottom: 30,
+  },
+  centeredContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   NameFont: {
     fontSize: 30,
@@ -237,6 +227,7 @@ const styles = StyleSheet.create({
   InfoFont: {
     fontSize: 16,
     fontWeight: '400',
+    paddingBottom: 20,
   },
   image: {
     width: 330,
@@ -244,19 +235,19 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   textContainer: {
-    height: 70, // 3줄이 보이도록 높이를 설정 (약 1줄 : 24px)
     width: '100%',
+    alignItems: 'center'
   },
   miniTitle: {
     width: '100%',
-    flexDirection: 'row', // 가로 방향으로 정렬
-    // justifyContent: 'space-between', // 양 끝에 배치
-    alignItems: 'center', // 세로 방향 중앙 정렬
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
   },
   iconContainer: {
-    flexDirection: 'row', // 아이콘들을 가로로 정렬
-    alignItems: 'center', // 아이콘을 세로 방향 중앙 정렬
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 10
   },
   itemContainer: {
     width: 80,
@@ -269,6 +260,14 @@ const styles = StyleSheet.create({
     borderColor: '#A2AA7B',
     borderWidth: 3,
     borderRadius: 10,
+  },
+  itemImage: {
+    width: 60,
+    height: 60,
+    marginVertical: 4,
+  },
+  itemDate: {
+    fontSize: 12,
   },
   modalBackground: {
     flex: 1,

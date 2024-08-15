@@ -1,51 +1,68 @@
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Label from '../../Atoms/ListItem';
-import React, { useState } from 'react';
-import axios from 'axios';
+import moment from 'moment';
 
-export default function FriendAcceptBox({friend}) {
+const { width, height } = Dimensions.get('window');
 
-  if (!friend || friend.length === 0) {
-    return null; // 또는 빈 View를 반환하여 아무것도 렌더링하지 않음
-  }
+const FriendAcceptBox = ({ friends }) => {
+
+  const formatTime = dateString => {
+    return dateString
+      ? moment(dateString).format('YYYY/MM/DD HH:mm')
+      : '시간 정보 없음';
+  };
 
   return (
     <View>
-      <View style={styles.container}>
-        <View style={styles.messageHeader}>
-          <Text style={styles.messageText}>시스템</Text>
-          <Text style={styles.timeText}>{friend[0].sentTime}</Text>
+      {friends.map(friendItem => (
+        <View key={friendItem.messageId} style={styles.container}>
+          <View style={styles.messageHeader}>
+            <Text style={styles.messageText}>시스템</Text>
+            <Text style={styles.timeText}>{formatTime(friendItem.sentTime)}</Text>
+          </View>
+          <View style={styles.messageContent}>
+            <Label
+              title={friendItem.fromMemberNickname || '제목 없음'}
+              content={friendItem.content || '내용이 없습니다.'}
+              url={friendItem.fromMemberImg || '기본 이미지 URL'}
+            />
+          </View>
         </View>
-        <View style={styles.messageContent}>
-          <Label pic="infocirlceo" title="친구 신청" content={friend[0].content} />
-        </View>
-      </View>
+      ))}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
+  noRequestText: {
+    textAlign: 'center',
+    marginTop: height * 0.02, // 2% of screen height
+    fontSize: width * 0.04, // 4% of screen width
+    color: 'gray',
+  },
   container: {
-    marginTop: 20,
+    marginTop: height * 0.02, // 2% of screen height
     width: '100%',
-    height: 100,
+    paddingHorizontal: width * 0.03, // 3% of screen width
   },
   messageHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingVertical: height * 0.015, // 1.5% of screen height
   },
   messageContent: {
     flexDirection: 'row',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: height * 0.02, // 2% of screen height
+    paddingHorizontal: width * 0.02, // 2% of screen width
   },
   messageText: {
-    fontSize: 16,
+    fontSize: width * 0.04, // 4% of screen width
   },
   timeText: {
-    fontSize: 16,
+    fontSize: width * 0.04, // 4% of screen width
     color: 'gray',
   },
 });
+
+export default FriendAcceptBox;

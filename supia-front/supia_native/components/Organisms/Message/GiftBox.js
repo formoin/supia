@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import Label from '../../Atoms/ListItem';
 import GiftModal from './GiftModal';
-import moment from 'moment'
+import moment from 'moment';
 
-export default function GiftBox({ gifts }) {
+const { width, height } = Dimensions.get('window');
+
+export default function GiftBox({ gifts, getGift }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGift, setSelectedGift] = useState(null); // 선택된 선물
 
@@ -15,12 +17,14 @@ export default function GiftBox({ gifts }) {
 
   const handleAccept = () => {
     // 선물 수락 시 처리할 로직
-   gifts.filter(g => g.messageId !== selectedGift.messageId); // 선물 목록에서 해당 선물 제거
+    gifts.filter(g => g.messageId !== selectedGift.messageId); // 선물 목록에서 해당 선물 제거
+    getGift();
   };
 
   const handleRefuse = () => {
     // 선물 거절 시 처리할 로직
-gifts.filter(g => g.messageId !== selectedGift.messageId); // 선물 목록에서 해당 선물 제거
+    gifts.filter(g => g.messageId !== selectedGift.messageId); // 선물 목록에서 해당 선물 제거
+    getGift();
   };
 
   const formatTime = (dateString) => {
@@ -38,8 +42,9 @@ gifts.filter(g => g.messageId !== selectedGift.messageId); // 선물 목록에�
           <View style={styles.messageContent}>
             <Label
               title="선물 도착"
-              url={item.fromMemberImg}
+              url={item.content}
               content={`${item.fromMemberNickname}님이 ${item.species}를 보내셨습니다.`}
+              type="gift"
             />
             <Pressable style={styles.button} onPress={() => onPress(item)}>
               <Text style={styles.buttonText}>확인</Text>
@@ -66,36 +71,36 @@ gifts.filter(g => g.messageId !== selectedGift.messageId); // 선물 목록에�
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20,
+    marginTop: height * 0.02, // 2% of screen height
     width: '95%',
-    height: 100,
+    height: height * 0.12, // 12% of screen height
   },
   messageHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingHorizontal: width * 0.04, // 4% of screen width
+    paddingVertical: height * 0.01, // 1% of screen height
   },
   messageContent: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingHorizontal: width * 0.025, // 2.5% of screen width
+    paddingVertical: height * 0.01, // 1% of screen height
   },
   messageText: {
-    fontSize: 16,
+    fontSize: width * 0.04, // 4% of screen width
   },
   button: {
-    width: 60,
-    height: 35,
+    width: width * 0.12, // 12% of screen width
+    height: height * 0.045, // 4.5% of screen height
     backgroundColor: '#A2AA7B',
-    padding: 8,
+    padding: height * 0.01, // 1% of screen height
     borderRadius: 5,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: height * 0.01, // 1% of screen height
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: width * 0.03, // 3% of screen width
   },
 });

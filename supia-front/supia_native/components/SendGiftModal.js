@@ -19,13 +19,12 @@ export default function SendGiftModal({
   itemId,
   onGiftSuccess,
 }) {
-
   const {getS3Url} = useStore();
-  const { memberId } = useStore()
+  const {memberId} = useStore();
   const [toMemberId, setToMemberId] = useState(null);
 
   const goGift = async () => {
-    console.log(toMemberId)
+    console.log(toMemberId);
     const token = await AsyncStorage.getItem('key');
     const Message = {
       fromMemberId: memberId, //수정
@@ -56,17 +55,17 @@ export default function SendGiftModal({
     goGift();
   };
 
-  const handleFriendSelect = (friendId) => {
-    setToMemberId(friendId)
+  const handleFriendSelect = friendId => {
+    setToMemberId(friendId);
   };
 
   return (
     <View style={styles.container}>
-      <PopupHeader Label="선물하기" onClose={onClose} style={{height:'15%'}}/>
-      <View style={{marginVertical: 10, height:'10%' }}>
-        <SelectOptions onFriendSelect={handleFriendSelect}/>
+      <PopupHeader Label="선물하기" onClose={onClose} style={{height: '15%'}} />
+      <View style={{marginVertical: 10, height: '10%'}}>
+        <SelectOptions onFriendSelect={handleFriendSelect} />
       </View>
-      <Frame style={{height:'65%'}}>
+      <Frame style={{height: '65%'}}>
         <Text style={{fontSize: 20}}>{speciesName}</Text>
         <Image
           source={{uri: getS3Url(representativeImg)}}
@@ -74,7 +73,6 @@ export default function SendGiftModal({
             width: 130,
             height: 130,
             marginVertical: 4,
-            transform: [{rotate: '90deg'}],
           }}
         />
         <Text style={{fontSize: 16}}>{date}</Text>
@@ -104,13 +102,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4, // 안드로이드에서는 elevation으로 그림자 설정
     alignItems: 'center',
-    padding: '5%'
+    padding: '5%',
   },
   buttonContainer: {
     flexDirection: 'row', // 가로로 배치
     justifyContent: 'center', // 중앙 정렬
     alignItems: 'center',
-    height:'15%'
+    height: '15%',
   },
   button: {
     margin: 10,

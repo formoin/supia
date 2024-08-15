@@ -7,17 +7,15 @@ import FriendRequest from '../Organisms/Message/FriendRequestBox';
 import GiftBox from '../Organisms/Message/GiftBox';
 import useStore from '../store/useStore';
 import axios from 'axios';
-import {useIsFocused, useFocusEffect} from '@react-navigation/native';
-import loginStore from '../store/useLoginStore';
+import {useFocusEffect} from '@react-navigation/native';
 import {Server_IP} from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AlarmScreen() {
-
-  const { activeText, setActiveText, resetActiveText } = useStore();
-  const isFocused = useIsFocused();
+  const {activeText, setActiveText, resetActiveText} = useStore();
   const [gifts, setGifts] = useState([]);
-  const [friends, setFriends] = useState([]);
+  const [requestFriends, setRequestFriends] = useState([]);
+  const [acceptFriends, setAcceptFriends] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useFocusEffect(
@@ -33,7 +31,6 @@ export default function AlarmScreen() {
       getGift();
     }
   }, [activeText]);
-
 
   // 선물 내역 불러오기
   const getGift = async () => {
@@ -76,7 +73,14 @@ export default function AlarmScreen() {
         },
       );
       if (response.status === 200) {
-        setFriends(response.data);
+        const friendsData = response.data;
+        // category에 따라 다른 처리를 해줌
+        const requestFriends = friendsData.filter(friend => friend.category === 3);
+        const acceptFriends = friendsData.filter(friend => friend.category === 4);
+
+        setRequestFriends(requestFriends); // category가 3인 경우
+        setAcceptFriends(acceptFriends);   // category가 4인 경우
+
         console.log('친구 요청 로딩 성공:', response.data);
       } else {
         console.log('친구 요청 로딩 실패');
@@ -92,32 +96,23 @@ export default function AlarmScreen() {
     setActiveText('text1');
   }, []);
 
-  useEffect(() => {
-    if (activeText === 'text1') {
-      getFriends();
-    } else if (activeText === 'text2') {
-      getGift();
-    }
-  }, [activeText]);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      resetActiveText();
-    }, [resetActiveText]),
-  );
-
   return (
-    <View>
+    <View style={styles.container}>
       <Header label="알림" />
       <View style={styles.divide}>
-        <View style={{width: '95%', marginLeft:'2.5%'}}>
+        <View style={styles.divideContent}>
           <Divide text1="친구" text2="선물" />
         </View>
-        <ScrollView>
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
           {activeText === 'text1' ? (
-            <FriendRequest friends={friends} getFriends={getFriends} />
+            <View style={styles.contentContainer}>
+              <FriendRequest friends={requestFriends} getFriends={getFriends} />
+              <FriendAccept friends={acceptFriends} getFriends={getFriends} />
+            </View>
           ) : (
-            <GiftBox gifts={gifts} />
+            <View style={styles.contentContainer}>
+              <GiftBox gifts={gifts} getGift={getGift} />
+            </View>
           )}
         </ScrollView>
       </View>
@@ -126,8 +121,23 @@ export default function AlarmScreen() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1, // 화면 전체를 차지하도록 설정
+  },
   divide: {
-    marginTop: 20,
+    flex: 1,
     alignItems: 'center',
+    marginTop: 20,
+  },
+  divideContent: {
+    width: '95%',
+    marginHorizontal: '2.5%',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    paddingBottom: 50, // 패딩 조정
+  },
+  contentContainer: {
+    flex: 1,
   },
 });

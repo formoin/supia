@@ -21,7 +21,6 @@ export default function FriendModal({
   friend
 }) {
   const [isFriendRequested, setIsFriendRequested] = useState(false);
-  // const { token } = loginStore.getState();
   const {memberId} = useStore();
 
   const sendFriendRequest = async () => {

@@ -1,4 +1,5 @@
 import React, {useEffect, useState, useRef} from 'react';
+import ImageEditor from '@react-native-community/image-editor';
 import {
   View,
   TouchableOpacity,
@@ -7,8 +8,9 @@ import {
   Platform,
   Text,
   Pressable,
-  ActivityIndicator,
-  Image, // 이미지 표시를 위해 추가
+  KeyboardAvoidingView,
+  Image,
+  Animated,
 } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
@@ -26,13 +28,14 @@ import ImageResizer from 'react-native-image-resizer';
 const CapturePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
-  const [memberId, setMemberId] = useState(null);
+  const {memberId} = useStore();
   const [isModalVisible, setModalVisible] = useState(false);
   const [drawingImg, setDrawingImg] = useState(null);
   const [probsName, setProbsName] = useState(null);
   const [category, setCategory] = useState(null);
   const [orgUrl, setOrgUrl] = useState(null);
   const [code, setCode] = useState(null);
+  const [capturedPhotoUri, setCapturedPhotoUri] = useState(null);
   const cameraRef = useRef(null);
   const devices = useCameraDevices();
   const device = devices ? devices.back : null;
@@ -40,8 +43,9 @@ const CapturePage = () => {
   const navigation = useNavigation();
   const {fetchLocationData} = useStore();
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const [photoUri, setPhotoUri] = useState(null); // 찍은 사진의 URI를 저장할 상태 추가
+  const scanAnimation = useRef(new Animated.Value(0)).current;
 
+  // 권한 얻기
   const getCameraPermission = async () => {
     if (Platform.OS === 'android') {
       try {
@@ -60,7 +64,7 @@ const CapturePage = () => {
         console.warn(err);
       }
     } else {
-      setHasPermission(true); // iOS의 경우 별도 권한 요청이 필요 없음
+      setHasPermission(true); // iOS의 경우는 별도 권한 요청이 필요 없음
     }
   };
 
@@ -75,12 +79,23 @@ const CapturePage = () => {
     }, []),
   );
 
+  const startScanAnimation = () => {
+    scanAnimation.setValue(0);
+    Animated.loop(
+      Animated.timing(scanAnimation, {
+        toValue: 1,
+        duration: 1500,
+        useNativeDriver: true,
+      }),
+    ).start();
+  };
+
   const takePictureAndUpload = async () => {
     setIsLoading(true);
-
+    // setDrawingImg(null)
+    // console.log('null드로잉',drawingImg)
     if (cameraRef.current) {
       try {
-        // 사진 찍기
         const photo = await cameraRef.current.takePhoto({
           qualityPrioritization: 'balanced',
           quality: 100,
@@ -88,32 +103,32 @@ const CapturePage = () => {
         });
 
         const newImageUri = 'file://' + photo.path;
-        setPhotoUri(newImageUri); // 사진 URI 저장
+        setCapturedPhotoUri(newImageUri);
 
-        // 현재 날짜와 시간 가져오기
-        const now = new Date();
-        const year = now.getFullYear().toString().slice(-2); // YY
-        const month = (now.getMonth() + 1).toString().padStart(2, '0'); // MM
-        const day = now.getDate().toString().padStart(2, '0'); // DD
-        const hour = now.getHours().toString().padStart(2, '0'); // HH
-        const minute = now.getMinutes().toString().padStart(2, '0'); // MM
+        // 애니메이션 시작
+        startScanAnimation();
 
-        const date = `${year}${month}${day}`; // YYMMDD
-        const time = `${hour}${minute}`; // HHMM
-
-        // 이미지 회전
+        // 이미지 회전 (90도 예시)
         const rotatedImage = await ImageResizer.createResizedImage(
           newImageUri,
           photo.width,
           photo.height,
           'PNG',
           100,
-          0, // 회전 각도
+          0,
         );
-
-        console.log('Rotated image URI:', rotatedImage.uri);
+        console.log(rotatedImage);
 
         const formData = new FormData();
+        const now = new Date();
+        const year = now.getFullYear().toString().slice(-2);
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        const hour = now.getHours().toString().padStart(2, '0');
+        const minute = now.getMinutes().toString().padStart(2, '0');
+        const date = `${year}${month}${day}`;
+        const time = `${hour}${minute}`;
+
         formData.append('file', {
           uri: rotatedImage.uri,
           type: 'image/png',
@@ -124,7 +139,7 @@ const CapturePage = () => {
         formData.append('member_id', memberId);
 
         const response = await axios.post(
-          'https://i11b304.p.ssafy.io/ai/process-image/',
+          'https://stirring-dodo-bursting.ngrok-free.app/ai/process-image',
           formData,
           {
             headers: {
@@ -136,9 +151,10 @@ const CapturePage = () => {
         );
 
         setDrawingImg(response.data.hand_drawing_img_url);
+        console.log('response: ', response.data.hand_drawing_img_url);
         setProbsName(response.data.probs_name);
         setCategory(response.data.category);
-        setModalVisible(true); // 모달 띄우기
+        // setModalVisible(true);
         getLocation();
       } catch (error) {
         console.error('Upload error', error);
@@ -147,9 +163,16 @@ const CapturePage = () => {
         }
       } finally {
         setIsLoading(false);
+        setCapturedPhotoUri(null);
       }
     }
   };
+
+  useEffect(() => {
+    if (drawingImg) {
+      setModalVisible(true);
+    }
+  }, [drawingImg]);
 
   const handleCloseModal = () => {
     setModalVisible(false); // 모달 닫기
@@ -174,6 +197,11 @@ const CapturePage = () => {
       {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
     );
   };
+
+  const scanLineTransform = scanAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-150, 150],
+  });
 
   return (
     <View style={styles.container}>
@@ -200,6 +228,7 @@ const CapturePage = () => {
       ) : (
         <Text>No camera permission</Text>
       )}
+
       <View style={{left: 10, top: 10}}>
         <Pressable onPress={backtoWalk}>
           <Entypo name="chevron-small-left" size={30} />
@@ -207,18 +236,33 @@ const CapturePage = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.capture} onPress={takePictureAndUpload} />
+        <TouchableOpacity
+          style={styles.capture}
+          onPress={takePictureAndUpload}
+        />
       </View>
 
-      {isLoading && (
-        <View style={[StyleSheet.absoluteFill, styles.loading]}>
-          <ActivityIndicator size="large" color="#0000ff" />
-          {photoUri && <Image source={{uri: photoUri}} style={styles.capturedImage} />}
+      {capturedPhotoUri && isLoading ? (
+        <View style={styles.capturedPhotoContainer}>
+          <Image
+            source={{uri: capturedPhotoUri}}
+            style={styles.capturedPhoto}
+            resizeMode="cover"
+          />
+          <Animated.View
+            style={[
+              styles.scanLine,
+              {transform: [{translateX: scanLineTransform}]},
+            ]}
+          />
         </View>
-      )}
+      ) : null}
 
       {isModalVisible && (
-        <View style={styles.modalBackground}>
+        <KeyboardAvoidingView
+          style={styles.modalBackground}
+          behavior="height" // Android에서는 'height' 사용
+          keyboardVerticalOffset={5}>
           <UploadModal
             onClose={handleCloseModal}
             drawingImg={drawingImg}
@@ -227,7 +271,7 @@ const CapturePage = () => {
             originalUrl={orgUrl}
             code={code}
           />
-        </View>
+        </KeyboardAvoidingView>
       )}
     </View>
   );
@@ -265,8 +309,6 @@ const styles = StyleSheet.create({
     top: '30%',
     width: '80%',
     height: '40%',
-    marginLeft: 0,
-    marginTop: 0,
   },
   corner: {
     position: 'absolute',
@@ -304,9 +346,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  capturedImage: {
-    width: 200, // 원하는 크기로 조절
-    height: 200,
+  capturedPhotoContainer: {
+    flex: 1,
+    alignItems: 'center',
+    marginTop: 188,
+  },
+  capturedPhoto: {
+    width: 300,
+    height: 310,
+    borderRadius: 10,
+  },
+  scanLine: {
+    position: 'absolute',
+    height: 310,
+    width: 20, // 선의 두께를 조정
+    backgroundColor: 'rgba(162, 170, 123, 0.6)',
   },
 });
 

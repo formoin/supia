@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import Immersive from 'react-native-immersive';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNavBar from './components/Organisms/BottomNavBar';
@@ -8,20 +8,23 @@ import {NavigationContainer} from '@react-navigation/native';
 import SignUpScreen from './components/Pages/User/SignUpPage';
 import CallScreen from './components/Pages/CallPage';
 import MyPageScreen from './components/Pages/User/MyPage';
+import Webview from './components/Pages/WebView';
 
 const Stack = createStackNavigator();
 
 export default function App() {
+  const navigationRef = useRef(null);
   //로그인이 되어있다면 앱 실행 시 바로 Home으로 들어갈 수 있게 처리
   useEffect(() => {
     const checkLoginStatus = async () => {
       const token = await AsyncStorage.getItem('key');
-      if (token) {
-        navigationRef.current?.navigate('Main');
+      if (token && navigationRef.current) {
+        navigationRef.current.navigate('Main');
       }
     };
+
     checkLoginStatus();
-    // useEffect 매개변수를 안넣어서 처음 마운트 될때만 기능
+
     // 전체 화면 모드로 전환
     Immersive.setImmersive(true);
 
@@ -30,17 +33,18 @@ export default function App() {
       Immersive.setImmersive(false);
     };
   }, []);
-
   return (
+    // <Webview
+    //   userId="444"
+    //   isCaller="true"
+    //   targetUserId="23"
+    //   memberName="seungjun"
+    // />
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Main" component={BottomNavBar} />
         <Stack.Screen name="Regist" component={SignUpScreen} />
-        {/* <Stack.Screen name="WalkRecord" component={StoreScreen} /> */}
-        {/* <Stack.Screen name="Walking" component={Walking} /> */}
-        <Stack.Screen name="Call" component={CallScreen} />
-        <Stack.Screen name="MyPage" component={MyPageScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

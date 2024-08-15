@@ -6,10 +6,13 @@ import loginStore from '../store/useLoginStore';
 import useStore from '../store/useStore';
 import {Server_IP} from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomAlert from './CustomAlert';
 
 export default function TextFrame({friend, user, page, onClose}) {
   const [text, setText] = useState('');
-  // const { token } = loginStore.getState()
+  const [isAlertVisible, setIsAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
   const {memberId} = useStore();
 
   const sendMessage = async () => {
@@ -33,6 +36,9 @@ export default function TextFrame({friend, user, page, onClose}) {
 
       if (response.status === 200) {
         console.log('메세지 보내기 성공');
+        setAlertTitle('전송 완료')
+        setAlertMessage('메세지가 성공적으로 전송되었습니다.')
+        setIsAlertVisible(true);
         Alert.alert('전송 완료', '메세지가 성공적으로 전송되었습니다.');
         setText('');
         if (onClose) {
@@ -68,6 +74,13 @@ export default function TextFrame({friend, user, page, onClose}) {
         />
       </View>
       <Button_Green label="보내기" onPress={NoteSubmit} />
+
+      <CustomAlert 
+        visible={isAlertVisible}
+        onClose={() => setIsAlertVisible(false)} 
+        title={alertTitle}
+        message={alertMessage}
+      />
     </View>
   );
 }

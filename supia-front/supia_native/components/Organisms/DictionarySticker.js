@@ -19,7 +19,7 @@ import axios from 'axios';
 // import loginStore from "../store/useLoginStore";
 import {Server_IP} from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+const {width, height} = Dimensions.get('window');
 export default function DictionarySticker({id, setShowSticker, speciesName}) {
   const {
     droppedImages,
@@ -133,7 +133,7 @@ export default function DictionarySticker({id, setShowSticker, speciesName}) {
   };
 
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <GestureHandlerRootView style={[styles.container, { borderRadius: 32 }]}>
       <View style={styles.headerContainer}>
         <Header label="나의 도감" goto="MyForest" />
         <Pressable onPress={() => setShowSticker(false)} style={{padding: 7}}>
@@ -160,7 +160,7 @@ export default function DictionarySticker({id, setShowSticker, speciesName}) {
                       width: 110,
                       height: 110,
                       marginVertical: 4,
-                      transform: [{rotate: '90deg'}],
+                      // transform: [{rotate: '90deg'}],
                     }}
                   />
 
@@ -186,9 +186,9 @@ export default function DictionarySticker({id, setShowSticker, speciesName}) {
 
 const styles = StyleSheet.create({
   container: {
-    width: 362,
-    height: 408,
-    borderRadius: 32,
+    width: height*0.45,
+    height: width,
+    // borderRadius: 32,
     backgroundColor: '#FCFCFC',
   },
   headerContainer: {

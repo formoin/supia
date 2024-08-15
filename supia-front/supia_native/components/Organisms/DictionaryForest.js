@@ -148,6 +148,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap', // 자식들이 줄을 넘어가도록 설정
     justifyContent: 'flex-start',
-    padding: 10,
+    padding: '2%',
   },
 });

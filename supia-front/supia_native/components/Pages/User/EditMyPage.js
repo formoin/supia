@@ -25,7 +25,6 @@ import {Server_IP} from '@env';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useLoginStore from '../../store/useLoginStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 const {height: windowHeight} = Dimensions.get('window');
 
 const EditPageScreen = ({navigation}) => {
@@ -41,6 +40,7 @@ const EditPageScreen = ({navigation}) => {
   const [currentPasswordInput, setCurrentPasswordInput] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const {getS3Url} = useStore();
+  const [loginuser, setLoginuser] = useState(null);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -55,6 +55,7 @@ const EditPageScreen = ({navigation}) => {
             },
           });
           if (response.status === 200) {
+            console.log(response.data.member);
             setMemberInfo(response.data.member);
           } else {
             console.log('홈페이지 로딩 실패');
@@ -64,9 +65,20 @@ const EditPageScreen = ({navigation}) => {
         console.error('Failed to fetch user info', err);
       }
     };
-
     fetchUserInfo();
   }, []);
+
+  // 로그아웃
+  const logoutUser = async () => {
+    try {
+      // AsyncStorage에서 저장된 로그인 정보 삭제
+      await AsyncStorage.removeItem('key');
+      alert('로그아웃 되었습니다.');
+      navigation.navigate('Login');
+    } catch (error) {
+      console.error('로그아웃 중 에러 발생: ', error);
+    }
+  };
 
   const selectImage = () => {
     launchImageLibrary({mediaType: 'photo', quality: 1}, response => {
@@ -76,38 +88,51 @@ const EditPageScreen = ({navigation}) => {
         console.error('ImagePicker Error: ', response.errorMessage);
       } else if (response.assets && response.assets.length > 0) {
         const selectedImageUri = response.assets[0].uri;
-        setLoginuser({...memberInfo, thumbnail: selectedImageUri});
+        setMemberInfo({...memberInfo, profileImg: selectedImageUri});
       }
     });
   };
 
   const verifyCurrentPassword = async () => {
     const token = await AsyncStorage.getItem('key');
-
     try {
+      const formData = new FormData();
+      formData.append('password', currentPasswordInput); // 비밀번호 추가
+
       const response = await axios.post(
         `${Server_IP}/members/verify-password`,
-        password,
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
+            'Content-Type': 'multipart/form-data', // 수동 설정 유지
           },
         },
       );
 
-      if (response.data.success) {
+      console.log(response.data); // 응답 데이터 확인
+
+      if (response.status === 200) {
         setIsPasswordVerified(true);
         Alert.alert('확인 완료', '현재 비밀번호가 확인되었습니다.');
       } else {
         Alert.alert('오류', '현재 비밀번호가 맞지 않습니다.');
       }
     } catch (error) {
-      Alert.alert('오류', '비밀번호 확인에 실패했습니다.');
-      console.error(error);
+      if (error.response) {
+        console.error('Error Response:', error.response.data);
+        Alert.alert('오류', `서버 응답 오류: ${error.response.status}`);
+      } else if (error.request) {
+        console.error('Error Request:', error.request);
+        Alert.alert('오류', '서버로부터 응답이 없습니다.');
+      } else {
+        console.error('Error:', error.message);
+        Alert.alert('오류', '비밀번호 확인 중 알 수 없는 오류가 발생했습니다.');
+      }
     }
   };
+
   if (!memberInfo) {
     return (
       <View style={styles.container}>
@@ -124,44 +149,63 @@ const EditPageScreen = ({navigation}) => {
       return {uri: getS3Url(thumbnail)}; // S3 경로일 때
     }
   };
-
   const resetImage = () => {
-    setLoginuser({...memberInfo, profileImg: null});
+    setMemberInfo({
+      ...memberInfo,
+      profileImg: 's3://supia/profile/default.png',
+    });
   };
-
   const openImgModal = () => {
     setImgModalVisible(true);
   };
-
   const closeImgModal = () => {
     setImgModalVisible(false);
   };
 
   const ChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      return Alert.alert('오류', '비밀번호가 일치하지 않습니다.');
+    }
+
     const token = await AsyncStorage.getItem('key');
-    await axios
-      .put(
+    if (!token) {
+      return Alert.alert('오류', '인증 토큰이 없습니다. 다시 로그인하세요.');
+    }
+
+    try {
+      // FormData 객체 생성 및 필드 추가
+      const formData = new FormData();
+      formData.append('newPassword', newPassword); // 서버에서 기대하는 필드 이름 사용
+
+      const response = await axios.put(
         `${Server_IP}/members/change-password`,
-        {
-          params: {
-            password: currentPasswordInput, // 쿼리 파라미터로 password 전달
-          },
-        },
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
-            'Content-Type': 'application/json; charset=utf-8',
+            'Content-Type': 'multipart/form-data', // FormData 전송을 위한 Content-Type
           },
         },
-      )
-      .then(response => {
+      );
+
+      if (response.status === 200) {
         Alert.alert('성공', '비밀번호가 업데이트되었습니다.');
-      })
-      .catch(error => {
+        await AsyncStorage.removeItem('key');
+        navigation.navigate('Login');
+      } else if (response.status === 403) {
+        Alert.alert('오류', '이 작업을 수행할 권한이 없습니다.');
+      } else {
         Alert.alert('오류', '비밀번호 업데이트에 실패했습니다.');
-        console.error(error);
-      });
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 403) {
+        Alert.alert('오류', '이 작업을 수행할 권한이 없습니다.');
+      } else {
+        Alert.alert('오류', '비밀번호 업데이트 중 오류가 발생했습니다.');
+        console.error('Error:', error);
+      }
+    }
   };
 
   const deleteUser = async () => {
@@ -179,7 +223,6 @@ const EditPageScreen = ({navigation}) => {
             },
           },
         );
-
         if (response.status === 200) {
           Alert.alert('회원 탈퇴가 완료되었습니다.');
           await AsyncStorage.removeItem('key');
@@ -194,35 +237,58 @@ const EditPageScreen = ({navigation}) => {
   };
 
   const updateUserInfo = async () => {
-    const token = await AsyncStorage.getItem('key');
-
-    const profileImg = {
-        uri: memberInfo.profileImg,
-        type: 'image/jpeg',
-        name: 'profile.jpg',
+    try {
+      const token = await AsyncStorage.getItem('key');
+      if (!token) {
+        Alert.alert('오류', '인증 토큰이 없습니다. 다시 로그인하세요.');
+        return;
       }
+      // console.log('Token: ', token);
 
       const formData = new FormData();
-      formData.append('name', memberInfo.name); // 이름 추가
-      formData.append('nickname', memberInfo.nickname); // 닉네임 추가
-      formData.append('profileImg', profileImg); // 프로필 이미지 추가
+      formData.append('name', name || memberInfo.name);
+      formData.append('nickname', nickname || memberInfo.nickname);
+      if (memberInfo.profileImg) {
+        formData.append('profileImg', {
+          uri: loginuser?.profileImg
+            ? loginuser.profileImg
+            : memberInfo.profileImg,
+          type: 'image/jpeg',
+          name: 'profile.jpg',
+        });
+      }
 
-    fetch('http://localhost:8080/api/members/my-info', {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'Bearer token',
-      },
-      body: formData,
-    })
-      .then(response => {
+      const response = await axios.put(
+        `${Server_IP}/members/my-info`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'multipart/form-data', // FormData 전송을 위한 Content-Type 설정
+          },
+        },
+      );
+
+      if (response.status === 200) {
         Alert.alert('성공', '사용자 정보가 업데이트되었습니다.');
-        AsyncStorage.removeItem('key');
+        await AsyncStorage.removeItem('key');
         navigation.navigate('Login');
-      })
-      .catch(error => {
+      } else {
+        console.log('Response: ', response);
         Alert.alert('오류', '사용자 정보 업데이트에 실패했습니다.');
-        console.error(error);
-      });
+      }
+    } catch (error) {
+      console.error('Error: ', error.response || error.message);
+      if (error.response && error.response.status === 403) {
+        Alert.alert('오류', '권한이 없습니다. 다시 로그인해주세요.');
+      } else if (error.response && error.response.status === 401) {
+        Alert.alert('오류', '인증에 실패했습니다. 다시 로그인하세요.');
+      } else {
+        console.log(error);
+        Alert.alert('오류', '사용자 정보 업데이트에 실패했습니다.');
+      }
+    }
   };
 
   return (
@@ -234,12 +300,15 @@ const EditPageScreen = ({navigation}) => {
       <Header label="정보 수정" goto={'MyPage'} />
       <Pressable onPress={openImgModal} style={{padding: 30}}>
         <Image
-          source={getImageUri(memberInfo.profileImg)}
+          source={getImageUri(
+            loginuser?.profileImg
+              ? loginuser.profileImg
+              : memberInfo.profileImg,
+          )}
           style={styles.profileImage}
           onError={() => console.log('이미지 로드 실패')}
         />
       </Pressable>
-
       <View style={styles.infoSection}>
         <View style={styles.infoRow}>
           <FontAwesome6 name="user" size={30} color="#8C8677" />
@@ -270,6 +339,9 @@ const EditPageScreen = ({navigation}) => {
         </View>
         <View style={styles.Buttons}>
           <Button_Green label="정보 수정" onPress={updateUserInfo} />
+          <TouchableOpacity style={styles.logoutButton} onPress={logoutUser}>
+            <Text style={styles.logoutText}>로그아웃</Text>
+          </TouchableOpacity>
           <Button_Red
             label="계정 탈퇴"
             onPress={() => setDeleteModalVisible(true)}
@@ -347,7 +419,6 @@ const EditPageScreen = ({navigation}) => {
           </View>
         </View>
       </Modal>
-
       <Modal
         animationType="slide"
         transparent={true}
@@ -380,7 +451,6 @@ const EditPageScreen = ({navigation}) => {
     </KeyboardAwareScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
@@ -455,6 +525,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'gray',
     marginVertical: 10,
   },
+  logoutButton: {
+    width: 72,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 5,
+    borderRadius: 5,
+    backgroundColor: 'lightgray',
+    paddingBottom: 3,
+  },
+  logoutText: {
+    color: 'white',
+  },
 });
-
 export default EditPageScreen;

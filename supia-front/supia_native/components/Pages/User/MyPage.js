@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import testWalkData from './walkTest.json'; // 로컬 JSON 파일 가져오기
 import {
   ScrollView,
   View,
@@ -17,7 +16,6 @@ import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import {Server_IP} from '@env';
-import useLoginStore from '../../store/useLoginStore';
 import useStore from '../../store/useStore';
 
 const MyPageScreen = ({navigation}) => {
@@ -26,50 +24,48 @@ const MyPageScreen = ({navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [error, setError] = useState(null);
   const [loginuser, setLoginuser] = useState(null);
-  // const {token} = useLoginStore.getState();
-
-  const {getS3Url} = useStore();
-
 
   const {
+    getS3Url,
     weeklyWalkHistory,
     monthlyWalkHistory,
     yearlyWalkHistory,
     fetchWalkHistory,
+    WeeklyWalkHistory,
+    MonthlyWalkHistory,
+    YearlyWalkHistory,
   } = useStore(state => ({
     fetchWalkHistory: state.fetchWalkHistory,
     weeklyWalkHistory: state.weeklyWalkHistory,
     monthlyWalkHistory: state.monthlyWalkHistory,
     yearlyWalkHistory: state.yearlyWalkHistory,
+    WeeklyWalkHistory: state.setWeeklyWalkHistory,
+    MonthlyWalkHistory: state.setMonthlyWalkHistory,
+    YearlyWalkHistory: state.setYearlyWalkHistory,
+    getS3Url: state.getS3Url,
   }));
 
-  const getImageUri = (thumbnail) => {
+  const getImageUri = thumbnail => {
     if (thumbnail.startsWith('file://')) {
-      return { uri: thumbnail }; // file 경로일 때
+      return {uri: thumbnail}; // file 경로일 때
     } else {
-      return { uri: getS3Url(thumbnail) }; // S3 경로일 때
+      return {uri: getS3Url(thumbnail)}; // S3 경로일 때
     }
   };
 
   // 컴포넌트 진입 시 유저 정보+걷기 정보 fetch
   useEffect(() => {
-    // 유저 정보 가져오기
     const fetchUserInfo = async () => {
       try {
-        // 원래 토큰 받아노는건 이거야
         const token = await AsyncStorage.getItem('key');
         if (token) {
-          const response = await axios.get(
-            //ContextPath
-            `${Server_IP}/members/my-info`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-                'Content-Type': 'application/json; charset=utf-8',
-              },
+          const response = await axios.get(`${Server_IP}/members/my-info`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+              'Content-Type': 'application/json; charset=utf-8',
             },
-          );
+          });
           setLoginuser(response.data.member);
         } else {
           setError('No token found');
@@ -79,50 +75,12 @@ const MyPageScreen = ({navigation}) => {
         console.error(err);
       }
     };
+
     fetchUserInfo();
     fetchWalkHistory();
   }, []);
 
-  // // 로컬에서 JSON 받을 때 axios 처럼 받기 위한 코드
-  // useEffect(() => {
-  //   //걷기 기록 가져오기
-  //   const fetchWalkHistory = async () => {
-  //     try {
-  //       // Axios 요청처럼 데이터를 가공
-  //       const response = {
-  //         data: testWalkData,
-  //         status: 200,
-  //         statusText: 'OK',
-  //         headers: {},
-  //         config: {},
-  //         request: {},
-  //       };
-
-  //       // 데이터를 기존 axios 요청처럼 처리
-  //       if (response.status === 200) {
-  //         // 각각의 데이터 상태에 저장
-  //         setMonthlyWalkHistory(response.data.monthly);
-  //         console.log(monthlyWalkHistory);
-  //         setYearlyWalkHistory(response.data.yearly);
-  //         console.log(yearlyWalkHistory);
-
-  //         // weeklyWalkHistory는 monthly 데이터의 마지막 7일을 사용
-  //         setWeeklyWalkHistory(response.data.monthly.slice(-7));
-  //         console.log(weeklyWalkHistory);
-  //       } else {
-  //         throw new Error('걷기 기록 가져오기 실패 : response.status !== 200');
-  //       }
-  //     } catch (err) {
-  //       setError('걷기 기록 가져오기 실패');
-  //       console.error(err);
-  //     }
-  //   };
-
-  //   fetchWalkHistory();
-  // }, []);
-
   if (!loginuser) {
-    // loginuser가 아직 null이면 로딩 상태를 표시하거나 빈 화면을 표시할 수 있습니다.
     return (
       <View style={styles.container}>
         <Text>Loading...</Text>
@@ -150,15 +108,6 @@ const MyPageScreen = ({navigation}) => {
   const minExp = 0;
   const maxExp = ExpMax[loginuser.level];
   const nowExp = ((loginuser.exp - minExp) / (maxExp - minExp)) * 100;
-  // if (!monthlyWalkHistory) {
-  //   // loginuser가 아직 null이면 로딩 상태를 표시하거나 빈 화면을 표시할 수 있습니다.
-  //   return (
-  //     <View style={styles.container}>
-  //       <Text>Loading...</Text>
-  //     </View>
-  //   );
-  // }
-  // console.log('??' + monthlyWalkHistory);
 
   return (
     <View style={styles.container}>
@@ -178,7 +127,6 @@ const MyPageScreen = ({navigation}) => {
                 size={24}
               />
             </Avatar>
-
           </View>
           <Text style={styles.username}>{loginuser.name}</Text>
           <Text style={styles.points}>내 포인트 {loginuser.point} P</Text>
@@ -223,11 +171,10 @@ const MyPageScreen = ({navigation}) => {
         </View>
         <View style={styles.infoSection}>
           <View style={{padding: 15, justifyContent: 'center'}}>
-            {/* 운동 정보 기록 -> walkingHistory 들고 가기 */}
             <ActivityChart
-              weeklyWalkHistory={weeklyWalkHistory}
-              monthlyWalkHistory={monthlyWalkHistory}
-              yearlyWalkHistory={yearlyWalkHistory}
+              WeeklyWalkHistory={WeeklyWalkHistory}
+              MonthlyWalkHistory={MonthlyWalkHistory}
+              YearlyWalkHistory={YearlyWalkHistory}
             />
           </View>
         </View>
@@ -243,47 +190,42 @@ const MyPageScreen = ({navigation}) => {
               <Text style={styles.closeButtonText}>X</Text>
             </TouchableOpacity>
             <Line />
-            <Text style={styles.modalTitle}>포인트로 상점 이용하기</Text>
-            <Text style={styles.modalTitle2}>거리 100m당 10포인트!</Text>
-            <Text style={styles.modalText}>
-              걸으면 걸을수록 포인트가 쌓여요. 운동도 하고 포인트도 얻고!
-            </Text>
-            <Text style={styles.modalTitle}>
-              아이템 등록 시 1개당 100포인트!
-            </Text>
-            <Text style={styles.modalTitle2}>포인트로 상점 이용하기</Text>
-            <Text style={styles.modalText}>
-              소중한 아이템을 등록하고 보상을 받아가세요!
-            </Text>
-            <Text style={styles.modalTitle2}>
-              천연기념물 발견 시 1000포인트!
-            </Text>
-            <Text style={styles.modalText}>
-              자연의 경이로움을 발견하면 보상이 팡팡!
-            </Text>
-            <Line />
-            <Text style={styles.modalTitle}>경험치와 레벨 업!</Text>
-            <Text style={styles.modalTitle2}>매일 방문 시 5경험치 !</Text>
-            <Text style={styles.modalText}>
-              하루에 한 번씩 방문하면 5경험치가 쌓여요.
-            </Text>
-            <Text style={styles.modalTitle2}>
-              친구에게 아이템 선물 시 5 경험치!
-            </Text>
-            <Text style={styles.modalText}>
-              친구에게 아이템을 선물하고 5경험치를 받아보세요!
-            </Text>
-            <Text style={styles.modalTitle2}>아이템 등록 시 10경험치!</Text>
-            <Text style={styles.modalText}>
-              아이템을 등록할 때마다 10경험치를 획득해요!
-            </Text>
-            <Line />
-            <Text style={styles.modalTitle}>레벨업 시스템</Text>
-            <Text style={styles.modalText}>exp 100 : 씨앗</Text>
-            <Text style={styles.modalText}>exp 300 : 새싹</Text>
-            <Text style={styles.modalText}>exp 500 : 잎새</Text>
-            <Text style={styles.modalText}>exp 1000 : 꽃</Text>
-            <Text style={styles.modalText}>exp 1500 : 열매</Text>
+            <ScrollView>
+              <Text style={styles.modalTitle}>포인트로 상점 이용하기</Text>
+              <Text style={styles.modalTitle2}>거리 100m당 10포인트!</Text>
+              <Text style={styles.modalText}>
+                걸으면 걸을수록 포인트가 쌓여요. 운동도 하고 포인트도 얻고!
+              </Text>
+              <Text style={styles.modalTitle}>
+                아이템 등록 시 1개당 100포인트!
+              </Text>
+              <Text style={styles.modalTitle2}>포인트로 상점 이용하기</Text>
+              <Text style={styles.modalText}>
+                소중한 아이템을 등록하고 보상을 받아가세요!
+              </Text>
+              <Text style={styles.modalTitle2}>
+                천연기념물 발견 시 1000포인트!
+              </Text>
+              <Text style={styles.modalText}>
+                자연의 경이로움을 발견하면 보상이 팡팡!
+              </Text>
+              <Line />
+              <Text style={styles.modalTitle}>경험치와 레벨 업!</Text>
+              <Text style={styles.modalTitle2}>매일 방문 시 5경험치 !</Text>
+              <Text style={styles.modalText}>
+                하루에 한 번씩 방문하면 5경험치가 쌓여요.
+              </Text>
+              <Text style={styles.modalTitle2}>
+                친구에게 아이템 선물 시 5 경험치!
+              </Text>
+              <Text style={styles.modalText}>
+                친구에게 아이템을 선물하고 5경험치를 받아보세요!
+              </Text>
+              <Text style={styles.modalTitle2}>아이템 등록 시 10경험치!</Text>
+              <Text style={styles.modalText}>
+                아이템을 등록할 때마다 10경험치가 쌓여요.
+              </Text>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -406,9 +348,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
+    width: '100%',
+    height: '50%',
   },
   modalContent: {
     width: '90%',
+    height: '85%',
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
@@ -441,15 +386,16 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   closeButtonText: {
-    fontSize: 18,
+    fontSize: 20,
+    marginHorizontal: 10,
     color: '#000',
   },
-    img: {
-      width: 55,
-      height: 55,
-      borderRadius: 25,
-      margin: 5
-    },
+  img: {
+    width: 55,
+    height: 55,
+    borderRadius: 25,
+    margin: 5,
+  },
 });
 
 export default MyPageScreen;

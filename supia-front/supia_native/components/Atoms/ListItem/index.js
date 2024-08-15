@@ -22,6 +22,7 @@ export default function Label({
   handleFriendChange,
   friend,
   user,
+  type
 }) {
   const [FriendModalVisible, setFriendModalVisible] = useState(false);
   const [SearchModalVisible, setSearchModalVisible] = useState(false);
@@ -31,7 +32,7 @@ export default function Label({
   const [friendDetail, setFriendDetail] = useState(null);
   const {getS3Url} = useStore();
 
-  const getUserDetail = async () => {
+  const getUserDetail = async () => { // 유저 상세정보
     const token = await AsyncStorage.getItem('key');
     try {
       const response = await axios.get(`${Server_IP}/search/member`, {
@@ -57,7 +58,7 @@ export default function Label({
     }
   };
 
-  const getFriendDetail = async () => {
+  const getFriendDetail = async () => { // 친구 프로필
     const token = await AsyncStorage.getItem('key');
     try {
       const response = await axios.get(`${Server_IP}/friends/detail`, {
@@ -128,7 +129,23 @@ export default function Label({
   return (
     <View style={styles.container}>
       <Pressable onPress={handleOpenUserModal}>
-      {url ? (<Image source={{uri: getS3Url(url)}} style={styles.image} />): (<Image source={{uri: url}} style={styles.image} />)}
+      {url ? (
+        <Image
+          source={{ uri: getS3Url(url) }}
+          style={[
+            styles.image,
+            type === 'gift' && styles.rotatedImage, // type이 gift이면 90도 회전
+          ]}
+        />
+      ) : (
+        <Image
+          source={{ uri: url }}
+          style={[
+            styles.image,
+            type === 'gift' && styles.rotatedImage, // type이 gift이면 90도 회전
+          ]}
+        />
+      )}
       </Pressable>
       <View style={styles.profile}>
         <Text style={styles.title}>{title}</Text>
@@ -247,4 +264,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
   },
+  rotatedImage: {
+    transform: [{ rotate: '90deg' }],
+  },  
 });

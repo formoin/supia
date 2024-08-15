@@ -12,7 +12,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import axios from 'axios';
 import {KAKAO_API_KEY, Server_IP} from '@env';
 
-export default function WalkingScreen() {
+export default function WalkingScreen({}) {
   const time = useStore(state => state.time);
   const isActive = useStore(state => state.isActive);
   const isPaused = useStore(state => state.isPaused);
@@ -230,13 +230,13 @@ const styles = StyleSheet.create({
   },
   bottomContainer: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 20,
     width: '100%',
     alignItems: 'center',
   },
   map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
+    width: '100%',
+    height: '100%',
   },
   currentLocationButton: {
     position: 'absolute',
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   locIcon: {
     position: 'absolute',
     top: 38,
-    right: 40,
+    right: 30,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     padding: 10,
     borderRadius: 5,

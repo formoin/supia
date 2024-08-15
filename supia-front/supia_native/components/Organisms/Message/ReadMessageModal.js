@@ -21,8 +21,8 @@ export default function ReadMessageModal({ visible, onClose, type, fromMessage, 
   const formatSentTime = (dateString) => {
     return dateString ? moment(dateString).format('YYYY/MM/DD HH:mm') : '정보 없음';
   };
-
   const messageContent = type === 'text1' ? fromMessage : toMessage;
+  // console.log(messageContent)
 
   return (
     <>

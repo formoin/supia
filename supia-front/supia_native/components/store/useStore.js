@@ -3,6 +3,7 @@ import axios from 'axios';
 import Sound from 'react-native-sound';
 import {KAKAO_API_KEY, Server_IP} from '@env';
 import useLoginStore from './useLoginStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const {token} = useLoginStore.getState();
 import testWalkData from '../Pages/User/walkTest.json'; // 로컬 JSON 파일 가져오기
@@ -193,72 +194,72 @@ const useStore = create(set => ({
   setWeeklyWalkHistory: data => set(() => ({weeklyWalkHistory: data})),
   setMonthlyWalkHistory: data => set(() => ({monthlyWalkHistory: data})),
   setYearlyWalkHistory: data => set(() => ({yearlyWalkHistory: data})),
-  // fetchWalkHistory: async () => {
-  //   try {
-  //     // const token = await AsyncStorage.getItem('key');
-  //     if (token) {
-  //       const response = await axios.post(
-  //         //ContextPath
-  //         `${Server_IP}/walk/history`,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${token}`,
-  //             Accept: 'application/json',
-  //             'Content-Type': 'application/json; charset=utf-8',
-  //           },
-  //         },
-  //       );
-  //       if (response.status === 200) {
-  // 컨텍스트 내에서 setState 함수들에 접근
-  // set(state => ({
-  //   monthlyWalkHistory: response.data.monthly,
-  //   yearlyWalkHistory: response.data.yearly,
-  //   weeklyWalkHistory: response.data.monthly.slice(-7),
-  // }));
-
-  // console.log('월별 데이터:', response.data.monthly);
-  // console.log('연도별 데이터:', response.data.yearly);
-  // console.log('주별 데이터:', response.data.monthly.slice(-7));
-  //       } else {
-  //         throw new Error('걷기 기록 가져오기 실패 : response.status !== 200');
-  //       }
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // },
-
   fetchWalkHistory: async () => {
+    console.log('걷기 기록');
     try {
-      // Axios 요청처럼 데이터를 가공
-      const response = {
-        data: testWalkData,
-        status: 200,
-        statusText: 'OK',
-        headers: {},
-        config: {},
-        request: {},
-      };
-
-      // 데이터를 기존 axios 요청처럼 처리
-      if (response.status === 200) {
-        // 컨텍스트 내에서 setState 함수들에 접근
-        set(state => ({
-          monthlyWalkHistory: response.data.monthly,
-          yearlyWalkHistory: response.data.yearly,
-          weeklyWalkHistory: response.data.monthly.slice(-7),
-        }));
-
-        // console.log('월별 데이터:', response.data.monthly);
-        // console.log('연도별 데이터:', response.data.yearly);
-        // console.log('주별 데이터:', response.data.monthly.slice(-7));
-      } else {
-        throw new Error('걷기 기록 가져오기 실패 : response.status !== 200');
+      const token = await AsyncStorage.getItem('key');
+      if (token) {
+        console.log(token);
+        const response = await axios.post(
+          //ContextPath
+          `${Server_IP}/walk/history`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+        if (response.status === 200) {
+          // 컨텍스트 내에서 setState 함수들에 접근
+          set(state => ({
+            monthlyWalkHistory: response.data.monthly,
+            yearlyWalkHistory: response.data.yearly,
+            weeklyWalkHistory: response.data.monthly.slice(-7),
+          }));
+          console.log('월별 데이터:', response.data.monthly);
+          console.log('연도별 데이터:', response.data.yearly);
+          console.log('주별 데이터:', response.data.monthly.slice(-7));
+        } else {
+          throw new Error('걷기 기록 가져오기 실패 : response.status !== 200');
+        }
       }
     } catch (err) {
       console.error(err);
     }
   },
+
+  // fetchWalkHistory: async () => {
+  //   try {
+  //     // Axios 요청처럼 데이터를 가공
+  //     const response = {
+  //       data: testWalkData,
+  //       status: 200,
+  //       statusText: 'OK',
+  //       headers: {},
+  //       config: {},
+  //       request: {},
+  //     };
+
+  //     // 데이터를 기존 axios 요청처럼 처리
+  //     if (response.status === 200) {
+  //       // 컨텍스트 내에서 setState 함수들에 접근
+  //       set(state => ({
+  //         monthlyWalkHistory: response.data.monthly,
+  //         yearlyWalkHistory: response.data.yearly,
+  //         weeklyWalkHistory: response.data.monthly.slice(-7),
+  //       }));
+
+  //       console.log('월별 데이터:', response.data.monthly);
+  //       console.log('연도별 데이터:', response.data.yearly);
+  //       console.log('주별 데이터:', response.data.monthly.slice(-7));
+  //     } else {
+  //       throw new Error('걷기 기록 가져오기 실패 : response.status !== 200');
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // },
 }));
 
 export default useStore;

@@ -7,11 +7,12 @@ import Green from '../../Atoms/Button_Green';
 import loginStore from '../../store/useLoginStore';
 import {Server_IP} from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import useStore from '../../store/useStore';
 
 export default function ReplyMessageModal({visible, onClose, toMessage}) {
   const [text, setText] = useState('');
   const [friendName, setFriendName] = useState('');
-  // const { token } = loginStore.getState()
+  const {memberId} = useStore();
 
   useEffect(() => {
     if (toMessage && toMessage.length > 0) {
@@ -23,7 +24,7 @@ export default function ReplyMessageModal({visible, onClose, toMessage}) {
     const token = await AsyncStorage.getItem('key');
 
     const Message = {
-      fromMemberId: 6,
+      fromMemberId: memberId,
       toMemberId: 8,
       content: text,
     };

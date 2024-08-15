@@ -19,22 +19,40 @@ export default function SignUpScreen({navigation}) {
     password: '',
     passwordConfirm: '',
   });
+  const [emailError, setEmailError] = useState('');
 
-  // 비밀번호 + 비밀번호 일치 여부 검증
-  // 나중에 여유가 되면 이메일 형식 + 비밀번호 형식 추가로 설정하기!
+  const validateEmail = email => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleChange = async (field, value) => {
     setValues({...values, [field]: value});
+
+    if (field === 'email') {
+      if (!validateEmail(value)) {
+        setEmailError('이메일 형식이 아닙니다.');
+      } else {
+        setEmailError('');
+      }
+    }
   };
 
   // 회원가입 로직
   const onSignUpSubmit = async () => {
+    if (!validateEmail(values.email)) {
+      setEmailError('유효한 이메일을 입력하세요');
+      return;
+    }
+
     const member = {
       email: values.email,
       password: values.password,
       name: values.name,
       nickname: values.nickname,
     };
-    if (values.password == values.passwordConfirm) {
+
+    if (values.password === values.passwordConfirm) {
       try {
         const response = await axios.post(
           `${Server_IP}/members/register`,
@@ -46,7 +64,7 @@ export default function SignUpScreen({navigation}) {
             },
           },
         );
-        console.log(response.data); // 성공 시 응답 데이터 로그 출력
+        console.log(response.data);
         navigation.navigate('Login');
       } catch (error) {
         console.log('Error during registration:', error.message);
@@ -59,10 +77,11 @@ export default function SignUpScreen({navigation}) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.loginContainer}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={100}>
+    <KeyboardAwareScrollView
+      contentContainerStyle={styles.loginContainer}
+      extraScrollHeight={20}
+      enableOnAndroid={true}
+      keyboardOpeningTime={250}>
       <Text style={{padding: 50, fontSize: 22, color: '#321C1C'}}>
         회원가입
       </Text>
@@ -76,6 +95,8 @@ export default function SignUpScreen({navigation}) {
           style={styles.inputField}
           value={values.name}
           onChangeText={text => handleChange('name', text)}
+          placeholderTextColor="#A9A9A9"
+          color="black"
         />
 
         <Text style={styles.formText}>닉네임</Text>
@@ -86,6 +107,8 @@ export default function SignUpScreen({navigation}) {
           id="nickname"
           value={values.nickname}
           onChangeText={text => handleChange('nickname', text)}
+          placeholderTextColor="#A9A9A9"
+          color="black"
         />
 
         <Text style={styles.formText}>이메일</Text>
@@ -96,7 +119,10 @@ export default function SignUpScreen({navigation}) {
           id="email"
           value={values.email}
           onChangeText={text => handleChange('email', text)}
+          placeholderTextColor="#A9A9A9"
+          color="black"
         />
+        {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
 
         <Text style={styles.formText}>비밀번호</Text>
         <TextInput
@@ -107,6 +133,8 @@ export default function SignUpScreen({navigation}) {
           id="password"
           value={values.password}
           onChangeText={text => handleChange('password', text)}
+          placeholderTextColor="#A9A9A9"
+          color="black"
         />
 
         <Text style={styles.formText}>비밀번호 확인</Text>
@@ -118,10 +146,12 @@ export default function SignUpScreen({navigation}) {
           id="passwordConfirm"
           value={values.passwordConfirm}
           onChangeText={text => handleChange('passwordConfirm', text)}
+          placeholderTextColor="#A9A9A9"
+          color="black"
         />
 
         <Text style={styles.message}>
-          {values.password == values.passwordConfirm
+          {values.password === values.passwordConfirm
             ? ''
             : '비밀번호가 일치하지 않습니다.'}
         </Text>
@@ -151,7 +181,7 @@ export default function SignUpScreen({navigation}) {
           </Text>
         </Pressable>
       </View>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -161,17 +191,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#ECEADE',
     flex: 1,
-    flexGrow: 1, // flexGrow를 추가하여 스크롤이 제대로 작동하도록 함
+    flexGrow: 1,
   },
   formBox: {
     borderRadius: 8,
     padding: 16,
     backgroundColor: 'white',
     width: '80%',
-    // height: 'contain' 잘못된 부분 수정
   },
   formText: {
     padding: 6,
+    color: 'grey',
   },
   inputField: {
     padding: 6,
@@ -181,7 +211,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#D9D9D9',
   },
-
   buttonGroup: {
     alignItems: 'center',
   },
@@ -203,5 +232,9 @@ const styles = StyleSheet.create({
   message: {
     color: 'red',
     fontSize: 8,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 8,
   },
 });
