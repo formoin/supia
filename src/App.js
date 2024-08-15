@@ -279,26 +279,9 @@ class App extends Component {
         if (newVideoDevice.length > 0) {
           // Creating a new publisher with specific videoSource
           // In mobile devices the default and first camera is the front one
-          let publisher = await this.OV.initPublisherAsync(undefined, {
-                audioSource: undefined, // The source of audio. If undefined default microphone
-                videoSource: undefined, // The source of video. If undefined default webcam
-                publishAudio: true, // Whether you want to start publishing with your audio unmuted or not
-                publishVideo: true, // Whether you want to start publishing with your video enabled or not
-                resolution: "640x480", // The resolution of your video
-                frameRate: 30, // The frame rate of your video
-                insertMode: "APPEND", // How the video is inserted in the target element 'video-container'
-                mirror: false, // Whether to mirror your local video or not
-          });
 
-          var currentVideoDeviceId = publisher.stream
-                .getMediaStream()
-                .getVideoTracks()[1]
-                .getSettings().deviceId;
-          var currentVideoDevice = videoDevices.find(
-                (device) => device.deviceId === currentVideoDeviceId
-                );
           var newPublisher = this.OV.initPublisher(undefined, {
-            videoSource: currentVideoDeviceId,
+            videoSource: newVideoDevice[1].deviceId,
             publishAudio: true,
             publishVideo: true,
             mirror: true,
@@ -310,7 +293,7 @@ class App extends Component {
 
           await this.state.session.publish(newPublisher);
           this.setState({
-            currentVideoDevice: currentVideoDevice,
+            currentVideoDevice: newVideoDevice[1],
             mainStreamManager: newPublisher,
             publisher: newPublisher,
           });
