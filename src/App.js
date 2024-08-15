@@ -3,7 +3,6 @@ import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
 import React, { Component } from "react";
 import { FiRefreshCw } from "react-icons/fi";
-import CallEndIcon from "@mui/icons-material/CallEnd";
 import "./App.css";
 import UserVideoComponent from "./UserVideoComponent";
 import html2canvas from "html2canvas";
@@ -62,6 +61,9 @@ class App extends Component {
           memberName,
           enterSession,
         });
+
+        // 데이터가 정상적으로 로드되었을 때 세션을 시작
+        this.joinSession();
       } else {
         // 데이터가 아직 준비되지 않은 경우 100ms 후 다시 시도
         setTimeout(checkDataAndSetState, 100);
@@ -69,8 +71,10 @@ class App extends Component {
     };
     // 데이터 받기 완료
     checkDataAndSetState();
-    //Join Session 실행
-    this.joinSession();
+    setTimeout(() => {
+      //Join Session 실행
+      this.joinSession();
+    }, 1000); // 1초 지연
   }
 
   componentWillUnmount() {
@@ -121,6 +125,7 @@ class App extends Component {
 
     html2canvas(target).then((canvas) => {
       const dataURL = canvas.toDataURL("image/png");
+
       // 이미지 데이터를 React Native로 전달
       window.ReactNativeWebView.postMessage(dataURL);
     });
@@ -237,11 +242,6 @@ class App extends Component {
 
     if (mySession) {
       mySession.disconnect();
-    }
-
-    // Notify the React Native WebView to unmount
-    if (window.ReactNativeWebView) {
-      window.ReactNativeWebView.postMessage("leaveSession");
     }
 
     // Empty all properties...
@@ -380,24 +380,15 @@ class App extends Component {
             </div>
           </div>
         ) : null}
-        <div id="session-footer">
-          <button className="btn" id="CallEnd" onclick={this.leaveSession}>
-            <a>종료</a>
-          </button>
-          <button
-            className="btn"
-            id="Capture"
-            type="button"
-            onClick={this.onClickDownloadButton}
-          ></button>
-          <button
-            className="btn"
-            id="switchCamera"
-            type="button"
-            onClick={this.switchCamera}
-          >
+        <div id="session-header">
+          <button className="btn" type="button" onClick={this.switchCamera}>
             <FiRefreshCw />
           </button>
+          <button
+            className="pictureIcon"
+            type="button"
+            onClick={this.onClickDownloadButton}
+          />
         </div>
       </div>
     );
