@@ -206,7 +206,7 @@ OECD 평균 근로 시간보다 약 200시간 많이 근무하는 현대의 한�
 
 ### ⚙ 아키텍쳐(임시)
 
-<img src="./Docs/Architecture.png" alt="Architecture" width="300px">
+<img src="./Docs/Architecture.PNG" alt="Architecture" width="300px">
 
 ## V. 팀원 소개 및 회고
 
